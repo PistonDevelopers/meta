@@ -13,3 +13,7 @@ homepage = "https://github.com/pistondevelopers/meta"
 [dependencies.read_token]
 git = "https://github.com/pistondevelopers/read_token"
 #version = "0.0.0"
+
+[dependencies.range]
+git = "https://github.com/pistondevelopers/range"
+#version = "0.0.0"

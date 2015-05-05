@@ -3,6 +3,9 @@
 //! Meta parsing and encoding for data oriented design
 
 extern crate read_token;
+extern crate range;
+
+use range::Range;
 
 pub use whitespace::{ Whitespace, WHITESPACE };
 
@@ -28,6 +31,12 @@ pub enum Error<'a> {
     ExpectedPropertyType(Type),
     /// Reaching end of node, but expected more properties.
     ExpectedMoreProperties(&'a [&'a str]),
+}
+
+/// Implemented by error handlers.
+pub trait ErrorHandler {
+    /// Report an error.
+    fn error<'a>(range: Range, error: Error<'a>);
 }
 
 /// Implemented by meta readers.
