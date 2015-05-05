@@ -58,6 +58,9 @@ pub trait MetaReader {
     /// Sets a string property of the node.
     fn set_as_str(&mut self, name: &str, val: &str, state: &Self::State) ->
         Result<Self::State, Error>;
+    /// Sets a f64 property of the node.
+    fn set_as_f64(&mut self, name: &str, val: f64, state: &Self::State) ->
+        Result<Self::State, Error>;
 }
 
 /// Stores information about token.
