@@ -12,6 +12,10 @@ mod whitespace;
 pub enum Type {
     /// Either true or false.
     Bool,
+    /// Text.
+    String,
+    /// Number.
+    F64,
 }
 
 /// Errors reporting expected values.
