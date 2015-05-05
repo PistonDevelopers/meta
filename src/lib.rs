@@ -12,6 +12,10 @@ mod whitespace;
 pub enum Type {
     /// Either true or false.
     Bool,
+    /// Text.
+    String,
+    /// Number.
+    F64,
 }
 
 /// Errors reporting expected values.
@@ -57,6 +61,9 @@ pub trait MetaReader {
         Result<Self::State, Error>;
     /// Sets a string property of the node.
     fn set_as_str(&mut self, name: &str, val: &str, state: &Self::State) ->
+        Result<Self::State, Error>;
+    /// Sets a f64 property of the node.
+    fn set_as_f64(&mut self, name: &str, val: f64, state: &Self::State) ->
         Result<Self::State, Error>;
 }
 
