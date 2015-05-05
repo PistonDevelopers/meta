@@ -8,6 +8,9 @@ extern crate range;
 use range::Range;
 
 pub use whitespace::{ Whitespace, WHITESPACE };
+pub use error_handler::{ ErrorHandler, StdErr };
+
+mod error_handler;
 
 mod whitespace;
 
@@ -25,18 +28,14 @@ pub enum Type {
 pub enum Error<'a> {
     /// Not supported.
     NotSupported,
+    /// Whitespace is required.
+    ExpectedWhitespace,
     /// Expected nodes with other names.
     ExpectedNode(&'a [&'a str]),
     /// Expected another propert type.
     ExpectedPropertyType(Type),
     /// Reaching end of node, but expected more properties.
     ExpectedMoreProperties(&'a [&'a str]),
-}
-
-/// Implemented by error handlers.
-pub trait ErrorHandler {
-    /// Report an error.
-    fn error<'a>(&mut self, range: Range, error: Error<'a>);
 }
 
 /// Implemented by meta readers.
