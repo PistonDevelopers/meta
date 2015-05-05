@@ -36,7 +36,7 @@ pub enum Error<'a> {
 /// Implemented by error handlers.
 pub trait ErrorHandler {
     /// Report an error.
-    fn error<'a>(range: Range, error: Error<'a>);
+    fn error<'a>(&mut self, range: Range, error: Error<'a>);
 }
 
 /// Implemented by meta readers.
