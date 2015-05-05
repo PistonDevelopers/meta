@@ -32,25 +32,32 @@ pub enum Error<'a> {
 /// tree structure. The meta parser communicates with the meta reader such
 /// that parsing is interrupted if any error happens.
 pub trait MetaReader {
+    /// The state that points to a location in the parsed structure.
+    type State;
+
     /// Starts parsing a node.
-    fn start_node(&mut self, name: &str) -> Option<Error>;
+    fn start_node(&mut self, name: &str, state: &Self::State) ->
+        Result<Self::State, Error>;
     /// Ends parsing a node.
-    fn end_node(&mut self) -> Option<Error>;
+    fn end_node(&mut self, state: &Self::State) -> Result<Self::State, Error>;
     /// Starts optional section of a node.
-    fn start_optional(&mut self) -> Option<Error>;
+    fn start_optional(&mut self, state: &Self::State) ->
+        Result<Self::State, Error>;
     /// Ends optional section of a node.
-    fn end_optional(&mut self) -> Option<Error>;
+    fn end_optional(&mut self, state: &Self::State) ->
+        Result<Self::State, Error>;
     /// Starts selection.
-    fn start_select(&mut self) -> Option<Error>;
-    /// Resets selection.
-    /// All state created after last `start_select` should be erased.
-    fn reset_select(&mut self) -> Option<Error>;
+    fn start_select(&mut self, state: &Self::State) ->
+        Result<Self::State, Error>;
     /// Ends selection.
-    fn end_select(&mut self) -> Option<Error>;
+    fn end_select(&mut self, state: &Self::State) ->
+        Result<Self::State, Error>;
     /// Sets a bool property of the node.
-    fn set_as_bool(&mut self, name: &str, val: bool) -> Option<Error>;
+    fn set_as_bool(&mut self, name: &str, val: bool, state: &Self::State) ->
+        Result<Self::State, Error>;
     /// Sets a string property of the node.
-    fn set_as_str(&mut self, name: &str, val: &str) -> Option<Error>;
+    fn set_as_str(&mut self, name: &str, val: &str, state: &Self::State) ->
+        Result<Self::State, Error>;
 }
 
 /// Stores information about token.
