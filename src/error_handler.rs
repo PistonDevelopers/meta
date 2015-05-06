@@ -33,6 +33,24 @@ impl<'a> StdErr<'a> {
 
 impl<'b> ErrorHandler for StdErr<'b> {
     fn error<'a>(&mut self, range: Range, error: Error<'a>) {
-        unimplemented!()
+        use std::io::{ stderr, Write };
+
+        let mut stderr = stderr();
+        let mut n = 0;
+        writeln!(&mut stderr, "Error: {}", error).unwrap();
+        for &(r, text) in &self.lines {
+            if let Some(intersect) = range.intersect(&r) {
+                writeln!(&mut stderr, "{}: {}", n, text).unwrap();
+                if intersect.offset > r.offset {
+                    write!(&mut stderr, "{}: ", n).unwrap();
+                    let n = intersect.offset - r.offset;
+                    for _ in 0 .. n {
+                        write!(&mut stderr, " ").unwrap();
+                    }
+                    writeln!(&mut stderr, "^").unwrap();
+                }
+            }
+            n += 1;
+        }
     }
 }

@@ -76,4 +76,17 @@ mod tests {
         assert_eq!(optional_whitespace.parse(std_err, &chars[4..], 4),
             Some(Range::new(4, 1)));
     }
+
+    #[test]
+    fn required() {
+        let text = "a,   b,c";
+        let chars: Vec<char> = text.chars().collect();
+        let required_whitespace = Whitespace { optional: false };
+        let ref mut std_err = StdErr::new(text);
+        assert_eq!(required_whitespace.parse(std_err, &chars[2..], 2),
+            Some(Range::new(2, 3)));
+        // Prints an error message to standard error output.
+        assert_eq!(required_whitespace.parse(std_err, &chars[7..], 7),
+            None);
+    }
 }

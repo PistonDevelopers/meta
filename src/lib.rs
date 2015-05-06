@@ -5,38 +5,15 @@
 extern crate read_token;
 extern crate range;
 
-use range::Range;
-
 pub use whitespace::{ Whitespace, WHITESPACE };
 pub use error_handler::{ ErrorHandler, StdErr };
+pub use error::Error;
+pub use ty::Type;
 
+mod error;
 mod error_handler;
-
+mod ty;
 mod whitespace;
-
-/// Types of properties.
-pub enum Type {
-    /// Either true or false.
-    Bool,
-    /// Text.
-    String,
-    /// Number.
-    F64,
-}
-
-/// Errors reporting expected values.
-pub enum Error<'a> {
-    /// Not supported.
-    NotSupported,
-    /// Whitespace is required.
-    ExpectedWhitespace,
-    /// Expected nodes with other names.
-    ExpectedNode(&'a [&'a str]),
-    /// Expected another propert type.
-    ExpectedPropertyType(Type),
-    /// Reaching end of node, but expected more properties.
-    ExpectedMoreProperties(&'a [&'a str]),
-}
 
 /// Implemented by meta readers.
 ///
