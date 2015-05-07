@@ -42,6 +42,10 @@ pub trait MetaReader {
 
 /// Implemented by meta writers.
 pub trait MetaWriter {
+    /// Starts encoding a node.
+    fn start_node(&mut self, name: &str);
+    /// Ends encoding a node.
+    fn end_node(&mut self, name: &str);
     /// Get bool property.
     fn get_as_bool(&mut self, name: &str) -> Option<bool>;
     /// Get str property.
