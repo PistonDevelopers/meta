@@ -9,10 +9,12 @@ pub use whitespace::{ Whitespace, WHITESPACE };
 pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
 pub use parse_error::ParseError;
 pub use ty::Type;
+pub use token::Token;
 
 mod parse_error;
 mod parse_error_handler;
 mod ty;
+mod token;
 mod whitespace;
 
 /// Implemented by meta readers.
@@ -56,17 +58,6 @@ pub trait MetaWriter {
     fn get_as_f64(&mut self, name: &str) -> Option<f64>;
 }
 
-/// Stores information about token.
-pub struct Token<'a> {
-    /// The text to match against.
-    pub text: &'a str,
-    /// Whether to set property to true or false (inverted).
-    pub inverted: Option<bool>,
-    /// Which predicate to set if token matches.
-    /// This is the name of the property in current node.
-    pub predicate: Option<&'a str>,
-}
-
 /// Stores information about a parameter.
 pub struct Parameter<'a> {
     /// The name of the parameter.
@@ -95,3 +86,13 @@ pub enum Rule<'a> {
     /// Read parameter.
     Parameter(Parameter<'a>),
 }
+
+/*
+Might be useful for later.
+#[inline(always)]
+fn update<'a>(range: range::Range, chars: &'a [char], offset: usize) ->
+    (&'a [char], usize) {
+    let next_offset = range.next_offset();
+    (&chars[next_offset - offset..], next_offset)
+}
+*/
