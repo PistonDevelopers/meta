@@ -2,8 +2,8 @@ use read_token;
 use range::Range;
 
 use {
-    Error,
-    ErrorHandler,
+    ParseError,
+    ParseErrorHandler,
     Parameter,
     Rule,
     Token,
@@ -21,11 +21,11 @@ impl Whitespace {
     /// an error will be reported.
     pub fn parse<E>(&self, error_handler: &mut E, chars: &[char], offset: usize) ->
         Option<Range>
-        where E: ErrorHandler
+        where E: ParseErrorHandler
     {
         let range = read_token::whitespace(chars, offset);
         if range.length == 0 && !self.optional {
-            error_handler.error(range, Error::ExpectedWhitespace);
+            error_handler.error(range, ParseError::ExpectedWhitespace);
             None
         } else {
             Some(range)
@@ -70,7 +70,7 @@ mod tests {
         let text = "a,b, c";
         let chars: Vec<char> = text.chars().collect();
         let optional_whitespace = Whitespace { optional: true };
-        let ref mut std_err = StdErr::new(text);
+        let ref mut std_err = ParseStdErr::new(text);
         assert_eq!(optional_whitespace.parse(std_err, &chars, 0),
             Some(Range::new(0, 0)));
         assert_eq!(optional_whitespace.parse(std_err, &chars[4..], 4),
@@ -82,7 +82,7 @@ mod tests {
         let text = "a,   b,c";
         let chars: Vec<char> = text.chars().collect();
         let required_whitespace = Whitespace { optional: false };
-        let ref mut std_err = StdErr::new(text);
+        let ref mut std_err = ParseStdErr::new(text);
         assert_eq!(required_whitespace.parse(std_err, &chars[2..], 2),
             Some(Range::new(2, 3)));
         // Prints an error message to standard error output.

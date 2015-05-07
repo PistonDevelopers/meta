@@ -6,12 +6,12 @@ extern crate read_token;
 extern crate range;
 
 pub use whitespace::{ Whitespace, WHITESPACE };
-pub use error_handler::{ ErrorHandler, StdErr };
-pub use error::Error;
+pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
+pub use parse_error::ParseError;
 pub use ty::Type;
 
-mod error;
-mod error_handler;
+mod parse_error;
+mod parse_error_handler;
 mod ty;
 mod whitespace;
 
@@ -26,18 +26,19 @@ pub trait MetaReader {
 
     /// Starts parsing a node.
     fn start_node(&mut self, name: &str, state: &Self::State) ->
-        Result<Self::State, Error>;
+        Result<Self::State, ParseError>;
     /// Ends parsing a node.
-    fn end_node(&mut self, state: &Self::State) -> Result<Self::State, Error>;
+    fn end_node(&mut self, state: &Self::State) ->
+        Result<Self::State, ParseError>;
     /// Sets a bool property of the node.
     fn set_as_bool(&mut self, name: &str, val: bool, state: &Self::State) ->
-        Result<Self::State, Error>;
+        Result<Self::State, ParseError>;
     /// Sets a string property of the node.
     fn set_as_str(&mut self, name: &str, val: &str, state: &Self::State) ->
-        Result<Self::State, Error>;
+        Result<Self::State, ParseError>;
     /// Sets a f64 property of the node.
     fn set_as_f64(&mut self, name: &str, val: f64, state: &Self::State) ->
-        Result<Self::State, Error>;
+        Result<Self::State, ParseError>;
 }
 
 /// Implemented by meta writers.
