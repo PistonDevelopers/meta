@@ -29,18 +29,6 @@ pub trait MetaReader {
         Result<Self::State, Error>;
     /// Ends parsing a node.
     fn end_node(&mut self, state: &Self::State) -> Result<Self::State, Error>;
-    /// Starts optional section of a node.
-    fn start_optional(&mut self, state: &Self::State) ->
-        Result<Self::State, Error>;
-    /// Ends optional section of a node.
-    fn end_optional(&mut self, state: &Self::State) ->
-        Result<Self::State, Error>;
-    /// Starts selection.
-    fn start_select(&mut self, state: &Self::State) ->
-        Result<Self::State, Error>;
-    /// Ends selection.
-    fn end_select(&mut self, state: &Self::State) ->
-        Result<Self::State, Error>;
     /// Sets a bool property of the node.
     fn set_as_bool(&mut self, name: &str, val: bool, state: &Self::State) ->
         Result<Self::State, Error>;
