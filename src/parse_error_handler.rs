@@ -1,21 +1,21 @@
 use range::Range;
 
-use Error;
+use ParseError;
 
 /// Implemented by error handlers.
-pub trait ErrorHandler {
+pub trait ParseErrorHandler {
     /// Report an error.
-    fn error<'a>(&mut self, range: Range, error: Error<'a>);
+    fn error<'a>(&mut self, range: Range, error: ParseError<'a>);
 }
 
 /// Reports error to standard error output.
-pub struct StdErr<'a> {
+pub struct ParseStdErr<'a> {
     lines: Vec<(Range, &'a str)>,
 }
 
-impl<'a> StdErr<'a> {
+impl<'a> ParseStdErr<'a> {
     /// Creates a new error handler for standard error output.
-    pub fn new(text: &'a str) -> StdErr<'a> {
+    pub fn new(text: &'a str) -> ParseStdErr<'a> {
         let mut start = 0;
         let mut lines = vec![];
         for line in text.lines() {
@@ -25,14 +25,14 @@ impl<'a> StdErr<'a> {
             start += length + 1;
         }
 
-        StdErr {
+        ParseStdErr {
             lines: lines,
         }
     }
 }
 
-impl<'b> ErrorHandler for StdErr<'b> {
-    fn error<'a>(&mut self, range: Range, error: Error<'a>) {
+impl<'b> ParseErrorHandler for ParseStdErr<'b> {
+    fn error<'a>(&mut self, range: Range, error: ParseError<'a>) {
         use std::io::{ stderr, Write };
 
         let mut stderr = stderr();

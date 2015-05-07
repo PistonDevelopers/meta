@@ -5,7 +5,7 @@ use Type;
 
 /// Errors reporting expected values.
 #[derive(Debug)]
-pub enum Error<'a> {
+pub enum ParseError<'a> {
     /// Not supported.
     NotSupported,
     /// Whitespace is required.
@@ -18,14 +18,14 @@ pub enum Error<'a> {
     ExpectedMoreProperties(&'a [&'a str]),
 }
 
-impl<'a> Display for Error<'a> {
+impl<'a> Display for ParseError<'a> {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), FormatError> {
         match self {
-            &Error::NotSupported =>
+            &ParseError::NotSupported =>
                 try!(fmt.write_str("This feature is not supported")),
-            &Error::ExpectedWhitespace =>
+            &ParseError::ExpectedWhitespace =>
                 try!(fmt.write_str("Expected whitespace")),
-            &Error::ExpectedNode(nodes) => {
+            &ParseError::ExpectedNode(nodes) => {
                 try!(fmt.write_str("Expected nodes: "));
                 let mut tail = false;
                 for node in nodes {
@@ -37,11 +37,11 @@ impl<'a> Display for Error<'a> {
                     try!(fmt.write_str(node));
                 }
             }
-            &Error::ExpectedPropertyType(ref ty) =>
+            &ParseError::ExpectedPropertyType(ref ty) =>
                 try!(fmt.write_fmt(format_args!(
                     "Expected property type {}", ty
                 ))),
-            &Error::ExpectedMoreProperties(props) => {
+            &ParseError::ExpectedMoreProperties(props) => {
                 try!(fmt.write_str("Expected more properties: "));
                 let mut tail = false;
                 for prop in props {
