@@ -40,6 +40,17 @@ pub trait MetaReader {
         Result<Self::State, Error>;
 }
 
+/// Implemented by meta writers.
+pub trait MetaWriter {
+    /// Get bool property.
+    fn get_as_bool(&mut self, name: &str) -> Option<bool>;
+    /// Get str property.
+    fn get_as_str<F, U>(&mut self, name: &str, f: F) -> Option<U>
+        where F: FnOnce(&str) -> U;
+    /// Get f64 property.
+    fn get_as_f64(&mut self, name: &str) -> Option<f64>;
+}
+
 /// Stores information about token.
 pub struct Token<'a> {
     /// The text to match against.
