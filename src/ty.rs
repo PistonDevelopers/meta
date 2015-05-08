@@ -12,13 +12,18 @@ pub enum Type {
     F64,
 }
 
+impl Type {
+    fn get_str(&self) -> &'static str {
+        match *self {
+            Type::Bool => "bool",
+            Type::String => "text",
+            Type::F64 => "num",
+        }
+    }
+}
+
 impl Display for Type {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), FormatError> {
-        match self {
-            &Type::Bool => try!(fmt.write_str("bool")),
-            &Type::String => try!(fmt.write_str("text")),
-            &Type::F64 => try!(fmt.write_str("num")),
-        }
-        Ok(())
+        fmt.write_str(self.get_str())
     }
 }
