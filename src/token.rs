@@ -12,7 +12,7 @@ pub struct Token<'a> {
     pub inverted: Option<bool>,
     /// Which predicate to set if token matches.
     /// This is the name of the property in current node.
-    pub predicate: Option<&'a str>,
+    pub property: Option<&'a str>,
 }
 
 impl<'a> Token<'a> {
@@ -32,7 +32,7 @@ impl<'a> Token<'a> {
         where M: MetaReader
     {
         if let Some(range) = read_token::token(self.text, chars, offset) {
-            match (self.inverted, self.predicate) {
+            match (self.inverted, self.property) {
                 (Some(inverted), Some(name)) => {
                     match meta_reader.set_as_bool(name, !inverted, &state) {
                         Err(err) => {

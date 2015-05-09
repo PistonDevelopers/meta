@@ -13,6 +13,7 @@ pub use token::Token;
 pub use select::Select;
 pub use parameter::Parameter;
 pub use optional::Optional;
+pub use until_any_or_whitespace::UntilAnyOrWhitespace;
 pub use rule::Rule;
 
 mod parse_error;
@@ -23,6 +24,7 @@ mod whitespace;
 mod select;
 mod parameter;
 mod optional;
+mod until_any_or_whitespace;
 mod rule;
 
 /// Implemented by meta readers.
@@ -44,7 +46,7 @@ pub trait MetaReader {
     fn set_as_bool(&mut self, name: &str, val: bool, state: &Self::State) ->
         Result<Self::State, ParseError>;
     /// Sets a string property of the node.
-    fn set_as_str(&mut self, name: &str, val: &str, state: &Self::State) ->
+    fn set_as_str(&mut self, name: &str, val: String, state: &Self::State) ->
         Result<Self::State, ParseError>;
     /// Sets a f64 property of the node.
     fn set_as_f64(&mut self, name: &str, val: f64, state: &Self::State) ->
