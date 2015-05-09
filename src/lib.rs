@@ -10,12 +10,16 @@ pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
 pub use parse_error::ParseError;
 pub use ty::Type;
 pub use token::Token;
+pub use select::Select;
+pub use rule::Rule;
 
 mod parse_error;
 mod parse_error_handler;
 mod ty;
 mod token;
 mod whitespace;
+mod select;
+mod rule;
 
 /// Implemented by meta readers.
 ///
@@ -24,7 +28,7 @@ mod whitespace;
 /// that parsing is interrupted if any error happens.
 pub trait MetaReader {
     /// The state that points to a location in the parsed structure.
-    type State;
+    type State: Clone;
 
     /// Starts parsing a node.
     fn start_node(&mut self, name: &str, state: &Self::State) ->
@@ -71,20 +75,6 @@ pub struct Parameter<'a> {
     pub value: Option<&'a str>,
     /// The body of the parameter.
     pub body: &'a [Rule<'a>],
-}
-
-/// A rule describes how some section of a document should be parsed.
-pub enum Rule<'a> {
-    /// Read whitespace.
-    Whitespace(Whitespace),
-    /// Match against a token.
-    Token(Token<'a>),
-    /// Select one of the sub rules.
-    /// If the first one does not succeed, try another and so on.
-    /// If all sub rules fail, then the rule fails.
-    Select(&'a [Rule<'a>]),
-    /// Read parameter.
-    Parameter(Parameter<'a>),
 }
 
 /*

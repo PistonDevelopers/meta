@@ -2,7 +2,7 @@ use std::fmt::{ Display, Formatter };
 use std::fmt::Error as FormatError;
 
 /// Types of properties.
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Type {
     /// Either true or false.
     Bool,
