@@ -11,6 +11,7 @@ pub use parse_error::ParseError;
 pub use ty::Type;
 pub use token::Token;
 pub use select::Select;
+pub use parameter::Parameter;
 pub use rule::Rule;
 
 mod parse_error;
@@ -19,6 +20,7 @@ mod ty;
 mod token;
 mod whitespace;
 mod select;
+mod parameter;
 mod rule;
 
 /// Implemented by meta readers.
@@ -62,27 +64,9 @@ pub trait MetaWriter {
     fn get_as_f64(&mut self, name: &str) -> Option<f64>;
 }
 
-/// Stores information about a parameter.
-pub struct Parameter<'a> {
-    /// The name of the parameter.
-    pub name: &'a str,
-    /// The properties of the parameter.
-    /// This is used to check the property names set by sub rules.
-    /// If a property name does not match any of the arguments to the parameter,
-    /// then an error is reported.
-    pub args: &'a [&'a str],
-    /// The property name of parent to set the value.
-    pub value: Option<&'a str>,
-    /// The body of the parameter.
-    pub body: &'a [Rule<'a>],
-}
-
-/*
-Might be useful for later.
 #[inline(always)]
-fn update<'a>(range: range::Range, chars: &'a [char], offset: usize) ->
-    (&'a [char], usize) {
+fn update<'a>(range: range::Range, chars: &mut &'a [char], offset: &mut usize) {
     let next_offset = range.next_offset();
-    (&chars[next_offset - offset..], next_offset)
+    *chars = &chars[next_offset - *offset..];
+    *offset = next_offset;
 }
-*/
