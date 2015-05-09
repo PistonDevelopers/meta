@@ -4,28 +4,36 @@ use std::fmt::Error as FormatError;
 use Type;
 
 /// Errors reporting expected values.
-#[derive(Debug)]
-pub enum ParseError<'a> {
+#[derive(Debug, Eq, PartialEq)]
+pub enum ParseError {
     /// Not supported.
     NotSupported,
     /// Whitespace is required.
     ExpectedWhitespace,
+    /// Expected token.
+    ExpectedToken(String),
     /// Expected nodes with other names.
-    ExpectedNode(&'a [&'a str]),
+    ExpectedNode(Vec<String>),
     /// Expected another propert type.
     ExpectedPropertyType(Type),
     /// Reaching end of node, but expected more properties.
-    ExpectedMoreProperties(&'a [&'a str]),
+    ExpectedMoreProperties(Vec<String>),
+    /// An invalid rule.
+    InvalidRule(&'static str),
 }
 
-impl<'a> Display for ParseError<'a> {
+impl Display for ParseError {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), FormatError> {
         match self {
             &ParseError::NotSupported =>
                 try!(fmt.write_str("This feature is not supported")),
             &ParseError::ExpectedWhitespace =>
                 try!(fmt.write_str("Expected whitespace")),
-            &ParseError::ExpectedNode(nodes) => {
+            &ParseError::ExpectedToken(ref token) =>
+                try!(fmt.write_fmt(format_args!(
+                    "Expected `{}`", token
+                ))),
+            &ParseError::ExpectedNode(ref nodes) => {
                 try!(fmt.write_str("Expected nodes: "));
                 let mut tail = false;
                 for node in nodes {
@@ -34,14 +42,14 @@ impl<'a> Display for ParseError<'a> {
                     } else {
                         tail = true;
                     }
-                    try!(fmt.write_str(node));
+                    try!(fmt.write_str(&node));
                 }
             }
             &ParseError::ExpectedPropertyType(ref ty) =>
                 try!(fmt.write_fmt(format_args!(
                     "Expected property type {}", ty
                 ))),
-            &ParseError::ExpectedMoreProperties(props) => {
+            &ParseError::ExpectedMoreProperties(ref props) => {
                 try!(fmt.write_str("Expected more properties: "));
                 let mut tail = false;
                 for prop in props {
@@ -53,6 +61,10 @@ impl<'a> Display for ParseError<'a> {
                     try!(fmt.write_str(prop));
                 }
             }
+            &ParseError::InvalidRule(msg) =>
+                try!(fmt.write_fmt(format_args!(
+                    "Invalid rule `{}`", msg
+                ))),
         }
         Ok(())
     }

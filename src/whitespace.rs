@@ -3,9 +3,9 @@ use range::Range;
 
 use {
     ParseError,
-    ParseErrorHandler,
     Parameter,
     Rule,
+    Select,
     Token,
 };
 
@@ -19,16 +19,14 @@ impl Whitespace {
     /// Parse whitespace.
     /// If whitespace is required and no whitespace is found,
     /// an error will be reported.
-    pub fn parse<E>(&self, error_handler: &mut E, chars: &[char], offset: usize) ->
-        Option<Range>
-        where E: ParseErrorHandler
+    pub fn parse(&self, chars: &[char], offset: usize) ->
+        Result<Range, (Range, ParseError)>
     {
         let range = read_token::whitespace(chars, offset);
         if range.length == 0 && !self.optional {
-            error_handler.error(range, ParseError::ExpectedWhitespace);
-            None
+            Err((range, ParseError::ExpectedWhitespace))
         } else {
-            Some(range)
+            Ok(range)
         }
     }
 }
@@ -45,7 +43,7 @@ pub static WHITESPACE: Parameter<'static> = Parameter {
             inverted: None,
             predicate: None
         }),
-        Rule::Select(&[
+        Rule::Select(Select { args: &[
             Rule::Token(Token {
                 text: "?",
                 inverted: Some(false),
@@ -56,7 +54,7 @@ pub static WHITESPACE: Parameter<'static> = Parameter {
                 inverted: Some(true),
                 predicate: Some("optional"),
             }),
-        ]),
+        ]}),
     ],
 };
 
@@ -70,11 +68,10 @@ mod tests {
         let text = "a,b, c";
         let chars: Vec<char> = text.chars().collect();
         let optional_whitespace = Whitespace { optional: true };
-        let ref mut std_err = ParseStdErr::new(text);
-        assert_eq!(optional_whitespace.parse(std_err, &chars, 0),
-            Some(Range::new(0, 0)));
-        assert_eq!(optional_whitespace.parse(std_err, &chars[4..], 4),
-            Some(Range::new(4, 1)));
+        assert_eq!(optional_whitespace.parse(&chars, 0),
+            Ok(Range::new(0, 0)));
+        assert_eq!(optional_whitespace.parse(&chars[4..], 4),
+            Ok(Range::new(4, 1)));
     }
 
     #[test]
@@ -82,11 +79,10 @@ mod tests {
         let text = "a,   b,c";
         let chars: Vec<char> = text.chars().collect();
         let required_whitespace = Whitespace { optional: false };
-        let ref mut std_err = ParseStdErr::new(text);
-        assert_eq!(required_whitespace.parse(std_err, &chars[2..], 2),
-            Some(Range::new(2, 3)));
+        assert_eq!(required_whitespace.parse(&chars[2..], 2),
+            Ok(Range::new(2, 3)));
         // Prints an error message to standard error output.
-        assert_eq!(required_whitespace.parse(std_err, &chars[7..], 7),
-            None);
+        assert_eq!(required_whitespace.parse(&chars[7..], 7),
+            Err((Range::new(7, 0), ParseError::ExpectedWhitespace)));
     }
 }

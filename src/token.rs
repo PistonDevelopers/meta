@@ -2,7 +2,7 @@ use range::Range;
 use read_token;
 
 use MetaReader;
-use ParseErrorHandler;
+use ParseError;
 
 /// Stores information about token.
 pub struct Token<'a> {
@@ -22,36 +22,34 @@ impl<'a> Token<'a> {
     /// If the meta reader fails setting the property the error is handled.
     /// If the token is not linked to any property,
     /// the same state will be returned.
-    pub fn parse<M, E>(
+    pub fn parse<M>(
         &self,
         meta_reader: &mut M,
-        state: M::State,
-        error_handler: &mut E,
+        state: &M::State,
         chars: &[char],
         offset: usize
-    ) -> Option<(Range, M::State)>
-        where E: ParseErrorHandler,
-              M: MetaReader,
+    ) -> Result<(Range, M::State), (Range, ParseError)>
+        where M: MetaReader
     {
         if let Some(range) = read_token::token(self.text, chars, offset) {
             match (self.inverted, self.predicate) {
                 (Some(inverted), Some(name)) => {
                     match meta_reader.set_as_bool(name, !inverted, &state) {
                         Err(err) => {
-                            error_handler.error(range, err);
-                            return None;
+                            return Err((range, err));
                         }
                         Ok(state) => {
-                            return Some((range, state));
+                            return Ok((range, state));
                         }
                     }
                 }
                 _ => {
-                    return Some((range, state))
+                    return Ok((range, state.clone()))
                 }
             }
         } else {
-            return None;
+            return Err((Range::new(offset, 0),
+                ParseError::ExpectedToken(self.text.into())));
         }
     }
 }

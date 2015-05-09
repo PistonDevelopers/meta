@@ -5,7 +5,7 @@ use ParseError;
 /// Implemented by error handlers.
 pub trait ParseErrorHandler {
     /// Report an error.
-    fn error<'a>(&mut self, range: Range, error: ParseError<'a>);
+    fn error(&mut self, range: Range, error: ParseError);
 }
 
 /// Reports error to standard error output.
@@ -32,7 +32,7 @@ impl<'a> ParseStdErr<'a> {
 }
 
 impl<'b> ParseErrorHandler for ParseStdErr<'b> {
-    fn error<'a>(&mut self, range: Range, error: ParseError<'a>) {
+    fn error(&mut self, range: Range, error: ParseError) {
         use std::io::{ stderr, Write };
 
         let mut stderr = stderr();
