@@ -41,18 +41,18 @@ pub static WHITESPACE: Parameter<'static> = Parameter {
         Rule::Token(Token {
             text: "whitespace",
             inverted: None,
-            predicate: None
+            property: None
         }),
         Rule::Select(Select { args: &[
             Rule::Token(Token {
                 text: "?",
                 inverted: Some(false),
-                predicate: Some("optional"),
+                property: Some("optional"),
             }),
             Rule::Token(Token {
                 text: "!",
                 inverted: Some(true),
-                predicate: Some("optional"),
+                property: Some("optional"),
             }),
         ]}),
     ],

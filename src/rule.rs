@@ -3,6 +3,7 @@ use range::Range;
 use {
     Whitespace,
     Token,
+    UntilAnyOrWhitespace,
     Parameter,
     MetaReader,
     ParseError,
@@ -16,6 +17,8 @@ pub enum Rule<'a> {
     Whitespace(Whitespace),
     /// Match against a token.
     Token(Token<'a>),
+    /// Read until any or whitespace.
+    UntilAnyOrWhitespace(UntilAnyOrWhitespace<'a>),
     /// Select one of the sub rules.
     /// If the first one does not succeed, try another and so on.
     /// If all sub rules fail, then the rule fails.
@@ -43,6 +46,9 @@ impl<'a> Rule<'a> {
             }
             &Rule::Token(ref t) => {
                 t.parse(meta_reader, state, chars, offset)
+            }
+            &Rule::UntilAnyOrWhitespace(ref u) => {
+                u.parse(meta_reader, state, chars, offset)
             }
             &Rule::Select(ref s) => {
                 s.parse(meta_reader, state, chars, offset)

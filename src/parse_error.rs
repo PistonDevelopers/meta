@@ -10,6 +10,8 @@ pub enum ParseError {
     NotSupported,
     /// Whitespace is required.
     ExpectedWhitespace,
+    /// Something is required.
+    ExpectedSomething,
     /// Expected token.
     ExpectedToken(String),
     /// Expected nodes with other names.
@@ -29,6 +31,8 @@ impl Display for ParseError {
                 try!(fmt.write_str("This feature is not supported")),
             &ParseError::ExpectedWhitespace =>
                 try!(fmt.write_str("Expected whitespace")),
+            &ParseError::ExpectedSomething =>
+                try!(fmt.write_str("Expected something")),
             &ParseError::ExpectedToken(ref token) =>
                 try!(fmt.write_fmt(format_args!(
                     "Expected `{}`", token
