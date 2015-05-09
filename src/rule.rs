@@ -1,11 +1,14 @@
 use range::Range;
 
-use Whitespace;
-use Token;
-use Parameter;
-use MetaReader;
-use ParseError;
-use Select;
+use {
+    Whitespace,
+    Token,
+    Parameter,
+    MetaReader,
+    ParseError,
+    Select,
+    Optional,
+};
 
 /// A rule describes how some section of a document should be parsed.
 pub enum Rule<'a> {
@@ -19,6 +22,8 @@ pub enum Rule<'a> {
     Select(Select<'a>),
     /// Read parameter.
     Parameter(Parameter<'a>),
+    /// Read optional.
+    Optional(Optional<'a>),
 }
 
 impl<'a> Rule<'a> {
@@ -42,8 +47,12 @@ impl<'a> Rule<'a> {
             &Rule::Select(ref s) => {
                 s.parse(meta_reader, state, chars, offset)
             }
-            &Rule::Parameter(_) => unimplemented!(),
-
+            &Rule::Parameter(ref p) => {
+                p.parse(meta_reader, state, chars, offset)
+            }
+            &Rule::Optional(ref o) => {
+                Ok(o.parse(meta_reader, state, chars, offset))
+            }
         }
     }
 }

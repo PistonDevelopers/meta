@@ -12,6 +12,7 @@ pub use ty::Type;
 pub use token::Token;
 pub use select::Select;
 pub use parameter::Parameter;
+pub use optional::Optional;
 pub use rule::Rule;
 
 mod parse_error;
@@ -21,6 +22,7 @@ mod token;
 mod whitespace;
 mod select;
 mod parameter;
+mod optional;
 mod rule;
 
 /// Implemented by meta readers.
