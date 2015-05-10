@@ -10,8 +10,7 @@ pub struct Token<'a> {
     pub text: &'a str,
     /// Whether to set property to true or false (inverted).
     pub inverted: Option<bool>,
-    /// Which predicate to set if token matches.
-    /// This is the name of the property in current node.
+    /// Which property to set if token matches.
     pub property: Option<&'a str>,
 }
 

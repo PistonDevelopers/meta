@@ -1,5 +1,6 @@
 use std::fmt::{ Display, Formatter };
 use std::fmt::Error as FormatError;
+use read_token;
 
 use Type;
 
@@ -12,6 +13,12 @@ pub enum ParseError {
     ExpectedWhitespace,
     /// Something is required.
     ExpectedSomething,
+    /// Expected text.
+    ExpectedText,
+    /// Empty text not allowed.
+    EmptyTextNotAllowed,
+    /// Invalid string format.
+    ParseStringError(read_token::ParseStringError),
     /// Expected token.
     ExpectedToken(String),
     /// Expected nodes with other names.
@@ -36,6 +43,14 @@ impl Display for ParseError {
             &ParseError::ExpectedToken(ref token) =>
                 try!(fmt.write_fmt(format_args!(
                     "Expected `{}`", token
+                ))),
+            &ParseError::ExpectedText =>
+                try!(fmt.write_str("Expected text")),
+            &ParseError::EmptyTextNotAllowed =>
+                try!(fmt.write_str("Empty text not allowed")),
+            &ParseError::ParseStringError(err) =>
+                try!(fmt.write_fmt(format_args!(
+                    "Invalid string format: {}", err
                 ))),
             &ParseError::ExpectedNode(ref nodes) => {
                 try!(fmt.write_str("Expected nodes: "));
