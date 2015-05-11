@@ -36,7 +36,7 @@ impl<'a> Text<'a> {
                         ParseError::ParseStringError(err))),
                     Ok(text) => {
                         if let Some(property) = self.property {
-                            match meta_reader.set_as_str(property, text ,state) {
+                            match meta_reader.set_as_string(property, text ,state) {
                                 Err(err) => Err((range, err)),
                                 Ok(state) => Ok((range, state)),
                             }
