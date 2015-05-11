@@ -37,7 +37,7 @@ impl<'a> UntilAnyOrWhitespace<'a> {
                 for c in chars.iter().take(range.length) {
                     text.push(*c);
                 }
-                match meta_reader.set_as_str(property, text, state) {
+                match meta_reader.set_as_string(property, text, state) {
                     Err(err) => Err((range, err)),
                     Ok(state) => Ok((range, state)),
                 }

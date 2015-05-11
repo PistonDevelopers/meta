@@ -50,7 +50,7 @@ pub trait MetaReader {
     fn set_as_bool(&mut self, name: &str, val: bool, state: &Self::State) ->
         Result<Self::State, ParseError>;
     /// Sets a string property of the node.
-    fn set_as_str(&mut self, name: &str, val: String, state: &Self::State) ->
+    fn set_as_string(&mut self, name: &str, val: String, state: &Self::State) ->
         Result<Self::State, ParseError>;
     /// Sets a f64 property of the node.
     fn set_as_f64(&mut self, name: &str, val: f64, state: &Self::State) ->
