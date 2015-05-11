@@ -4,6 +4,8 @@ use {
     Whitespace,
     Token,
     UntilAnyOrWhitespace,
+    Text,
+    Number,
     Parameter,
     MetaReader,
     ParseError,
@@ -19,6 +21,10 @@ pub enum Rule<'a> {
     Token(Token<'a>),
     /// Read until any or whitespace.
     UntilAnyOrWhitespace(UntilAnyOrWhitespace<'a>),
+    /// Read text.
+    Text(Text<'a>),
+    /// Read number.
+    Number(Number<'a>),
     /// Select one of the sub rules.
     /// If the first one does not succeed, try another and so on.
     /// If all sub rules fail, then the rule fails.
@@ -49,6 +55,12 @@ impl<'a> Rule<'a> {
             }
             &Rule::UntilAnyOrWhitespace(ref u) => {
                 u.parse(meta_reader, state, chars, offset)
+            }
+            &Rule::Text(ref t) => {
+                t.parse(meta_reader, state, chars, offset)
+            }
+            &Rule::Number(ref n) => {
+                n.parse(meta_reader, state, chars, offset)
             }
             &Rule::Select(ref s) => {
                 s.parse(meta_reader, state, chars, offset)
