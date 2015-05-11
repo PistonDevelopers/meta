@@ -15,6 +15,7 @@ pub use parameter::Parameter;
 pub use optional::Optional;
 pub use until_any_or_whitespace::UntilAnyOrWhitespace;
 pub use text::Text;
+pub use number::Number;
 pub use rule::Rule;
 
 mod parse_error;
@@ -27,6 +28,7 @@ mod parameter;
 mod optional;
 mod until_any_or_whitespace;
 mod text;
+mod number;
 mod rule;
 
 /// Implemented by meta readers.

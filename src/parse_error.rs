@@ -1,11 +1,12 @@
 use std::fmt::{ Display, Formatter };
 use std::fmt::Error as FormatError;
-use read_token;
+use std::num::ParseFloatError;
+use read_token::ParseStringError;
 
 use Type;
 
 /// Errors reporting expected values.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum ParseError {
     /// Not supported.
     NotSupported,
@@ -13,12 +14,16 @@ pub enum ParseError {
     ExpectedWhitespace,
     /// Something is required.
     ExpectedSomething,
+    /// Expected number.
+    ExpectedNumber,
+    /// Error when parsing float.
+    ParseFloatError(ParseFloatError),
     /// Expected text.
     ExpectedText,
     /// Empty text not allowed.
     EmptyTextNotAllowed,
     /// Invalid string format.
-    ParseStringError(read_token::ParseStringError),
+    ParseStringError(ParseStringError),
     /// Expected token.
     ExpectedToken(String),
     /// Expected nodes with other names.
@@ -40,6 +45,12 @@ impl Display for ParseError {
                 try!(fmt.write_str("Expected whitespace")),
             &ParseError::ExpectedSomething =>
                 try!(fmt.write_str("Expected something")),
+            &ParseError::ExpectedNumber =>
+                try!(fmt.write_str("Expected number")),
+            &ParseError::ParseFloatError(ref err) =>
+                try!(fmt.write_fmt(format_args!(
+                    "Invalid number format: {}", err
+                ))),
             &ParseError::ExpectedToken(ref token) =>
                 try!(fmt.write_fmt(format_args!(
                     "Expected `{}`", token
