@@ -78,3 +78,13 @@ fn update<'a>(range: range::Range, chars: &mut &'a [char], offset: &mut usize) {
     *chars = &chars[next_offset - *offset..];
     *offset = next_offset;
 }
+
+/// Used by meta readers to handle or forward a state.
+/// This makes it easier to write generic meta readers wrapping a sub reader.
+pub enum CommandState<T, U> {
+    /// Handle state.
+    Handle(T),
+    /// Forward command to sub meta reader.
+    Forward(U),
+}
+
