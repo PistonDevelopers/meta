@@ -1,8 +1,11 @@
 use range::Range;
 use read_token;
 
-use MetaReader;
-use ParseError;
+use {
+    MetaData,
+    MetaReader,
+    ParseError,
+};
 
 /// Stores information about token.
 pub struct Token<'a> {
@@ -33,7 +36,10 @@ impl<'a> Token<'a> {
         if let Some(range) = read_token::token(self.text, chars, offset) {
             match (self.inverted, self.property) {
                 (Some(inverted), Some(name)) => {
-                    match meta_reader.set_as_bool(name, !inverted, &state) {
+                    match meta_reader.data(
+                        MetaData::Bool(name, !inverted),
+                        &state
+                    ) {
                         Err(err) => {
                             return Err((range, err));
                         }

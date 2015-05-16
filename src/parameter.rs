@@ -2,6 +2,7 @@ use range::Range;
 
 use {
     update,
+    MetaData,
     MetaReader,
     ParseError,
     Rule,
@@ -35,7 +36,10 @@ impl<'a> Parameter<'a> {
     {
         let start_offset = offset;
         let name = self.value.unwrap_or(self.name);
-        let mut state = match meta_reader.start_node(name, state) {
+        let mut state = match meta_reader.data(
+            MetaData::StartNode(name),
+            state
+        ) {
             Err(err) => { return Err((Range::new(offset, 0), err)); }
             Ok(state) => state,
         };
@@ -49,7 +53,7 @@ impl<'a> Parameter<'a> {
             }
         }
         let range = Range::new(start_offset, offset - start_offset);
-        match meta_reader.end_node(&state) {
+        match meta_reader.data(MetaData::EndNode, &state) {
             Err(err) => { return Err((range, err)); }
             Ok(state) => Ok((range, state)),
         }

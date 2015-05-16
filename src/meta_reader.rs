@@ -1,4 +1,7 @@
-use ParseError;
+use {
+    MetaData,
+    ParseError,
+};
 
 /// Implemented by meta readers.
 ///
@@ -9,19 +12,7 @@ pub trait MetaReader {
     /// The state that points to a location in the parsed structure.
     type State: Clone;
 
-    /// Starts parsing a node.
-    fn start_node(&mut self, name: &str, state: &Self::State) ->
-        Result<Self::State, ParseError>;
-    /// Ends parsing a node.
-    fn end_node(&mut self, state: &Self::State) ->
-        Result<Self::State, ParseError>;
-    /// Sets a bool property of the node.
-    fn set_as_bool(&mut self, name: &str, val: bool, state: &Self::State) ->
-        Result<Self::State, ParseError>;
-    /// Sets a string property of the node.
-    fn set_as_string(&mut self, name: &str, val: String, state: &Self::State) ->
-        Result<Self::State, ParseError>;
-    /// Sets a f64 property of the node.
-    fn set_as_f64(&mut self, name: &str, val: f64, state: &Self::State) ->
+    /// Sends meta data.
+    fn data(&mut self, data: MetaData, state: &Self::State) ->
         Result<Self::State, ParseError>;
 }

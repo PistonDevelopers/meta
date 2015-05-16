@@ -2,6 +2,7 @@ use range::Range;
 use read_token;
 
 use {
+    MetaData,
     MetaReader,
     ParseError,
 };
@@ -32,7 +33,7 @@ impl<'a> Number<'a> {
                 Err(err) => Err((range, ParseError::ParseFloatError(err))),
                 Ok(val) => {
                     if let Some(property) = self.property {
-                        match meta_reader.set_as_f64(property, val, state) {
+                        match meta_reader.data(MetaData::F64(property, val), state) {
                             Err(err) => Err((range, err)),
                             Ok(state) => Ok((range, state)),
                         }
