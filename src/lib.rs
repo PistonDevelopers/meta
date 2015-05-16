@@ -19,6 +19,9 @@ pub use number::Number;
 pub use rule::Rule;
 pub use meta_reader::MetaReader;
 
+use std::rc::Rc;
+use std::cell::RefCell;
+
 mod parse_error;
 mod parse_error_handler;
 mod ty;
@@ -32,6 +35,20 @@ mod text;
 mod number;
 mod rule;
 mod meta_reader;
+
+/// Represents meta data.
+pub enum MetaData<'a> {
+    /// Starts node.
+    StartNode(&'a str),
+    /// Ends node.
+    EndNode,
+    /// Sets bool property.
+    Bool(&'a str, bool),
+    /// Sets f64 property.
+    F64(&'a str, f64),
+    /// Sets string property.
+    String(&'a str, String),
+}
 
 /// Implemented by meta writers.
 pub trait MetaWriter {
