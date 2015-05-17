@@ -36,6 +36,24 @@ mod number;
 mod rule;
 mod meta_reader;
 
+/// Represents a data structure to read into.
+pub struct Struct<'a> {
+    /// The fields of a struct.
+    pub fields: &'a mut [Data<'a>],
+}
+
+/// Allocated data for reading.
+pub enum Data<'a> {
+    /// Hash a f64 property.
+    F64(&'a str, &'a mut f64),
+    /// Has a bool property.
+    Bool(&'a str, &'a mut bool),
+    /// Has a string property.
+    String(&'a str, &'a mut String),
+    /// Has a sub node.
+    Node(&'a str),
+}
+
 /// Represents meta data.
 pub enum MetaData<'a> {
     /// Starts node.
