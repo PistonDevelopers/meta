@@ -43,8 +43,10 @@ pub struct Struct<'a> {
 }
 
 /// Allocated data for reading.
+/// This also tells the meta parser which properties are required
+/// and which properties that are optional.
 pub enum Data<'a> {
-    /// Hash a f64 property.
+    /// Has a f64 property.
     F64(&'a str, &'a mut f64),
     /// Has a bool property.
     Bool(&'a str, &'a mut bool),
@@ -52,6 +54,14 @@ pub enum Data<'a> {
     String(&'a str, &'a mut String),
     /// Has a sub node.
     Node(&'a str),
+    /// Has an optional f64 property.
+    MaybeF64(&'a str, &'a mut Option<f64>),
+    /// Has an optional bool property.
+    MaybeBool(&'a str, &'a mut Option<bool>),
+    /// Has an optional string property.
+    MaybeString(&'a str, &'a mut Option<String>),
+    /// Has an optional sub node.
+    MaybeNode(&'a str),
 }
 
 /// Represents meta data.
