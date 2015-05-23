@@ -40,7 +40,8 @@ impl<'a> UntilAnyOrWhitespace<'a> {
                 }
                 match meta_reader.data(
                     MetaData::String(property, text),
-                    state
+                    state,
+                    range
                 ) {
                     Err(err) => Err((range, err)),
                     Ok(state) => Ok((range, state)),

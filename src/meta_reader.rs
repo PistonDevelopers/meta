@@ -1,3 +1,5 @@
+use range::Range;
+
 use {
     MetaData,
     ParseError,
@@ -13,6 +15,6 @@ pub trait MetaReader {
     type State: Clone;
 
     /// Sends meta data.
-    fn data(&mut self, data: MetaData, state: &Self::State) ->
+    fn data(&mut self, data: MetaData, state: &Self::State, range: Range) ->
         Result<Self::State, ParseError>;
 }

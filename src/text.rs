@@ -38,8 +38,9 @@ impl<'a> Text<'a> {
                     Ok(text) => {
                         if let Some(property) = self.property {
                             match meta_reader.data(
-                                MetaData::String(property, text)
-                                ,state
+                                MetaData::String(property, text),
+                                state,
+                                range
                             ) {
                                 Err(err) => Err((range, err)),
                                 Ok(state) => Ok((range, state)),

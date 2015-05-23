@@ -19,9 +19,6 @@ pub use number::Number;
 pub use rule::Rule;
 pub use meta_reader::MetaReader;
 
-use std::rc::Rc;
-use std::cell::RefCell;
-
 mod parse_error;
 mod parse_error_handler;
 mod ty;
