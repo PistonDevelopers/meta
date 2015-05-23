@@ -38,7 +38,8 @@ impl<'a> Parameter<'a> {
         let name = self.value.unwrap_or(self.name);
         let mut state = match meta_reader.data(
             MetaData::StartNode(name),
-            state
+            state,
+            Range::empty(offset)
         ) {
             Err(err) => { return Err((Range::new(offset, 0), err)); }
             Ok(state) => state,
@@ -53,7 +54,7 @@ impl<'a> Parameter<'a> {
             }
         }
         let range = Range::new(start_offset, offset - start_offset);
-        match meta_reader.data(MetaData::EndNode, &state) {
+        match meta_reader.data(MetaData::EndNode, &state, range) {
             Err(err) => { return Err((range, err)); }
             Ok(state) => Ok((range, state)),
         }

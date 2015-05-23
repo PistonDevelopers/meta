@@ -38,7 +38,8 @@ impl<'a> Token<'a> {
                 (Some(inverted), Some(name)) => {
                     match meta_reader.data(
                         MetaData::Bool(name, !inverted),
-                        &state
+                        &state,
+                        range
                     ) {
                         Err(err) => {
                             return Err((range, err));
