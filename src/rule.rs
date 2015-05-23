@@ -14,28 +14,28 @@ use {
 };
 
 /// A rule describes how some section of a document should be parsed.
-pub enum Rule<'a> {
+pub enum Rule {
     /// Read whitespace.
     Whitespace(Whitespace),
     /// Match against a token.
-    Token(Token<'a>),
+    Token(Token),
     /// Read until any or whitespace.
-    UntilAnyOrWhitespace(UntilAnyOrWhitespace<'a>),
+    UntilAnyOrWhitespace(UntilAnyOrWhitespace),
     /// Read text.
-    Text(Text<'a>),
+    Text(Text),
     /// Read number.
-    Number(Number<'a>),
+    Number(Number),
     /// Select one of the sub rules.
     /// If the first one does not succeed, try another and so on.
     /// If all sub rules fail, then the rule fails.
-    Select(Select<'a>),
+    Select(Select),
     /// Read parameter.
-    Parameter(Parameter<'a>),
+    Parameter(Parameter),
     /// Read optional.
-    Optional(Optional<'a>),
+    Optional(Optional),
 }
 
-impl<'a> Rule<'a> {
+impl Rule {
     /// Parses rule.
     pub fn parse<M>(
         &self,

@@ -7,12 +7,12 @@ use {
 };
 
 /// Stores information about optional.
-pub struct Optional<'a> {
+pub struct Optional {
     /// The optional rules.
-    pub args: &'a [Rule<'a>],
+    pub args: Vec<Rule>,
 }
 
-impl<'a> Optional<'a> {
+impl Optional {
     /// Parse optional.
     /// Returns the old state if any sub rule fails.
     pub fn parse<M>(
@@ -26,7 +26,7 @@ impl<'a> Optional<'a> {
     {
         let start_offset = offset;
         let mut success_state = state.clone();
-        for sub_rule in self.args {
+        for sub_rule in &self.args {
             success_state = match sub_rule.parse(meta_reader, &success_state,
                                          chars, offset) {
                 Ok((range, state)) => {

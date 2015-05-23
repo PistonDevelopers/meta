@@ -1,5 +1,6 @@
 use read_token;
 use range::Range;
+use std::rc::Rc;
 
 use {
     MetaData,
@@ -8,14 +9,14 @@ use {
 };
 
 /// Stores information about text.
-pub struct Text<'a> {
+pub struct Text {
     /// Whether to allow empty string.
     pub allow_empty: bool,
     /// Which property to set if text is read.
-    pub property: Option<&'a str>,
+    pub property: Option<Rc<String>>,
 }
 
-impl<'a> Text<'a> {
+impl Text {
     /// Parses text.
     pub fn parse<M>(
         &self,
@@ -36,9 +37,9 @@ impl<'a> Text<'a> {
                     Err(err) => Err((err.range(),
                         ParseError::ParseStringError(err))),
                     Ok(text) => {
-                        if let Some(property) = self.property {
+                        if let Some(ref property) = self.property {
                             match meta_reader.data(
-                                MetaData::String(property, text),
+                                MetaData::String(property.clone(), text),
                                 state,
                                 range
                             ) {

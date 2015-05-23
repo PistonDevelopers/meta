@@ -1,5 +1,6 @@
 use read_token;
 use range::Range;
+use std::rc::Rc;
 
 use {
     ParseError,
@@ -29,34 +30,36 @@ impl Whitespace {
             Ok(range)
         }
     }
-}
 
-/// A hard coded parameter rule for whitespace.
-pub static WHITESPACE: Parameter<'static> = Parameter {
-    name: "whitespace",
-    args: &["optional"],
-    value: None,
-    body: &[
-        Rule::Whitespace(Whitespace { optional: true }),
-        Rule::Token(Token {
-            text: "whitespace",
-            inverted: None,
-            property: None
-        }),
-        Rule::Select(Select { args: &[
-            Rule::Token(Token {
-                text: "?",
-                inverted: Some(false),
-                property: Some("optional"),
-            }),
-            Rule::Token(Token {
-                text: "!",
-                inverted: Some(true),
-                property: Some("optional"),
-            }),
-        ]}),
-    ],
-};
+    /// Gets the rule for whitespace in the meta language.
+    pub fn rule() -> Parameter {
+        Parameter {
+            name: Rc::new("whitespace".into()),
+            args: vec![Rc::new("optional".into())],
+            value: None,
+            body: vec![
+                Rule::Whitespace(Whitespace { optional: true }),
+                Rule::Token(Token {
+                    text: Rc::new("whitespace".into()),
+                    inverted: None,
+                    property: None
+                }),
+                Rule::Select(Select { args: vec![
+                    Rule::Token(Token {
+                        text: Rc::new("?".into()),
+                        inverted: Some(false),
+                        property: Some(Rc::new("optional".into())),
+                    }),
+                    Rule::Token(Token {
+                        text: Rc::new("!".into()),
+                        inverted: Some(true),
+                        property: Some(Rc::new("optional".into())),
+                    }),
+                ]}),
+            ],
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

@@ -1,5 +1,6 @@
 use range::Range;
 use read_token;
+use std::rc::Rc;
 
 use {
     MetaData,
@@ -8,16 +9,16 @@ use {
 };
 
 /// Stores information about token.
-pub struct Token<'a> {
+pub struct Token {
     /// The text to match against.
-    pub text: &'a str,
+    pub text: Rc<String>,
     /// Whether to set property to true or false (inverted).
     pub inverted: Option<bool>,
     /// Which property to set if token matches.
-    pub property: Option<&'a str>,
+    pub property: Option<Rc<String>>,
 }
 
-impl<'a> Token<'a> {
+impl Token {
     /// Parses token.
     /// If the token is linked to a property,
     /// the property will be set.
@@ -33,11 +34,11 @@ impl<'a> Token<'a> {
     ) -> Result<(Range, M::State), (Range, ParseError)>
         where M: MetaReader
     {
-        if let Some(range) = read_token::token(self.text, chars, offset) {
-            match (self.inverted, self.property) {
-                (Some(inverted), Some(name)) => {
+        if let Some(range) = read_token::token(&self.text, chars, offset) {
+            match (self.inverted, &self.property) {
+                (Some(inverted), &Some(ref name)) => {
                     match meta_reader.data(
-                        MetaData::Bool(name, !inverted),
+                        MetaData::Bool(name.clone(), !inverted),
                         &state,
                         range
                     ) {
@@ -55,7 +56,7 @@ impl<'a> Token<'a> {
             }
         } else {
             return Err((Range::new(offset, 0),
-                ParseError::ExpectedToken(self.text.into())));
+                ParseError::ExpectedToken((&*self.text).clone())));
         }
     }
 }
