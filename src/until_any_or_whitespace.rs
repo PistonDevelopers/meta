@@ -1,5 +1,6 @@
 use read_token;
 use range::Range;
+use std::rc::Rc;
 
 use {
     MetaData,
@@ -8,16 +9,16 @@ use {
 };
 
 /// Stores information about reading until whitespace or any of some character.
-pub struct UntilAnyOrWhitespace<'a> {
+pub struct UntilAnyOrWhitespace {
     /// The characters to stop at.
-    pub any_characters: &'a str,
+    pub any_characters: Rc<String>,
     /// Whether empty data is accepted or not.
     pub optional: bool,
     /// The property to store read text.
-    pub property: Option<&'a str>,
+    pub property: Option<Rc<String>>,
 }
 
-impl<'a> UntilAnyOrWhitespace<'a> {
+impl UntilAnyOrWhitespace {
     /// Parses until whitespace or any specified characters.
     pub fn parse<M>(
         &self,
@@ -29,17 +30,17 @@ impl<'a> UntilAnyOrWhitespace<'a> {
         where M: MetaReader
     {
         let (range, _) = read_token::until_any_or_whitespace(
-            self.any_characters, chars, offset);
+            &self.any_characters, chars, offset);
         if range.length == 0 && !self.optional {
             Err((range, ParseError::ExpectedSomething))
         } else {
-            if let Some(property) = self.property {
+            if let Some(ref property) = self.property {
                 let mut text = String::with_capacity(range.length);
                 for c in chars.iter().take(range.length) {
                     text.push(*c);
                 }
                 match meta_reader.data(
-                    MetaData::String(property, text),
+                    MetaData::String(property.clone(), text),
                     state,
                     range
                 ) {

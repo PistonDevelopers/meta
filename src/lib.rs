@@ -5,7 +5,7 @@
 extern crate read_token;
 extern crate range;
 
-pub use whitespace::{ Whitespace, WHITESPACE };
+pub use whitespace::Whitespace;
 pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
 pub use parse_error::ParseError;
 pub use ty::Type;
@@ -18,6 +18,9 @@ pub use text::Text;
 pub use number::Number;
 pub use rule::Rule;
 pub use meta_reader::MetaReader;
+pub use tokenizer::Tokenizer;
+
+use std::rc::Rc;
 
 mod parse_error;
 mod parse_error_handler;
@@ -32,6 +35,7 @@ mod text;
 mod number;
 mod rule;
 mod meta_reader;
+mod tokenizer;
 
 /// Represents a data structure to read into.
 pub struct Struct<'a> {
@@ -62,17 +66,17 @@ pub enum Data<'a> {
 }
 
 /// Represents meta data.
-pub enum MetaData<'a> {
+pub enum MetaData {
     /// Starts node.
-    StartNode(&'a str),
+    StartNode(Rc<String>),
     /// Ends node.
     EndNode,
     /// Sets bool property.
-    Bool(&'a str, bool),
+    Bool(Rc<String>, bool),
     /// Sets f64 property.
-    F64(&'a str, f64),
+    F64(Rc<String>, f64),
     /// Sets string property.
-    String(&'a str, String),
+    String(Rc<String>, String),
 }
 
 /// Implemented by meta writers.

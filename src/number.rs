@@ -1,5 +1,6 @@
 use range::Range;
 use read_token;
+use std::rc::Rc;
 
 use {
     MetaData,
@@ -8,12 +9,12 @@ use {
 };
 
 /// Contains information about number.
-pub struct Number<'a> {
+pub struct Number {
     /// The property to set.
-    pub property: Option<&'a str>,
+    pub property: Option<Rc<String>>,
 }
 
-impl<'a> Number<'a> {
+impl Number {
     /// Parses number.
     pub fn parse<M>(
         &self,
@@ -32,9 +33,12 @@ impl<'a> Number<'a> {
             match text.parse::<f64>() {
                 Err(err) => Err((range, ParseError::ParseFloatError(err))),
                 Ok(val) => {
-                    if let Some(property) = self.property {
-                        match meta_reader.data(MetaData::F64(property, val),
-                                               state, range) {
+                    if let Some(ref property) = self.property {
+                        match meta_reader.data(
+                            MetaData::F64(property.clone(), val),
+                            state,
+                            range
+                        ) {
                             Err(err) => Err((range, err)),
                             Ok(state) => Ok((range, state)),
                         }

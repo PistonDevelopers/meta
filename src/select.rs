@@ -1,16 +1,18 @@
 use range::Range;
 
-use Rule;
-use MetaReader;
-use ParseError;
+use {
+    MetaReader,
+    ParseError,
+    Rule,
+};
 
 /// Stores information about select.
-pub struct Select<'a> {
+pub struct Select {
     /// The rules to select from.
-    pub args: &'a [Rule<'a>],
+    pub args: Vec<Rule>,
 }
 
-impl<'a> Select<'a> {
+impl Select {
     /// Parses select.
     pub fn parse<M>(
         &self,
@@ -22,7 +24,7 @@ impl<'a> Select<'a> {
         where M: MetaReader
     {
         let mut first_error: Option<(Range, ParseError)> = None;
-        for sub_rule in self.args {
+        for sub_rule in &self.args {
             match sub_rule.parse(meta_reader, state, chars, offset) {
                 Ok((range, state)) => {
                     return Ok((Range::new(offset, range.next_offset()), state));
