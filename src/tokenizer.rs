@@ -19,16 +19,25 @@ impl Tokenizer {
     }
 }
 
+/// Stores the number of tokens received.
+#[derive(Copy, Clone, Debug, PartialOrd, Ord, PartialEq, Eq)]
+pub struct TokenizerState(pub usize);
+
+impl TokenizerState {
+    /// Creates a new tokenizer state.
+    pub fn new() -> TokenizerState { TokenizerState(0) }
+}
+
 impl MetaReader for Tokenizer {
-    type State = usize;
+    type State = TokenizerState;
 
     fn data(&mut self, data: MetaData, state: &Self::State, range: Range)
         -> Result<Self::State, ParseError>
     {
-        if *state < self.tokens.len() {
-            self.tokens.truncate(*state);
+        if state.0 < self.tokens.len() {
+            self.tokens.truncate(state.0);
         }
         self.tokens.push((data, range));
-        Ok(self.tokens.len())
+        Ok(TokenizerState(self.tokens.len()))
     }
 }

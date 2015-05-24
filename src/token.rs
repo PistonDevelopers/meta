@@ -77,7 +77,8 @@ mod tests {
             property: None
         };
         let mut tokenizer = Tokenizer::new();
-        let res = start_parenthesis.parse(&mut tokenizer, &0, &chars, 0);
+        let s = TokenizerState::new();
+        let res = start_parenthesis.parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Err((
             Range::new(0, 0),
             ParseError::ExpectedToken("(".into())
@@ -95,8 +96,9 @@ mod tests {
             property: None
         };
         let mut tokenizer = Tokenizer::new();
-        let res = fn_.parse(&mut tokenizer, &0, &chars, 0);
-        assert_eq!(res, Ok((Range::new(0, 3), 0)));
+        let s = TokenizerState::new();
+        let res = fn_.parse(&mut tokenizer, &s, &chars, 0);
+        assert_eq!(res, Ok((Range::new(0, 3), s)));
         assert_eq!(tokenizer.tokens.len(), 0);
 
         // Set bool property.
@@ -107,8 +109,9 @@ mod tests {
             inverted: Some(false),
             property: Some(has_arguments.clone())
         };
-        let res = start_parenthesis.parse(&mut tokenizer, &0, &chars[6..], 6);
-        assert_eq!(res, Ok((Range::new(6, 1), 1)));
+        let s = TokenizerState::new();
+        let res = start_parenthesis.parse(&mut tokenizer, &s, &chars[6..], 6);
+        assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1))));
         assert_eq!(tokenizer.tokens.len(), 1);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::Bool(has_arguments.clone(), true));
@@ -121,8 +124,9 @@ mod tests {
             inverted: Some(true),
             property: Some(has_arguments.clone())
         };
-        let res = start_parenthesis.parse(&mut tokenizer, &0, &chars[6..], 6);
-        assert_eq!(res, Ok((Range::new(6, 1), 1)));
+        let s = TokenizerState::new();
+        let res = start_parenthesis.parse(&mut tokenizer, &s, &chars[6..], 6);
+        assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1))));
         assert_eq!(tokenizer.tokens.len(), 1);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::Bool(has_arguments.clone(), false));
