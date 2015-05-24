@@ -41,3 +41,34 @@ impl Optional {
         (Range::new(start_offset, offset - start_offset), success_state)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::*;
+    use range::Range;
+    use std::rc::Rc;
+
+    #[test]
+    fn fail_but_continue() {
+        let text = "2";
+        let chars: Vec<char> = text.chars().collect();
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let num: Rc<String> = Rc::new("num".into());
+        // Will fail because text is expected first.
+        let optional = Optional {
+            args: vec![
+                Rule::Text(Text {
+                    allow_empty: true,
+                    property: None
+                }),
+                Rule::Number(Number {
+                    property: Some(num.clone())
+                })
+            ]
+        };
+        let res = optional.parse(&mut tokenizer, &s, &chars, 0);
+        assert_eq!(res, (Range::new(0, 0), TokenizerState(0)));
+        assert_eq!(tokenizer.tokens.len(), 0);
+    }
+}
