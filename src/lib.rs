@@ -11,7 +11,7 @@ pub use parse_error::ParseError;
 pub use ty::Type;
 pub use token::Token;
 pub use select::Select;
-pub use parameter::Parameter;
+pub use parameter::{ Parameter, ParameterRef, ParameterVisit };
 pub use optional::Optional;
 pub use sequence::Sequence;
 pub use until_any_or_whitespace::UntilAnyOrWhitespace;
