@@ -14,6 +14,7 @@ use {
     MetaReader,
     ParseError,
     Select,
+    SeparatedBy,
     Sequence,
     Optional,
 };
@@ -37,6 +38,8 @@ pub enum Rule {
     /// Run each sub rule in sequence.
     /// If any sub rule fails, the rule fails.
     Sequence(Sequence),
+    /// Repeat rule separated by another rule.
+    SeparatedBy(Box<SeparatedBy>),
     /// Read node.
     Node(NodeRef),
     /// Read optional.
@@ -74,6 +77,9 @@ impl Rule {
                 s.parse(meta_reader, state, chars, offset)
             }
             &Rule::Sequence(ref s) => {
+                s.parse(meta_reader, state, chars, offset)
+            }
+            &Rule::SeparatedBy(ref s) => {
                 s.parse(meta_reader, state, chars, offset)
             }
             &Rule::Node(ref p) => {
@@ -150,6 +156,10 @@ impl Rule {
                 for sub_rule in &mut s.args {
                     sub_rule.update_refs(refs);
                 }
+            }
+            &mut Rule::SeparatedBy(ref mut s) => {
+                s.rule.update_refs(refs);
+                s.by.update_refs(refs);
             }
             &mut Rule::Optional(ref mut o) => {
                 for sub_rule in &mut o.args {
