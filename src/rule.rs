@@ -10,6 +10,7 @@ use {
     MetaReader,
     ParseError,
     Select,
+    Sequence,
     Optional,
 };
 
@@ -29,6 +30,9 @@ pub enum Rule {
     /// If the first one does not succeed, try another and so on.
     /// If all sub rules fail, then the rule fails.
     Select(Select),
+    /// Run each sub rule in sequence.
+    /// If any sub rule fails, the rule fails.
+    Sequence(Sequence),
     /// Read parameter.
     Parameter(Parameter),
     /// Read optional.
@@ -63,6 +67,9 @@ impl Rule {
                 n.parse(meta_reader, state, chars, offset)
             }
             &Rule::Select(ref s) => {
+                s.parse(meta_reader, state, chars, offset)
+            }
+            &Rule::Sequence(ref s) => {
                 s.parse(meta_reader, state, chars, offset)
             }
             &Rule::Parameter(ref p) => {
