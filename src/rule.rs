@@ -1,4 +1,6 @@
 use range::Range;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use {
     Whitespace,
@@ -7,9 +9,12 @@ use {
     Text,
     Number,
     Parameter,
+    ParameterRef,
+    ParameterVisit,
     MetaReader,
     ParseError,
     Select,
+    Sequence,
     Optional,
 };
 
@@ -29,8 +34,11 @@ pub enum Rule {
     /// If the first one does not succeed, try another and so on.
     /// If all sub rules fail, then the rule fails.
     Select(Select),
+    /// Run each sub rule in sequence.
+    /// If any sub rule fails, the rule fails.
+    Sequence(Sequence),
     /// Read parameter.
-    Parameter(Parameter),
+    Parameter(ParameterRef),
     /// Read optional.
     Optional(Optional),
 }
@@ -65,11 +73,88 @@ impl Rule {
             &Rule::Select(ref s) => {
                 s.parse(meta_reader, state, chars, offset)
             }
+            &Rule::Sequence(ref s) => {
+                s.parse(meta_reader, state, chars, offset)
+            }
             &Rule::Parameter(ref p) => {
-                p.parse(meta_reader, state, chars, offset)
+                match p {
+                    &ParameterRef::Name(_) => {
+                        Err((
+                            Range::empty(offset),
+                            ParseError::InvalidRule(
+                                "Parameter rule is not updated to reference")
+                        ))
+                    }
+                    &ParameterRef::Ref(ref p, _) => {
+                        p.borrow().parse(meta_reader, state, chars, offset)
+                    }
+                }
             }
             &Rule::Optional(ref o) => {
                 Ok(o.parse(meta_reader, state, chars, offset))
+            }
+        }
+    }
+
+    /// Updates replacing names with the references.
+    ///
+    /// The references contains the name,
+    /// but this can not be borrowed as when the same reference is updated.
+    pub fn update_refs(&mut self, refs: &[(Rc<String>, Rc<RefCell<Parameter>>)]) {
+        match self {
+            &mut Rule::Parameter(ref mut p) => {
+                *p = {
+                    match p {
+                        &mut ParameterRef::Name(ref name) => {
+                            // Look through references and update if correct name
+                            // is found.
+                            let mut found: Option<Rc<RefCell<Parameter>>> = None;
+                            for r in refs {
+                                if &**name == &*r.0 {
+                                    found = Some(r.1.clone());
+                                }
+                            }
+                            match found {
+                                None => { return; }
+                                Some(r) =>
+                                    ParameterRef::Ref(r, ParameterVisit::Unvisited)
+                            }
+                        }
+                        &mut ParameterRef::Ref(ref mut p, ref mut visited) => {
+                            // Update the sub rules of the reference,
+                            // but only if it has not been visited.
+                            if let ParameterVisit::Unvisited = *visited {
+                                *visited = ParameterVisit::Visited;
+                                for sub_rule in &mut p.borrow_mut().body {
+                                    sub_rule.update_refs(refs);
+                                }
+                                return;
+                            } else {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            &mut Rule::Whitespace(_) => {}
+            &mut Rule::Token(_) => {}
+            &mut Rule::UntilAnyOrWhitespace(_) => {}
+            &mut Rule::Text(_) => {}
+            &mut Rule::Number(_) => {}
+            &mut Rule::Select(ref mut s) => {
+                for sub_rule in &mut s.args {
+                    sub_rule.update_refs(refs);
+                }
+            }
+            &mut Rule::Sequence(ref mut s) => {
+                for sub_rule in &mut s.args {
+                    sub_rule.update_refs(refs);
+                }
+            }
+            &mut Rule::Optional(ref mut o) => {
+                for sub_rule in &mut o.args {
+                    sub_rule.update_refs(refs);
+                }
             }
         }
     }
