@@ -53,3 +53,44 @@ impl UntilAnyOrWhitespace {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::*;
+    use range::Range;
+    use std::rc::Rc;
+
+    #[test]
+    fn required() {
+        let text = "fn ()";
+        let chars: Vec<char> = text.chars().collect();
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let name = UntilAnyOrWhitespace {
+            any_characters: Rc::new("(".into()),
+            optional: false,
+            property: None
+        };
+        let res = name.parse(&mut tokenizer, &s, &chars[3..], 3);
+        assert_eq!(res, Err((Range::new(3, 0), ParseError::ExpectedSomething)));
+    }
+
+    #[test]
+    fn successful() {
+        let text = "fn foo()";
+        let chars: Vec<char> = text.chars().collect();
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let function_name: Rc<String> = Rc::new("function_name".into());
+        let name = UntilAnyOrWhitespace {
+            any_characters: Rc::new("(".into()),
+            optional: false,
+            property: Some(function_name.clone())
+        };
+        let res = name.parse(&mut tokenizer, &s, &chars[3..], 3);
+        assert_eq!(res, Ok((Range::new(3, 3), TokenizerState(1))));
+        assert_eq!(tokenizer.tokens.len(), 1);
+        assert_eq!(&tokenizer.tokens[0].0,
+            &MetaData::String(function_name.clone(), "foo".into()));
+    }
+}
