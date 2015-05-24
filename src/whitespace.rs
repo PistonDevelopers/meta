@@ -41,18 +41,18 @@ impl Whitespace {
                 Rule::Whitespace(Whitespace { optional: true }),
                 Rule::Token(Token {
                     text: Rc::new("whitespace".into()),
-                    inverted: None,
+                    inverted: false,
                     property: None
                 }),
                 Rule::Select(Select { args: vec![
                     Rule::Token(Token {
                         text: Rc::new("?".into()),
-                        inverted: Some(false),
+                        inverted: false,
                         property: Some(Rc::new("optional".into())),
                     }),
                     Rule::Token(Token {
                         text: Rc::new("!".into()),
-                        inverted: Some(true),
+                        inverted: true,
                         property: Some(Rc::new("optional".into())),
                     }),
                 ]}),
