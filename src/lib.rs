@@ -38,6 +38,7 @@ mod meta_reader;
 mod tokenizer;
 
 /// Represents meta data.
+#[derive(PartialEq, Clone, Debug)]
 pub enum MetaData {
     /// Starts node.
     StartNode(Rc<String>),

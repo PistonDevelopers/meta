@@ -60,3 +60,71 @@ impl Token {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::*;
+    use std::rc::Rc;
+    use range::Range;
+
+    #[test]
+    fn expected_token() {
+        let text = ")";
+        let chars: Vec<char> = text.chars().collect();
+        let start_parenthesis = Token {
+            text: Rc::new("(".into()),
+            inverted: None,
+            property: None
+        };
+        let mut tokenizer = Tokenizer::new();
+        let res = start_parenthesis.parse(&mut tokenizer, &0, &chars, 0);
+        assert_eq!(res, Err((
+            Range::new(0, 0),
+            ParseError::ExpectedToken("(".into())
+            ))
+        );
+    }
+
+    #[test]
+    fn successful() {
+        let text = "fn foo()";
+        let chars: Vec<char> = text.chars().collect();
+        let fn_ = Token {
+            text: Rc::new("fn ".into()),
+            inverted: None,
+            property: None
+        };
+        let mut tokenizer = Tokenizer::new();
+        let res = fn_.parse(&mut tokenizer, &0, &chars, 0);
+        assert_eq!(res, Ok((Range::new(0, 3), 0)));
+        assert_eq!(tokenizer.tokens.len(), 0);
+
+        // Set bool property.
+        let mut tokenizer = Tokenizer::new();
+        let has_arguments: Rc<String> = Rc::new("has_arguments".into());
+        let start_parenthesis = Token {
+            text: Rc::new("(".into()),
+            inverted: Some(false),
+            property: Some(has_arguments.clone())
+        };
+        let res = start_parenthesis.parse(&mut tokenizer, &0, &chars[6..], 6);
+        assert_eq!(res, Ok((Range::new(6, 1), 1)));
+        assert_eq!(tokenizer.tokens.len(), 1);
+        assert_eq!(&tokenizer.tokens[0].0,
+            &MetaData::Bool(has_arguments.clone(), true));
+
+        // Set inverted bool property.
+        let mut tokenizer = Tokenizer::new();
+        let has_arguments: Rc<String> = Rc::new("has_no_arguments".into());
+        let start_parenthesis = Token {
+            text: Rc::new("(".into()),
+            inverted: Some(true),
+            property: Some(has_arguments.clone())
+        };
+        let res = start_parenthesis.parse(&mut tokenizer, &0, &chars[6..], 6);
+        assert_eq!(res, Ok((Range::new(6, 1), 1)));
+        assert_eq!(tokenizer.tokens.len(), 1);
+        assert_eq!(&tokenizer.tokens[0].0,
+            &MetaData::Bool(has_arguments.clone(), false));
+    }
+}

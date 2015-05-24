@@ -12,9 +12,15 @@ pub struct Tokenizer {
     pub tokens: Vec<(MetaData, Range)>
 }
 
+impl Tokenizer {
+    /// Creates a new tokenizer.
+    pub fn new() -> Tokenizer {
+        Tokenizer { tokens: vec![] }
+    }
+}
+
 impl MetaReader for Tokenizer {
     type State = usize;
-
 
     fn data(&mut self, data: MetaData, state: &Self::State, range: Range)
         -> Result<Self::State, ParseError>
