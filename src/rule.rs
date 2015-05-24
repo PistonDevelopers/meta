@@ -8,9 +8,9 @@ use {
     UntilAnyOrWhitespace,
     Text,
     Number,
-    Parameter,
-    ParameterRef,
-    ParameterVisit,
+    Node,
+    NodeRef,
+    NodeVisit,
     MetaReader,
     ParseError,
     Select,
@@ -37,8 +37,8 @@ pub enum Rule {
     /// Run each sub rule in sequence.
     /// If any sub rule fails, the rule fails.
     Sequence(Sequence),
-    /// Read parameter.
-    Parameter(ParameterRef),
+    /// Read node.
+    Node(NodeRef),
     /// Read optional.
     Optional(Optional),
 }
@@ -76,16 +76,16 @@ impl Rule {
             &Rule::Sequence(ref s) => {
                 s.parse(meta_reader, state, chars, offset)
             }
-            &Rule::Parameter(ref p) => {
+            &Rule::Node(ref p) => {
                 match p {
-                    &ParameterRef::Name(_) => {
+                    &NodeRef::Name(_) => {
                         Err((
                             Range::empty(offset),
                             ParseError::InvalidRule(
-                                "Parameter rule is not updated to reference")
+                                "Node rule is not updated to reference")
                         ))
                     }
-                    &ParameterRef::Ref(ref p, _) => {
+                    &NodeRef::Ref(ref p, _) => {
                         p.borrow().parse(meta_reader, state, chars, offset)
                     }
                 }
@@ -100,15 +100,15 @@ impl Rule {
     ///
     /// The references contains the name,
     /// but this can not be borrowed as when the same reference is updated.
-    pub fn update_refs(&mut self, refs: &[(Rc<String>, Rc<RefCell<Parameter>>)]) {
+    pub fn update_refs(&mut self, refs: &[(Rc<String>, Rc<RefCell<Node>>)]) {
         match self {
-            &mut Rule::Parameter(ref mut p) => {
+            &mut Rule::Node(ref mut p) => {
                 *p = {
                     match p {
-                        &mut ParameterRef::Name(ref name) => {
+                        &mut NodeRef::Name(ref name) => {
                             // Look through references and update if correct name
                             // is found.
-                            let mut found: Option<Rc<RefCell<Parameter>>> = None;
+                            let mut found: Option<Rc<RefCell<Node>>> = None;
                             for r in refs {
                                 if &**name == &*r.0 {
                                     found = Some(r.1.clone());
@@ -117,14 +117,14 @@ impl Rule {
                             match found {
                                 None => { return; }
                                 Some(r) =>
-                                    ParameterRef::Ref(r, ParameterVisit::Unvisited)
+                                    NodeRef::Ref(r, NodeVisit::Unvisited)
                             }
                         }
-                        &mut ParameterRef::Ref(ref mut p, ref mut visited) => {
+                        &mut NodeRef::Ref(ref mut p, ref mut visited) => {
                             // Update the sub rules of the reference,
                             // but only if it has not been visited.
-                            if let ParameterVisit::Unvisited = *visited {
-                                *visited = ParameterVisit::Visited;
+                            if let NodeVisit::Unvisited = *visited {
+                                *visited = NodeVisit::Visited;
                                 for sub_rule in &mut p.borrow_mut().body {
                                     sub_rule.update_refs(refs);
                                 }

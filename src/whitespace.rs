@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use {
     ParseError,
-    Parameter,
+    Node,
     Rule,
     Select,
     Token,
@@ -32,8 +32,8 @@ impl Whitespace {
     }
 
     /// Gets the rule for whitespace in the meta language.
-    pub fn rule() -> Parameter {
-        Parameter {
+    pub fn rule() -> Node {
+        Node {
             name: Rc::new("whitespace".into()),
             args: vec![Rc::new("optional".into())],
             value: None,

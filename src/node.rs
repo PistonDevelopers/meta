@@ -11,7 +11,7 @@ use {
 };
 
 /// Stores information about a parameter.
-pub struct Parameter {
+pub struct Node {
     /// The name of the parameter.
     pub name: Rc<String>,
     /// The properties of the parameter.
@@ -25,7 +25,7 @@ pub struct Parameter {
     pub body: Vec<Rule>,
 }
 
-impl Parameter {
+impl Node {
     /// Parses parameter.
     pub fn parse<M>(
         &self,
@@ -64,16 +64,16 @@ impl Parameter {
 }
 
 /// A parameter reference.
-pub enum ParameterRef {
+pub enum NodeRef {
     /// Points to a parameter by name.
     Name(Rc<String>),
     /// Reference to parameter.
     /// The `bool` flag is used to prevent multiple visits when updating.
-    Ref(Rc<RefCell<Parameter>>, ParameterVisit),
+    Ref(Rc<RefCell<Node>>, NodeVisit),
 }
 
 /// Tells whether a parameter is visited when updated.
-pub enum ParameterVisit {
+pub enum NodeVisit {
     /// The parameter is not being visited.
     Unvisited,
     /// The parameter is being visited.
@@ -92,7 +92,7 @@ mod tests {
         // Create a parameter rule the refers to itself.
         let foo: Rc<String> = Rc::new("foo".into());
         let num: Rc<String> = Rc::new("num".into());
-        let param = Rc::new(RefCell::new(Parameter {
+        let node = Rc::new(RefCell::new(Node {
             name: foo.clone(),
             args: vec![],
             value: None,
@@ -101,15 +101,15 @@ mod tests {
                 Rule::Optional(Optional {
                     args: vec![
                         Rule::Whitespace(Whitespace { optional: false }),
-                        Rule::Parameter(ParameterRef::Name(foo.clone())),
+                        Rule::Node(NodeRef::Name(foo.clone())),
                     ]
                 })
             ]
         }));
 
         // Replace self referencing names with direct references.
-        let refs = vec![(foo.clone(), param.clone())];
-        for sub_rule in &mut param.borrow_mut().body {
+        let refs = vec![(foo.clone(), node.clone())];
+        for sub_rule in &mut node.borrow_mut().body {
             sub_rule.update_refs(&refs);
         }
 
@@ -117,7 +117,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
-        let res = param.borrow().parse(&mut tokenizer, &s, &chars, 0);
+        let res = node.borrow().parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Ok((Range::new(0, 5), TokenizerState(9))));
         assert_eq!(tokenizer.tokens.len(), 9);
         assert_eq!(&tokenizer.tokens[0].0, &MetaData::StartNode(foo.clone()));
