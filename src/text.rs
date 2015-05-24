@@ -57,3 +57,56 @@ impl Text {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::*;
+    use range::Range;
+    use std::rc::Rc;
+
+    #[test]
+    fn expected_text() {
+        let text = "23";
+        let chars: Vec<char> = text.chars().collect();
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let text = Text {
+            allow_empty: true,
+            property: None
+        };
+        let res = text.parse(&mut tokenizer, &s, &chars, 0);
+        assert_eq!(res, Err((Range::new(0, 0), ParseError::ExpectedText)));
+    }
+
+    #[test]
+    fn empty_string() {
+        let text = "\"\"";
+        let chars: Vec<char> = text.chars().collect();
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let text = Text {
+            allow_empty: false,
+            property: None
+        };
+        let res = text.parse(&mut tokenizer, &s, &chars, 0);
+        assert_eq!(res, Err((Range::new(0, 2), ParseError::EmptyTextNotAllowed)));
+    }
+
+    #[test]
+    fn successful() {
+        let text = "foo \"hello\"";
+        let chars: Vec<char> = text.chars().collect();
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let foo: Rc<String> = Rc::new("foo".into());
+        let text = Text {
+            allow_empty: true,
+            property: Some(foo.clone())
+        };
+        let res = text.parse(&mut tokenizer, &s, &chars[4..], 4);
+        assert_eq!(res, Ok((Range::new(4, 7), TokenizerState(1))));
+        assert_eq!(tokenizer.tokens.len(), 1);
+        assert_eq!(&tokenizer.tokens[0].0,
+            &MetaData::String(foo.clone(), "hello".into()));
+    }
+}
