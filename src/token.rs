@@ -13,7 +13,7 @@ pub struct Token {
     /// The text to match against.
     pub text: Rc<String>,
     /// Whether to set property to true or false (inverted).
-    pub inverted: Option<bool>,
+    pub inverted: bool,
     /// Which property to set if token matches.
     pub property: Option<Rc<String>>,
 }
@@ -35,10 +35,10 @@ impl Token {
         where M: MetaReader
     {
         if let Some(range) = read_token::token(&self.text, chars, offset) {
-            match (self.inverted, &self.property) {
-                (Some(inverted), &Some(ref name)) => {
+            match &self.property {
+                &Some(ref name) => {
                     match meta_reader.data(
-                        MetaData::Bool(name.clone(), !inverted),
+                        MetaData::Bool(name.clone(), !self.inverted),
                         &state,
                         range
                     ) {
@@ -73,7 +73,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let start_parenthesis = Token {
             text: Rc::new("(".into()),
-            inverted: None,
+            inverted: false,
             property: None
         };
         let mut tokenizer = Tokenizer::new();
@@ -92,7 +92,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let fn_ = Token {
             text: Rc::new("fn ".into()),
-            inverted: None,
+            inverted: false,
             property: None
         };
         let mut tokenizer = Tokenizer::new();
@@ -106,7 +106,7 @@ mod tests {
         let has_arguments: Rc<String> = Rc::new("has_arguments".into());
         let start_parenthesis = Token {
             text: Rc::new("(".into()),
-            inverted: Some(false),
+            inverted: false,
             property: Some(has_arguments.clone())
         };
         let s = TokenizerState::new();
@@ -121,7 +121,7 @@ mod tests {
         let has_arguments: Rc<String> = Rc::new("has_no_arguments".into());
         let start_parenthesis = Token {
             text: Rc::new("(".into()),
-            inverted: Some(true),
+            inverted: true,
             property: Some(has_arguments.clone())
         };
         let s = TokenizerState::new();
