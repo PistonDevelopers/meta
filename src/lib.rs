@@ -18,7 +18,7 @@ pub use text::Text;
 pub use number::Number;
 pub use rule::Rule;
 pub use meta_reader::MetaReader;
-pub use tokenizer::Tokenizer;
+pub use tokenizer::{ Tokenizer, TokenizerState };
 
 use std::rc::Rc;
 
