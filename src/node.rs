@@ -14,11 +14,6 @@ use {
 pub struct Node {
     /// The name of the parameter.
     pub name: Rc<String>,
-    /// The properties of the parameter.
-    /// This is used to check the property names set by sub rules.
-    /// If a property name does not match any of the arguments to the parameter,
-    /// then an error is reported.
-    pub args: Vec<Rc<String>>,
     /// The property name of parent to set the value.
     pub value: Option<Rc<String>>,
     /// The body of the parameter.
@@ -94,7 +89,6 @@ mod tests {
         let num: Rc<String> = Rc::new("num".into());
         let node = Rc::new(RefCell::new(Node {
             name: foo.clone(),
-            args: vec![],
             value: None,
             body: vec![
                 Rule::Number(Number { property: Some(num.clone()) }),
