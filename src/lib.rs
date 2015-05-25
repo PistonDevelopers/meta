@@ -47,7 +47,7 @@ pub enum MetaData {
     /// Starts node.
     StartNode(Rc<String>),
     /// Ends node.
-    EndNode,
+    EndNode(Rc<String>),
     /// Sets bool property.
     Bool(Rc<String>, bool),
     /// Sets f64 property.
