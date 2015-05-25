@@ -14,8 +14,6 @@ use {
 pub struct Node {
     /// The name of the node.
     pub name: Rc<String>,
-    /// The property name of parent to set the value.
-    pub value: Option<Rc<String>>,
     /// The body of the node.
     pub body: Vec<Rule>,
 }
@@ -32,9 +30,8 @@ impl Node {
         where M: MetaReader
     {
         let mut offset = start_offset;
-        let name = self.value.clone().unwrap_or(self.name.clone());
         let mut state = match meta_reader.data(
-            MetaData::StartNode(name.clone()),
+            MetaData::StartNode(self.name.clone()),
             state,
             Range::empty(offset)
         ) {
@@ -51,7 +48,7 @@ impl Node {
             }
         }
         let range = Range::new(start_offset, offset - start_offset);
-        match meta_reader.data(MetaData::EndNode(name), &state, range) {
+        match meta_reader.data(MetaData::EndNode(self.name.clone()), &state, range) {
             Err(err) => { return Err((range, err)); }
             Ok(state) => Ok((range, state)),
         }
@@ -89,7 +86,6 @@ mod tests {
         let num: Rc<String> = Rc::new("num".into());
         let node = Rc::new(RefCell::new(Node {
             name: foo.clone(),
-            value: None,
             body: vec![
                 Rule::Number(Number { property: Some(num.clone()) }),
                 Rule::Optional(Optional {
