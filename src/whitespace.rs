@@ -35,7 +35,6 @@ impl Whitespace {
     pub fn rule() -> Node {
         Node {
             name: Rc::new("whitespace".into()),
-            value: None,
             body: vec![
                 Rule::Whitespace(Whitespace { optional: true }),
                 Rule::Token(Token {
