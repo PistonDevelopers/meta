@@ -10,18 +10,18 @@ use {
     Rule,
 };
 
-/// Stores information about a parameter.
+/// Stores information about a node.
 pub struct Node {
-    /// The name of the parameter.
+    /// The name of the node.
     pub name: Rc<String>,
     /// The property name of parent to set the value.
     pub value: Option<Rc<String>>,
-    /// The body of the parameter.
+    /// The body of the node.
     pub body: Vec<Rule>,
 }
 
 impl Node {
-    /// Parses parameter.
+    /// Parses node.
     pub fn parse<M>(
         &self,
         meta_reader: &mut M,
@@ -58,20 +58,20 @@ impl Node {
     }
 }
 
-/// A parameter reference.
+/// A node reference.
 pub enum NodeRef {
-    /// Points to a parameter by name.
+    /// Points to a node by name.
     Name(Rc<String>),
-    /// Reference to parameter.
+    /// Reference to node.
     /// The `bool` flag is used to prevent multiple visits when updating.
     Ref(Rc<RefCell<Node>>, NodeVisit),
 }
 
-/// Tells whether a parameter is visited when updated.
+/// Tells whether a node is visited when updated.
 pub enum NodeVisit {
-    /// The parameter is not being visited.
+    /// The node is not being visited.
     Unvisited,
-    /// The parameter is being visited.
+    /// The node is being visited.
     Visited
 }
 
@@ -83,8 +83,8 @@ mod tests {
     use std::cell::RefCell;
 
     #[test]
-    fn parameter_ref() {
-        // Create a parameter rule the refers to itself.
+    fn node_ref() {
+        // Create a node rule the refers to itself.
         let foo: Rc<String> = Rc::new("foo".into());
         let num: Rc<String> = Rc::new("num".into());
         let node = Rc::new(RefCell::new(Node {
