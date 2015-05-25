@@ -39,7 +39,7 @@ impl Node {
         let mut offset = start_offset;
         let name = self.value.clone().unwrap_or(self.name.clone());
         let mut state = match meta_reader.data(
-            MetaData::StartNode(name),
+            MetaData::StartNode(name.clone()),
             state,
             Range::empty(offset)
         ) {
@@ -56,7 +56,7 @@ impl Node {
             }
         }
         let range = Range::new(start_offset, offset - start_offset);
-        match meta_reader.data(MetaData::EndNode, &state, range) {
+        match meta_reader.data(MetaData::EndNode(name), &state, range) {
             Err(err) => { return Err((range, err)); }
             Ok(state) => Ok((range, state)),
         }
@@ -126,8 +126,8 @@ mod tests {
         assert_eq!(&tokenizer.tokens[3].0, &MetaData::F64(num.clone(), 2.0));
         assert_eq!(&tokenizer.tokens[4].0, &MetaData::StartNode(foo.clone()));
         assert_eq!(&tokenizer.tokens[5].0, &MetaData::F64(num.clone(), 3.0));
-        assert_eq!(&tokenizer.tokens[6].0, &MetaData::EndNode);
-        assert_eq!(&tokenizer.tokens[7].0, &MetaData::EndNode);
-        assert_eq!(&tokenizer.tokens[8].0, &MetaData::EndNode);
+        assert_eq!(&tokenizer.tokens[6].0, &MetaData::EndNode(foo.clone()));
+        assert_eq!(&tokenizer.tokens[7].0, &MetaData::EndNode(foo.clone()));
+        assert_eq!(&tokenizer.tokens[8].0, &MetaData::EndNode(foo.clone()));
     }
 }
