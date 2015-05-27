@@ -13,6 +13,7 @@ use {
     NodeVisit,
     MetaReader,
     ParseError,
+    ParseResult,
     Select,
     SeparatedBy,
     Sequence,
@@ -54,12 +55,12 @@ impl Rule {
         state: &M::State,
         chars: &[char],
         offset: usize
-    ) -> Result<(Range, M::State), (Range, ParseError)>
+    ) -> ParseResult<M::State>
         where M: MetaReader
     {
         match self {
             &Rule::Whitespace(ref w) => {
-                w.parse(chars, offset).map(|r| (r, state.clone()))
+                w.parse(chars, offset).map(|r| (r, state.clone(), None))
             }
             &Rule::Token(ref t) => {
                 t.parse(meta_reader, state, chars, offset)

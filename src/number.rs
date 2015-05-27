@@ -6,6 +6,7 @@ use {
     MetaData,
     MetaReader,
     ParseError,
+    ParseResult,
 };
 
 /// Contains information about number.
@@ -22,7 +23,7 @@ impl Number {
         state: &M::State,
         chars: &[char],
         offset: usize
-    ) -> Result<(Range, M::State), (Range, ParseError)>
+    ) -> ParseResult<M::State>
         where M: MetaReader
     {
         if let Some(range) = read_token::number(chars, offset) {
@@ -40,10 +41,10 @@ impl Number {
                             range
                         ) {
                             Err(err) => Err((range, err)),
-                            Ok(state) => Ok((range, state)),
+                            Ok(state) => Ok((range, state, None)),
                         }
                     } else {
-                        Ok((range, state.clone()))
+                        Ok((range, state.clone(), None))
                     }
                 }
             }
@@ -78,16 +79,16 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let res = number.parse(&mut tokenizer, &s, &chars[4..], 4);
-        assert_eq!(res, Ok((Range::new(4, 1), s)));
+        assert_eq!(res, Ok((Range::new(4, 1), s, None)));
         let res = number.parse(&mut tokenizer, &s, &chars[6..], 6);
-        assert_eq!(res, Ok((Range::new(6, 3), s)));
+        assert_eq!(res, Ok((Range::new(6, 3), s, None)));
         let res = number.parse(&mut tokenizer, &s, &chars[10..], 10);
-        assert_eq!(res, Ok((Range::new(10, 4), s)));
+        assert_eq!(res, Ok((Range::new(10, 4), s, None)));
 
         let val: Rc<String> = Rc::new("val".into());
         let number = Number { property: Some(val.clone()) };
         let res = number.parse(&mut tokenizer, &s, &chars[15..], 15);
-        assert_eq!(res, Ok((Range::new(15, 6), TokenizerState(1))));
+        assert_eq!(res, Ok((Range::new(15, 6), TokenizerState(1), None)));
         assert_eq!(tokenizer.tokens.len(), 1);
         assert_eq!(&tokenizer.tokens[0].0, &MetaData::F64(val.clone(), 10.0e1));
     }

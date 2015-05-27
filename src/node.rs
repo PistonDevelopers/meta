@@ -3,10 +3,11 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 use {
+    ret_err,
     update,
     MetaData,
     MetaReader,
-    ParseError,
+    ParseResult,
     Rule,
 };
 
@@ -26,7 +27,7 @@ impl Node {
         state: &M::State,
         mut chars: &[char],
         start_offset: usize
-    ) -> Result<(Range, M::State), (Range, ParseError)>
+    ) -> ParseResult<M::State>
         where M: MetaReader
     {
         let mut offset = start_offset;
@@ -38,11 +39,12 @@ impl Node {
             Err(err) => { return Err((Range::new(offset, 0), err)); }
             Ok(state) => state,
         };
+        let mut opt_error = None;
         for rule in &self.body {
             state = match rule.parse(meta_reader, &state, chars, offset) {
-                Err(err) => { return Err(err); }
-                Ok((range, state)) => {
-                    update(range, &mut chars, &mut offset);
+                Err(err) => { return Err(ret_err(err, opt_error)); }
+                Ok((range, state, err)) => {
+                    update(range, err, &mut chars, &mut offset, &mut opt_error);
                     state
                 }
             }
@@ -50,7 +52,7 @@ impl Node {
         let range = Range::new(start_offset, offset - start_offset);
         match meta_reader.data(MetaData::EndNode(self.name.clone()), &state, range) {
             Err(err) => { return Err((range, err)); }
-            Ok(state) => Ok((range, state)),
+            Ok(state) => Ok((range, state, opt_error)),
         }
     }
 }
@@ -108,7 +110,8 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let res = node.borrow().parse(&mut tokenizer, &s, &chars, 0);
-        assert_eq!(res, Ok((Range::new(0, 5), TokenizerState(9))));
+        assert_eq!(res, Ok((Range::new(0, 5), TokenizerState(9),
+            Some((Range::new(5, 0), ParseError::ExpectedWhitespace)))));
         assert_eq!(tokenizer.tokens.len(), 9);
         assert_eq!(&tokenizer.tokens[0].0, &MetaData::StartNode(foo.clone()));
         assert_eq!(&tokenizer.tokens[1].0, &MetaData::F64(num.clone(), 1.0));
