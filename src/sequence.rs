@@ -1,9 +1,10 @@
 use range::Range;
 
 use {
+    ret_err,
     update,
     MetaReader,
-    ParseError,
+    ParseResult,
     Rule,
 };
 
@@ -22,22 +23,23 @@ impl Sequence {
         state: &M::State,
         mut chars: &[char],
         start_offset: usize
-    ) -> Result<(Range, M::State), (Range, ParseError)>
+    ) -> ParseResult<M::State>
         where M: MetaReader
     {
         let mut offset = start_offset;
         let mut state = state.clone();
+        let mut opt_error = None;
         for sub_rule in &self.args {
             state = match sub_rule.parse(meta_reader, &state, chars, offset) {
-                Ok((range, state)) => {
-                    update(range, &mut chars, &mut offset);
+                Ok((range, state, err)) => {
+                    update(range, err, &mut chars, &mut offset, &mut opt_error);
                     state
                 }
                 Err(err) => {
-                    return Err(err);
+                    return Err(ret_err(err, opt_error));
                 }
             }
         }
-        Ok((Range::new(start_offset, offset - start_offset), state))
+        Ok((Range::new(start_offset, offset - start_offset), state, opt_error))
     }
 }

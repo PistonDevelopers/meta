@@ -1,8 +1,10 @@
 use range::Range;
 
 use {
+    err_update,
     MetaReader,
     ParseError,
+    ParseResult,
     Rule,
 };
 
@@ -20,21 +22,23 @@ impl Select {
         state: &M::State,
         chars: &[char],
         offset: usize
-    ) -> Result<(Range, M::State), (Range, ParseError)>
+    ) -> ParseResult<M::State>
         where M: MetaReader
     {
-        let mut first_error: Option<(Range, ParseError)> = None;
+        let mut opt_error: Option<(Range, ParseError)> = None;
         for sub_rule in &self.args {
             match sub_rule.parse(meta_reader, state, chars, offset) {
-                Ok((range, state)) => {
-                    return Ok((Range::new(offset, range.next_offset()), state));
+                Ok((range, state, err)) => {
+                    err_update(err, &mut opt_error);
+                    return Ok((Range::new(offset, range.next_offset()), state,
+                        opt_error));
                 }
                 Err(err) => {
-                    first_error = Some(err);
+                    err_update(Some(err), &mut opt_error);
                 }
             }
         }
-        match first_error {
+        match opt_error {
             None => Err((Range::new(offset, 0), ParseError::InvalidRule(
                 "`Select` requires at least one sub rule"))),
             Some(err) => Err(err),
@@ -84,7 +88,8 @@ mod tests {
             ]
         };
         let res = select.parse(&mut tokenizer, &s, &chars, 0);
-        assert_eq!(res, Ok((Range::new(0, 1), TokenizerState(1))));
+        assert_eq!(res, Ok((Range::new(0, 1), TokenizerState(1),
+            Some((Range::new(0, 0), ParseError::ExpectedText)))));
         assert_eq!(tokenizer.tokens.len(), 1);
         assert_eq!(&tokenizer.tokens[0].0, &MetaData::F64(num.clone(), 2.0));
     }

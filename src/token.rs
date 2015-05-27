@@ -6,6 +6,7 @@ use {
     MetaData,
     MetaReader,
     ParseError,
+    ParseResult,
 };
 
 /// Stores information about token.
@@ -31,7 +32,7 @@ impl Token {
         state: &M::State,
         chars: &[char],
         offset: usize
-    ) -> Result<(Range, M::State), (Range, ParseError)>
+    ) -> ParseResult<M::State>
         where M: MetaReader
     {
         if let Some(range) = read_token::token(&self.text, chars, offset) {
@@ -46,12 +47,12 @@ impl Token {
                             return Err((range, err));
                         }
                         Ok(state) => {
-                            return Ok((range, state));
+                            return Ok((range, state, None));
                         }
                     }
                 }
                 _ => {
-                    return Ok((range, state.clone()))
+                    return Ok((range, state.clone(), None))
                 }
             }
         } else {
@@ -98,7 +99,7 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let res = fn_.parse(&mut tokenizer, &s, &chars, 0);
-        assert_eq!(res, Ok((Range::new(0, 3), s)));
+        assert_eq!(res, Ok((Range::new(0, 3), s, None)));
         assert_eq!(tokenizer.tokens.len(), 0);
 
         // Set bool property.
@@ -111,7 +112,7 @@ mod tests {
         };
         let s = TokenizerState::new();
         let res = start_parenthesis.parse(&mut tokenizer, &s, &chars[6..], 6);
-        assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1))));
+        assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1), None)));
         assert_eq!(tokenizer.tokens.len(), 1);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::Bool(has_arguments.clone(), true));
@@ -126,7 +127,7 @@ mod tests {
         };
         let s = TokenizerState::new();
         let res = start_parenthesis.parse(&mut tokenizer, &s, &chars[6..], 6);
-        assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1))));
+        assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1), None)));
         assert_eq!(tokenizer.tokens.len(), 1);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::Bool(has_arguments.clone(), false));

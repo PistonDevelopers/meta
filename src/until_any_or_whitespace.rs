@@ -1,11 +1,11 @@
 use read_token;
-use range::Range;
 use std::rc::Rc;
 
 use {
     MetaData,
     MetaReader,
     ParseError,
+    ParseResult,
 };
 
 /// Stores information about reading until whitespace or any of some character.
@@ -26,7 +26,7 @@ impl UntilAnyOrWhitespace {
         state: &M::State,
         chars: &[char],
         offset: usize
-    ) -> Result<(Range, M::State), (Range, ParseError)>
+    ) -> ParseResult<M::State>
         where M: MetaReader
     {
         let (range, _) = read_token::until_any_or_whitespace(
@@ -45,10 +45,10 @@ impl UntilAnyOrWhitespace {
                     range
                 ) {
                     Err(err) => Err((range, err)),
-                    Ok(state) => Ok((range, state)),
+                    Ok(state) => Ok((range, state, None)),
                 }
             } else {
-                Ok((range, state.clone()))
+                Ok((range, state.clone(), None))
             }
         }
     }
@@ -88,7 +88,7 @@ mod tests {
             property: Some(function_name.clone())
         };
         let res = name.parse(&mut tokenizer, &s, &chars[3..], 3);
-        assert_eq!(res, Ok((Range::new(3, 3), TokenizerState(1))));
+        assert_eq!(res, Ok((Range::new(3, 3), TokenizerState(1), None)));
         assert_eq!(tokenizer.tokens.len(), 1);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::String(function_name.clone(), "foo".into()));

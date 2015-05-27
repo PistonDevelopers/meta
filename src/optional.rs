@@ -1,7 +1,9 @@
 use range::Range;
 
 use {
+    ret_err,
     update,
+    ParseError,
     MetaReader,
     Rule,
 };
@@ -21,24 +23,27 @@ impl Optional {
         state: &M::State,
         mut chars: &[char],
         mut offset: usize
-    ) -> (Range, M::State)
+    ) -> (Range, M::State, Option<(Range, ParseError)>)
         where M: MetaReader
     {
         let start_offset = offset;
         let mut success_state = state.clone();
+        let mut opt_error = None;
         for sub_rule in &self.args {
             success_state = match sub_rule.parse(meta_reader, &success_state,
                                          chars, offset) {
-                Ok((range, state)) => {
-                    update(range, &mut chars, &mut offset);
+                Ok((range, state, err)) => {
+                    update(range, err, &mut chars, &mut offset, &mut opt_error);
                     state
                 }
-                Err(_) => {
-                    return (Range::new(start_offset, 0), state.clone())
+                Err(err) => {
+                    return (Range::new(start_offset, 0), state.clone(),
+                        Some(ret_err(err, opt_error)))
                 }
             }
         }
-        (Range::new(start_offset, offset - start_offset), success_state)
+        (Range::new(start_offset, offset - start_offset), success_state,
+            opt_error)
     }
 }
 
@@ -68,7 +73,8 @@ mod tests {
             ]
         };
         let res = optional.parse(&mut tokenizer, &s, &chars, 0);
-        assert_eq!(res, (Range::new(0, 0), TokenizerState(0)));
+        assert_eq!(res, (Range::new(0, 0), TokenizerState(0),
+            Some((Range::new(0, 0), ParseError::ExpectedText))));
         assert_eq!(tokenizer.tokens.len(), 0);
     }
 }

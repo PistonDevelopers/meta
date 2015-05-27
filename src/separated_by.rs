@@ -1,9 +1,10 @@
 use range::Range;
 
 use {
+    ret_err,
     update,
     MetaReader,
-    ParseError,
+    ParseResult,
     Rule,
 };
 
@@ -27,37 +28,40 @@ impl SeparatedBy {
         state: &M::State,
         mut chars: &[char],
         start_offset: usize
-    ) -> Result<(Range, M::State), (Range, ParseError)>
+    ) -> ParseResult<M::State>
         where M: MetaReader
     {
         let mut offset = start_offset;
         let mut state = state.clone();
         let mut first = true;
+        let mut opt_error = None;
         loop {
             state = match self.rule.parse(meta_reader, &state, chars, offset) {
                 Err(err) => {
                     match (first, self.optional, self.allow_trail) {
                           (true, false, _)
-                        | (false, _, false) => { return Err(err); }
+                        | (false, _, false) => {
+                            return Err(ret_err(err, opt_error));
+                        }
                           (true, true, _)
                         | (false, _, true) => { break; }
                     }
                 }
-                Ok((range, state)) => {
-                    update(range, &mut chars, &mut offset);
+                Ok((range, state, err)) => {
+                    update(range, err, &mut chars, &mut offset, &mut opt_error);
                     state
                 }
             };
             state = match self.by.parse(meta_reader, &state, chars, offset) {
-                Err(_) => { break; }
-                Ok((range, state)) => {
-                    update(range, &mut chars, &mut offset);
+                Err(err) => { opt_error = Some(err); break; }
+                Ok((range, state, err)) => {
+                    update(range, err, &mut chars, &mut offset, &mut opt_error);
                     state
                 }
             };
             first = false;
         }
-        Ok((Range::new(start_offset, offset - start_offset), state))
+        Ok((Range::new(start_offset, offset - start_offset), state, opt_error))
     }
 }
 
@@ -112,7 +116,7 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
-        assert_eq!(res, Ok((Range::new(4, 0), s)));
+        assert_eq!(res, Ok((Range::new(4, 0), s, None)));
     }
 
     #[test]
@@ -162,7 +166,7 @@ mod tests {
             allow_trail: true,
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
-        assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3))));
+        assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3), None)));
         assert_eq!(tokenizer.tokens.len(), 3);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::String(arg.clone(), "a".into()));
@@ -194,7 +198,8 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
-        assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3))));
+        assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3),
+            Some((Range::new(9, 0), ParseError::ExpectedToken(",".into()))))));
         assert_eq!(tokenizer.tokens.len(), 3);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::String(arg.clone(), "a".into()));
