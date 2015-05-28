@@ -2,6 +2,7 @@ use range::Range;
 
 use {
     ret_err,
+    err_update,
     update,
     MetaReader,
     ParseResult,
@@ -44,7 +45,10 @@ impl SeparatedBy {
                             return Err(ret_err(err, opt_error));
                         }
                           (true, true, _)
-                        | (false, _, true) => { break; }
+                        | (false, _, true) => {
+                            err_update(Some(err), &mut opt_error);
+                            break;
+                        }
                     }
                 }
                 Ok((range, state, err)) => {
@@ -116,7 +120,8 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
-        assert_eq!(res, Ok((Range::new(4, 0), s, None)));
+        assert_eq!(res, Ok((Range::new(4, 0), s,
+            Some((Range::new(4, 0), ParseError::ExpectedSomething)))));
     }
 
     #[test]
@@ -166,7 +171,8 @@ mod tests {
             allow_trail: true,
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
-        assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3), None)));
+        assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3),
+            Some((Range::new(10, 0), ParseError::ExpectedSomething)))));
         assert_eq!(tokenizer.tokens.len(), 3);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::String(arg.clone(), "a".into()));
