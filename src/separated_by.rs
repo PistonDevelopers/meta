@@ -214,4 +214,50 @@ mod tests {
         assert_eq!(&tokenizer.tokens[2].0,
             &MetaData::String(arg.clone(), "c".into()));
     }
+
+    #[test]
+    fn nested() {
+        let text = "a,b,c;d,e,f;";
+        let chars: Vec<char> = text.chars().collect();
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let arg: Rc<String> = Rc::new("arg".into());
+        let sep = SeparatedBy {
+            rule: Rule::SeparatedBy(Box::new(SeparatedBy {
+                rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
+                    any_characters: Rc::new(",;".into()),
+                    optional: false,
+                    property: Some(arg.clone()),
+                }),
+                by: Rule::Token(Token {
+                    text: Rc::new(",".into()),
+                    inverted: false,
+                    property: None,
+                }),
+                optional: false,
+                allow_trail: true,
+            })),
+            by: Rule::Token(Token {
+                text: Rc::new(";".into()),
+                inverted: false,
+                property: None,
+            }),
+            optional: false,
+            allow_trail: true,
+        };
+        let res = sep.parse(&mut tokenizer, &s, &chars, 0);
+        assert_eq!(res, Ok((Range::new(0, 12), TokenizerState(6),
+            Some((Range::new(12, 0), ParseError::ExpectedSomething)))));
+        assert_eq!(tokenizer.tokens.len(), 6);
+        assert_eq!(&tokenizer.tokens[0].0,
+            &MetaData::String(arg.clone(), "a".into()));
+        assert_eq!(&tokenizer.tokens[1].0,
+            &MetaData::String(arg.clone(), "b".into()));
+        assert_eq!(&tokenizer.tokens[2].0,
+            &MetaData::String(arg.clone(), "c".into()));
+        assert_eq!(&tokenizer.tokens[3].0,
+            &MetaData::String(arg.clone(), "d".into()));
+        assert_eq!(&tokenizer.tokens[4].0,
+            &MetaData::String(arg.clone(), "e".into()));
+    }
 }
