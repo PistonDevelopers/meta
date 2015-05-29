@@ -1,5 +1,5 @@
 # piston_meta
-A research project of meta parsing and composing for data driven programming
+A research project of meta parsing and composing for data
 
 Piston-Meta is a research project under the Piston project to explore the use of meta parsing and composing for data oriented design. Meta parsing is a technique where you use a rules to describe how to transform a text into a tree structure, in a similar way that a parser generator can generate code for reading a text by a grammar, except that the rules in meta parsing can be changed at run time, or even read from a text described by the same rules. Piston-Meta is inspired by OMeta (https://en.wikipedia.org/wiki/OMeta) developed at Viewpoints Research Institute in 2007.
 
