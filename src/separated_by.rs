@@ -57,7 +57,10 @@ impl SeparatedBy {
                 }
             };
             state = match self.by.parse(meta_reader, &state, chars, offset) {
-                Err(err) => { opt_error = Some(err); break; }
+                Err(err) => {
+                    err_update(Some(err), &mut opt_error);
+                    break;
+                }
                 Ok((range, state, err)) => {
                     update(range, err, &mut chars, &mut offset, &mut opt_error);
                     state
