@@ -146,8 +146,8 @@ Here is an overview of the process:
 First you need some rules to parse the meta language, which you could read with `Tokenizer` and then convert to rules in Rust. These rules are then used to read the data, which then is converted to the application structure in Rust.
 
 ```
-rules (for meta language) -> document (meta language describing rules for data) -> meta data
--> rules (for data) -> document (data) -> meta data -> data
+rules (for meta language) -> document (meta language describing rules for data) ->
+meta data -> rules (for data) -> document (data) -> meta data -> data
 ```
 
 In general, meta parsing is about this kind of transformation:
