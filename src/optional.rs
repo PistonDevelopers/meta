@@ -64,17 +64,19 @@ mod tests {
         let optional = Optional {
             args: vec![
                 Rule::Text(Text {
+                    debug_id: 0,
                     allow_empty: true,
                     property: None
                 }),
                 Rule::Number(Number {
+                    debug_id: 1,
                     property: Some(num.clone())
                 })
             ]
         };
         let res = optional.parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, (Range::new(0, 0), TokenizerState(0),
-            Some((Range::new(0, 0), ParseError::ExpectedText))));
+            Some((Range::new(0, 0), ParseError::ExpectedText(0)))));
         assert_eq!(tokenizer.tokens.len(), 0);
     }
 }

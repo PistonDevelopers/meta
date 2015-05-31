@@ -5,6 +5,7 @@ use std::cell::RefCell;
 use {
     ret_err,
     update,
+    DebugId,
     MetaData,
     MetaReader,
     ParseResult,
@@ -60,7 +61,7 @@ impl Node {
 /// A node reference.
 pub enum NodeRef {
     /// Points to a node by name.
-    Name(Rc<String>),
+    Name(Rc<String>, DebugId),
     /// Reference to node.
     /// The `bool` flag is used to prevent multiple visits when updating.
     Ref(Rc<RefCell<Node>>, NodeVisit),
@@ -89,11 +90,14 @@ mod tests {
         let node = Rc::new(RefCell::new(Node {
             name: foo.clone(),
             body: vec![
-                Rule::Number(Number { property: Some(num.clone()) }),
+                Rule::Number(Number { debug_id: 1, property: Some(num.clone()) }),
                 Rule::Optional(Optional {
                     args: vec![
-                        Rule::Whitespace(Whitespace { optional: false }),
-                        Rule::Node(NodeRef::Name(foo.clone())),
+                        Rule::Whitespace(Whitespace {
+                            debug_id: 2,
+                            optional: false
+                        }),
+                        Rule::Node(NodeRef::Name(foo.clone(), 3)),
                     ]
                 })
             ]
@@ -111,7 +115,7 @@ mod tests {
         let s = TokenizerState::new();
         let res = node.borrow().parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Ok((Range::new(0, 5), TokenizerState(9),
-            Some((Range::new(5, 0), ParseError::ExpectedWhitespace)))));
+            Some((Range::new(5, 0), ParseError::ExpectedWhitespace(2))))));
         assert_eq!(tokenizer.tokens.len(), 9);
         assert_eq!(&tokenizer.tokens[0].0, &MetaData::StartNode(foo.clone()));
         assert_eq!(&tokenizer.tokens[1].0, &MetaData::F64(num.clone(), 1.0));

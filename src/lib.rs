@@ -22,6 +22,9 @@ pub use rule::Rule;
 pub use meta_reader::MetaReader;
 pub use tokenizer::{ Tokenizer, TokenizerState };
 
+/// The type of debug id used to track down errors in rules.
+pub type DebugId = usize;
+
 use std::rc::Rc;
 use range::Range;
 

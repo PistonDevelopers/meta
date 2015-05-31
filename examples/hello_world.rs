@@ -11,6 +11,7 @@ fn main() {
     let s = TokenizerState::new();
     let foo: Rc<String> = Rc::new("foo".into());
     let text = Text {
+        debug_id: 0,
         allow_empty: true,
         property: Some(foo.clone())
     };

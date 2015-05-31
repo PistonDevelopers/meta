@@ -3,6 +3,7 @@ use range::Range;
 use std::rc::Rc;
 
 use {
+    DebugId,
     MetaData,
     MetaReader,
     ParseError,
@@ -15,6 +16,8 @@ pub struct Text {
     pub allow_empty: bool,
     /// Which property to set if text is read.
     pub property: Option<Rc<String>>,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
 }
 
 impl Text {
@@ -30,13 +33,13 @@ impl Text {
     {
         if let Some(range) = read_token::string(chars, offset) {
             if !self.allow_empty && range.length == 2 {
-                Err((range, ParseError::EmptyTextNotAllowed))
+                Err((range, ParseError::EmptyTextNotAllowed(self.debug_id)))
             } else {
                 match read_token::parse_string(
                     chars, offset, range.next_offset()) {
                     // Focus range to invalid string format.
                     Err(err) => Err((err.range(),
-                        ParseError::ParseStringError(err))),
+                        ParseError::ParseStringError(err, self.debug_id))),
                     Ok(text) => {
                         if let Some(ref property) = self.property {
                             match meta_reader.data(
@@ -54,7 +57,8 @@ impl Text {
                 }
             }
         } else {
-            Err((Range::new(offset, 0), ParseError::ExpectedText))
+            Err((Range::new(offset, 0),
+                ParseError::ExpectedText(self.debug_id)))
         }
     }
 }
@@ -72,11 +76,12 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let text = Text {
+            debug_id: 0,
             allow_empty: true,
             property: None
         };
         let res = text.parse(&mut tokenizer, &s, &chars, 0);
-        assert_eq!(res, Err((Range::new(0, 0), ParseError::ExpectedText)));
+        assert_eq!(res, Err((Range::new(0, 0), ParseError::ExpectedText(0))));
     }
 
     #[test]
@@ -86,11 +91,13 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let text = Text {
+            debug_id: 0,
             allow_empty: false,
             property: None
         };
         let res = text.parse(&mut tokenizer, &s, &chars, 0);
-        assert_eq!(res, Err((Range::new(0, 2), ParseError::EmptyTextNotAllowed)));
+        assert_eq!(res, Err((Range::new(0, 2),
+            ParseError::EmptyTextNotAllowed(0))));
     }
 
     #[test]
@@ -101,6 +108,7 @@ mod tests {
         let s = TokenizerState::new();
         let foo: Rc<String> = Rc::new("foo".into());
         let text = Text {
+            debug_id: 0,
             allow_empty: true,
             property: Some(foo.clone())
         };
