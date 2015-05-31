@@ -3,6 +3,7 @@ use read_token;
 use std::rc::Rc;
 
 use {
+    DebugId,
     MetaData,
     MetaReader,
     ParseError,
@@ -13,6 +14,8 @@ use {
 pub struct Number {
     /// The property to set.
     pub property: Option<Rc<String>>,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
 }
 
 impl Number {
@@ -32,7 +35,8 @@ impl Number {
                 text.push(*c);
             }
             match text.parse::<f64>() {
-                Err(err) => Err((range, ParseError::ParseFloatError(err))),
+                Err(err) => Err((range,
+                    ParseError::ParseFloatError(err, self.debug_id))),
                 Ok(val) => {
                     if let Some(ref property) = self.property {
                         match meta_reader.data(
@@ -49,7 +53,8 @@ impl Number {
                 }
             }
         } else {
-            return Err((Range::new(offset, 0), ParseError::ExpectedNumber))
+            return Err((Range::new(offset, 0),
+                ParseError::ExpectedNumber(self.debug_id)))
         }
     }
 }
@@ -64,18 +69,18 @@ mod tests {
     fn expected_number() {
         let text = "foo";
         let chars: Vec<char> = text.chars().collect();
-        let number = Number { property: None };
+        let number = Number { debug_id: 0, property: None };
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let res = number.parse(&mut tokenizer, &s, &chars, 0);
-        assert_eq!(res, Err((Range::new(0, 0), ParseError::ExpectedNumber)));
+        assert_eq!(res, Err((Range::new(0, 0), ParseError::ExpectedNumber(0))));
     }
 
     #[test]
     fn successful() {
         let text = "foo 1 1.1 10e1 10.0E1";
         let chars: Vec<char> = text.chars().collect();
-        let number = Number { property: None };
+        let number = Number { debug_id: 0, property: None };
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let res = number.parse(&mut tokenizer, &s, &chars[4..], 4);
@@ -86,7 +91,7 @@ mod tests {
         assert_eq!(res, Ok((Range::new(10, 4), s, None)));
 
         let val: Rc<String> = Rc::new("val".into());
-        let number = Number { property: Some(val.clone()) };
+        let number = Number { debug_id: 0, property: Some(val.clone()) };
         let res = number.parse(&mut tokenizer, &s, &chars[15..], 15);
         assert_eq!(res, Ok((Range::new(15, 6), TokenizerState(1), None)));
         assert_eq!(tokenizer.tokens.len(), 1);

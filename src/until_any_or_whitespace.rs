@@ -2,6 +2,7 @@ use read_token;
 use std::rc::Rc;
 
 use {
+    DebugId,
     MetaData,
     MetaReader,
     ParseError,
@@ -16,6 +17,8 @@ pub struct UntilAnyOrWhitespace {
     pub optional: bool,
     /// The property to store read text.
     pub property: Option<Rc<String>>,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
 }
 
 impl UntilAnyOrWhitespace {
@@ -32,7 +35,7 @@ impl UntilAnyOrWhitespace {
         let (range, _) = read_token::until_any_or_whitespace(
             &self.any_characters, chars, offset);
         if range.length == 0 && !self.optional {
-            Err((range, ParseError::ExpectedSomething))
+            Err((range, ParseError::ExpectedSomething(self.debug_id)))
         } else {
             if let Some(ref property) = self.property {
                 let mut text = String::with_capacity(range.length);
@@ -67,12 +70,14 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let name = UntilAnyOrWhitespace {
+            debug_id: 0,
             any_characters: Rc::new("(".into()),
             optional: false,
             property: None
         };
         let res = name.parse(&mut tokenizer, &s, &chars[3..], 3);
-        assert_eq!(res, Err((Range::new(3, 0), ParseError::ExpectedSomething)));
+        assert_eq!(res, Err((Range::new(3, 0),
+            ParseError::ExpectedSomething(0))));
     }
 
     #[test]
@@ -83,6 +88,7 @@ mod tests {
         let s = TokenizerState::new();
         let function_name: Rc<String> = Rc::new("function_name".into());
         let name = UntilAnyOrWhitespace {
+            debug_id: 0,
             any_characters: Rc::new("(".into()),
             optional: false,
             property: Some(function_name.clone())

@@ -86,11 +86,13 @@ mod tests {
         let s = TokenizerState::new();
         let sep = SeparatedBy {
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
+                debug_id: 1,
                 any_characters: Rc::new(",)".into()),
                 optional: false,
                 property: None,
             }),
             by: Rule::Token(Token {
+                debug_id: 2,
                 text: Rc::new(",".into()),
                 inverted: false,
                 property: None,
@@ -99,7 +101,8 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
-        assert_eq!(res, Err((Range::new(4, 0), ParseError::ExpectedSomething)));
+        assert_eq!(res, Err((Range::new(4, 0),
+            ParseError::ExpectedSomething(1))));
     }
 
     #[test]
@@ -110,11 +113,13 @@ mod tests {
         let s = TokenizerState::new();
         let sep = SeparatedBy {
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
+                debug_id: 1,
                 any_characters: Rc::new(",)".into()),
                 optional: false,
                 property: None,
             }),
             by: Rule::Token(Token {
+                debug_id: 2,
                 text: Rc::new(",".into()),
                 inverted: false,
                 property: None,
@@ -124,7 +129,7 @@ mod tests {
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
         assert_eq!(res, Ok((Range::new(4, 0), s,
-            Some((Range::new(4, 0), ParseError::ExpectedSomething)))));
+            Some((Range::new(4, 0), ParseError::ExpectedSomething(1))))));
     }
 
     #[test]
@@ -136,11 +141,13 @@ mod tests {
         let arg: Rc<String> = Rc::new("arg".into());
         let sep = SeparatedBy {
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
+                debug_id: 1,
                 any_characters: Rc::new(",)".into()),
                 optional: false,
                 property: Some(arg.clone()),
             }),
             by: Rule::Token(Token {
+                debug_id: 2,
                 text: Rc::new(",".into()),
                 inverted: false,
                 property: None,
@@ -149,7 +156,8 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
-        assert_eq!(res, Err((Range::new(10, 0), ParseError::ExpectedSomething)));
+        assert_eq!(res, Err((Range::new(10, 0),
+            ParseError::ExpectedSomething(1))));
     }
 
     #[test]
@@ -161,11 +169,13 @@ mod tests {
         let arg: Rc<String> = Rc::new("arg".into());
         let sep = SeparatedBy {
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
+                debug_id: 1,
                 any_characters: Rc::new(",)".into()),
                 optional: false,
                 property: Some(arg.clone()),
             }),
             by: Rule::Token(Token {
+                debug_id: 2,
                 text: Rc::new(",".into()),
                 inverted: false,
                 property: None,
@@ -175,7 +185,7 @@ mod tests {
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
         assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3),
-            Some((Range::new(10, 0), ParseError::ExpectedSomething)))));
+            Some((Range::new(10, 0), ParseError::ExpectedSomething(1))))));
         assert_eq!(tokenizer.tokens.len(), 3);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::String(arg.clone(), "a".into()));
@@ -194,11 +204,13 @@ mod tests {
         let arg: Rc<String> = Rc::new("arg".into());
         let sep = SeparatedBy {
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
+                debug_id: 1,
                 any_characters: Rc::new(",)".into()),
                 optional: false,
                 property: Some(arg.clone()),
             }),
             by: Rule::Token(Token {
+                debug_id: 2,
                 text: Rc::new(",".into()),
                 inverted: false,
                 property: None,
@@ -208,7 +220,7 @@ mod tests {
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
         assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3),
-            Some((Range::new(9, 0), ParseError::ExpectedToken(",".into()))))));
+            Some((Range::new(9, 0), ParseError::ExpectedToken(",".into(), 2))))));
         assert_eq!(tokenizer.tokens.len(), 3);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::String(arg.clone(), "a".into()));
@@ -228,11 +240,13 @@ mod tests {
         let sep = SeparatedBy {
             rule: Rule::SeparatedBy(Box::new(SeparatedBy {
                 rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
+                    debug_id: 2,
                     any_characters: Rc::new(",;".into()),
                     optional: false,
                     property: Some(arg.clone()),
                 }),
                 by: Rule::Token(Token {
+                    debug_id: 3,
                     text: Rc::new(",".into()),
                     inverted: false,
                     property: None,
@@ -241,6 +255,7 @@ mod tests {
                 allow_trail: true,
             })),
             by: Rule::Token(Token {
+                debug_id: 4,
                 text: Rc::new(";".into()),
                 inverted: false,
                 property: None,
@@ -250,7 +265,7 @@ mod tests {
         };
         let res = sep.parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Ok((Range::new(0, 12), TokenizerState(6),
-            Some((Range::new(12, 0), ParseError::ExpectedSomething)))));
+            Some((Range::new(12, 0), ParseError::ExpectedSomething(2))))));
         assert_eq!(tokenizer.tokens.len(), 6);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::String(arg.clone(), "a".into()));

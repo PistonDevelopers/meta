@@ -85,11 +85,11 @@ impl Rule {
             }
             &Rule::Node(ref p) => {
                 match p {
-                    &NodeRef::Name(_) => {
+                    &NodeRef::Name(_, debug_id) => {
                         Err((
                             Range::empty(offset),
                             ParseError::InvalidRule(
-                                "Node rule is not updated to reference")
+                                "Node rule is not updated to reference", debug_id)
                         ))
                     }
                     &NodeRef::Ref(ref p, _) => {
@@ -112,7 +112,7 @@ impl Rule {
             &mut Rule::Node(ref mut p) => {
                 *p = {
                     match p {
-                        &mut NodeRef::Name(ref name) => {
+                        &mut NodeRef::Name(ref name, _) => {
                             // Look through references and update if correct name
                             // is found.
                             let mut found: Option<Rc<RefCell<Node>>> = None;

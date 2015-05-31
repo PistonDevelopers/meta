@@ -3,6 +3,7 @@ use read_token;
 use std::rc::Rc;
 
 use {
+    DebugId,
     MetaData,
     MetaReader,
     ParseError,
@@ -17,6 +18,8 @@ pub struct Token {
     pub inverted: bool,
     /// Which property to set if token matches.
     pub property: Option<Rc<String>>,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
 }
 
 impl Token {
@@ -57,7 +60,8 @@ impl Token {
             }
         } else {
             return Err((Range::new(offset, 0),
-                ParseError::ExpectedToken((&*self.text).clone())));
+                ParseError::ExpectedToken((&*self.text).clone(),
+                self.debug_id)));
         }
     }
 }
@@ -73,6 +77,7 @@ mod tests {
         let text = ")";
         let chars: Vec<char> = text.chars().collect();
         let start_parenthesis = Token {
+            debug_id: 0,
             text: Rc::new("(".into()),
             inverted: false,
             property: None
@@ -82,7 +87,7 @@ mod tests {
         let res = start_parenthesis.parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Err((
             Range::new(0, 0),
-            ParseError::ExpectedToken("(".into())
+            ParseError::ExpectedToken("(".into(), 0)
             ))
         );
     }
@@ -92,6 +97,7 @@ mod tests {
         let text = "fn foo()";
         let chars: Vec<char> = text.chars().collect();
         let fn_ = Token {
+            debug_id: 0,
             text: Rc::new("fn ".into()),
             inverted: false,
             property: None
@@ -106,6 +112,7 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let has_arguments: Rc<String> = Rc::new("has_arguments".into());
         let start_parenthesis = Token {
+            debug_id: 0,
             text: Rc::new("(".into()),
             inverted: false,
             property: Some(has_arguments.clone())
@@ -121,6 +128,7 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let has_arguments: Rc<String> = Rc::new("has_no_arguments".into());
         let start_parenthesis = Token {
+            debug_id: 0,
             text: Rc::new("(".into()),
             inverted: true,
             property: Some(has_arguments.clone())

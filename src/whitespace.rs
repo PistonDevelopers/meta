@@ -3,6 +3,7 @@ use range::Range;
 use std::rc::Rc;
 
 use {
+    DebugId,
     ParseError,
     Node,
     Rule,
@@ -14,6 +15,8 @@ use {
 pub struct Whitespace {
     /// Whether the whitespace is optional or required.
     pub optional: bool,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
 }
 
 impl Whitespace {
@@ -25,7 +28,7 @@ impl Whitespace {
     {
         let range = read_token::whitespace(chars, offset);
         if range.length == 0 && !self.optional {
-            Err((range, ParseError::ExpectedWhitespace))
+            Err((range, ParseError::ExpectedWhitespace(self.debug_id)))
         } else {
             Ok(range)
         }
@@ -36,19 +39,22 @@ impl Whitespace {
         Node {
             name: Rc::new("whitespace".into()),
             body: vec![
-                Rule::Whitespace(Whitespace { optional: true }),
+                Rule::Whitespace(Whitespace { debug_id: 0, optional: true }),
                 Rule::Token(Token {
+                    debug_id: 0,
                     text: Rc::new("whitespace".into()),
                     inverted: false,
                     property: None
                 }),
-                Rule::Select(Select { args: vec![
+                Rule::Select(Select { debug_id: 0, args: vec![
                     Rule::Token(Token {
+                        debug_id: 0,
                         text: Rc::new("?".into()),
                         inverted: false,
                         property: Some(Rc::new("optional".into())),
                     }),
                     Rule::Token(Token {
+                        debug_id: 0,
                         text: Rc::new("!".into()),
                         inverted: true,
                         property: Some(Rc::new("optional".into())),
@@ -68,7 +74,7 @@ mod tests {
     fn optional() {
         let text = "a,b, c";
         let chars: Vec<char> = text.chars().collect();
-        let optional_whitespace = Whitespace { optional: true };
+        let optional_whitespace = Whitespace { debug_id: 0, optional: true };
         assert_eq!(optional_whitespace.parse(&chars, 0),
             Ok(Range::new(0, 0)));
         assert_eq!(optional_whitespace.parse(&chars[4..], 4),
@@ -79,11 +85,11 @@ mod tests {
     fn required() {
         let text = "a,   b,c";
         let chars: Vec<char> = text.chars().collect();
-        let required_whitespace = Whitespace { optional: false };
+        let required_whitespace = Whitespace { debug_id: 0, optional: false };
         assert_eq!(required_whitespace.parse(&chars[2..], 2),
             Ok(Range::new(2, 3)));
         // Prints an error message to standard error output.
         assert_eq!(required_whitespace.parse(&chars[7..], 7),
-            Err((Range::new(7, 0), ParseError::ExpectedWhitespace)));
+            Err((Range::new(7, 0), ParseError::ExpectedWhitespace(0))));
     }
 }

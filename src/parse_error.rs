@@ -3,7 +3,10 @@ use std::fmt::Error as FormatError;
 use std::num::ParseFloatError;
 use read_token::ParseStringError;
 
-use Type;
+use {
+    Type,
+    DebugId
+};
 
 /// Errors reporting expected values.
 #[derive(Debug, PartialEq)]
@@ -11,29 +14,29 @@ pub enum ParseError {
     /// Not supported.
     NotSupported,
     /// Whitespace is required.
-    ExpectedWhitespace,
+    ExpectedWhitespace(DebugId),
     /// Something is required.
-    ExpectedSomething,
+    ExpectedSomething(DebugId),
     /// Expected number.
-    ExpectedNumber,
+    ExpectedNumber(DebugId),
     /// Error when parsing float.
-    ParseFloatError(ParseFloatError),
+    ParseFloatError(ParseFloatError, DebugId),
     /// Expected text.
-    ExpectedText,
+    ExpectedText(DebugId),
     /// Empty text not allowed.
-    EmptyTextNotAllowed,
+    EmptyTextNotAllowed(DebugId),
     /// Invalid string format.
-    ParseStringError(ParseStringError),
+    ParseStringError(ParseStringError, DebugId),
     /// Expected token.
-    ExpectedToken(String),
+    ExpectedToken(String, DebugId),
+    /// An invalid rule.
+    InvalidRule(&'static str, DebugId),
     /// Expected nodes with other names.
     ExpectedNode(Vec<String>),
     /// Expected another propert type.
     ExpectedPropertyType(Type),
     /// Reaching end of node, but expected more properties.
     ExpectedMoreProperties(Vec<String>),
-    /// An invalid rule.
-    InvalidRule(&'static str),
 }
 
 impl Display for ParseError {
@@ -41,28 +44,29 @@ impl Display for ParseError {
         match self {
             &ParseError::NotSupported =>
                 try!(fmt.write_str("This feature is not supported")),
-            &ParseError::ExpectedWhitespace =>
-                try!(fmt.write_str("Expected whitespace")),
-            &ParseError::ExpectedSomething =>
-                try!(fmt.write_str("Expected something")),
-            &ParseError::ExpectedNumber =>
-                try!(fmt.write_str("Expected number")),
-            &ParseError::ParseFloatError(ref err) =>
+            &ParseError::ExpectedWhitespace(debug_id) =>
+                try!(write!(fmt, "Expected whitespace (debug id `{}`)",
+                    debug_id)),
+            &ParseError::ExpectedSomething(debug_id) =>
+                try!(write!(fmt, "Expected something (debug id `{}`)",
+                    debug_id)),
+            &ParseError::ExpectedNumber(debug_id) =>
+                try!(write!(fmt, "Expected number (debug id `{}`)", debug_id)),
+            &ParseError::ParseFloatError(ref err, debug_id) =>
                 try!(fmt.write_fmt(format_args!(
-                    "Invalid number format: {}", err
+                    "Invalid number format (debug id `{}`): {}", debug_id, err
                 ))),
-            &ParseError::ExpectedToken(ref token) =>
-                try!(fmt.write_fmt(format_args!(
-                    "Expected `{}`", token
-                ))),
-            &ParseError::ExpectedText =>
-                try!(fmt.write_str("Expected text")),
-            &ParseError::EmptyTextNotAllowed =>
-                try!(fmt.write_str("Empty text not allowed")),
-            &ParseError::ParseStringError(err) =>
-                try!(fmt.write_fmt(format_args!(
-                    "Invalid string format: {}", err
-                ))),
+            &ParseError::ExpectedToken(ref token, debug_id) =>
+                try!(write!(fmt, "Expected (debug id `{}`): `{}`", debug_id,
+                    token)),
+            &ParseError::ExpectedText(debug_id) =>
+                try!(write!(fmt, "Expected text (debug id `{}`)", debug_id)),
+            &ParseError::EmptyTextNotAllowed(debug_id) =>
+                try!(write!(fmt, "Empty text not allowed (debug id `{}`)",
+                    debug_id)),
+            &ParseError::ParseStringError(err, debug_id) =>
+                try!(write!(fmt, "Invalid string format (debug id `{}`): {}",
+                    debug_id, err)),
             &ParseError::ExpectedNode(ref nodes) => {
                 try!(fmt.write_str("Expected nodes: "));
                 let mut tail = false;
@@ -77,7 +81,7 @@ impl Display for ParseError {
             }
             &ParseError::ExpectedPropertyType(ref ty) =>
                 try!(fmt.write_fmt(format_args!(
-                    "Expected property type {}", ty
+                    "Expected property type: {}", ty
                 ))),
             &ParseError::ExpectedMoreProperties(ref props) => {
                 try!(fmt.write_str("Expected more properties: "));
@@ -91,9 +95,9 @@ impl Display for ParseError {
                     try!(fmt.write_str(prop));
                 }
             }
-            &ParseError::InvalidRule(msg) =>
+            &ParseError::InvalidRule(msg, debug_id) =>
                 try!(fmt.write_fmt(format_args!(
-                    "Invalid rule `{}`", msg
+                    "Invalid rule (debug id `{}`): {}", debug_id, msg
                 ))),
         }
         Ok(())

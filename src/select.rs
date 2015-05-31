@@ -2,6 +2,7 @@ use range::Range;
 
 use {
     err_update,
+    DebugId,
     MetaReader,
     ParseError,
     ParseResult,
@@ -12,6 +13,8 @@ use {
 pub struct Select {
     /// The rules to select from.
     pub args: Vec<Rule>,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
 }
 
 impl Select {
@@ -40,7 +43,7 @@ impl Select {
         }
         match opt_error {
             None => Err((Range::new(offset, 0), ParseError::InvalidRule(
-                "`Select` requires at least one sub rule"))),
+                "`Select` requires at least one sub rule", self.debug_id))),
             Some(err) => Err(err),
         }
     }
@@ -59,11 +62,12 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let select = Select {
+            debug_id: 0,
             args: vec![]
         };
         let res = select.parse(&mut tokenizer, &s, &chars, 0);
         let invalid_rule = match &res {
-            &Err((_, ParseError::InvalidRule(_))) => true,
+            &Err((_, ParseError::InvalidRule(_, _))) => true,
             _ => false
         };
         assert!(invalid_rule);
@@ -77,19 +81,22 @@ mod tests {
         let s = TokenizerState::new();
         let num: Rc<String> = Rc::new("num".into());
         let select = Select {
+            debug_id: 0,
             args: vec![
                 Rule::Text(Text {
+                    debug_id: 1,
                     allow_empty: true,
                     property: None
                 }),
                 Rule::Number(Number {
+                    debug_id: 2,
                     property: Some(num.clone())
                 })
             ]
         };
         let res = select.parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Ok((Range::new(0, 1), TokenizerState(1),
-            Some((Range::new(0, 0), ParseError::ExpectedText)))));
+            Some((Range::new(0, 0), ParseError::ExpectedText(1))))));
         assert_eq!(tokenizer.tokens.len(), 1);
         assert_eq!(&tokenizer.tokens[0].0, &MetaData::F64(num.clone(), 2.0));
     }
