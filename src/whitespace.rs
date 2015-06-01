@@ -1,14 +1,9 @@
 use read_token;
 use range::Range;
-use std::rc::Rc;
 
 use {
     DebugId,
     ParseError,
-    Node,
-    Rule,
-    Select,
-    Token,
 };
 
 /// Stores information about whitespace.
@@ -31,37 +26,6 @@ impl Whitespace {
             Err((range, ParseError::ExpectedWhitespace(self.debug_id)))
         } else {
             Ok(range)
-        }
-    }
-
-    /// Gets the rule for whitespace in the meta language.
-    pub fn rule() -> Node {
-        Node {
-            debug_id: 0,
-            name: Rc::new("whitespace".into()),
-            body: vec![
-                Rule::Whitespace(Whitespace { debug_id: 1, optional: true }),
-                Rule::Token(Token {
-                    debug_id: 2,
-                    text: Rc::new("whitespace".into()),
-                    inverted: false,
-                    property: None
-                }),
-                Rule::Select(Select { debug_id: 3, args: vec![
-                    Rule::Token(Token {
-                        debug_id: 4,
-                        text: Rc::new("?".into()),
-                        inverted: false,
-                        property: Some(Rc::new("optional".into())),
-                    }),
-                    Rule::Token(Token {
-                        debug_id: 5,
-                        text: Rc::new("!".into()),
-                        inverted: true,
-                        property: Some(Rc::new("optional".into())),
-                    }),
-                ]}),
-            ],
         }
     }
 }
