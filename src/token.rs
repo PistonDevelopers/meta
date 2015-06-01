@@ -60,7 +60,7 @@ impl Token {
             }
         } else {
             return Err((Range::new(offset, 0),
-                ParseError::ExpectedToken((&*self.text).clone(),
+                ParseError::ExpectedToken(self.text.clone(),
                 self.debug_id)));
         }
     }
@@ -87,7 +87,7 @@ mod tests {
         let res = start_parenthesis.parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Err((
             Range::new(0, 0),
-            ParseError::ExpectedToken("(".into(), 0)
+            ParseError::ExpectedToken(Rc::new("(".into()), 0)
             ))
         );
     }
