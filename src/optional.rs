@@ -3,6 +3,7 @@ use range::Range;
 use {
     ret_err,
     update,
+    DebugId,
     ParseError,
     MetaReader,
     Rule,
@@ -12,6 +13,8 @@ use {
 pub struct Optional {
     /// The optional rules.
     pub args: Vec<Rule>,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
 }
 
 impl Optional {
@@ -62,21 +65,22 @@ mod tests {
         let num: Rc<String> = Rc::new("num".into());
         // Will fail because text is expected first.
         let optional = Optional {
+            debug_id: 0,
             args: vec![
                 Rule::Text(Text {
-                    debug_id: 0,
+                    debug_id: 1,
                     allow_empty: true,
                     property: None
                 }),
                 Rule::Number(Number {
-                    debug_id: 1,
+                    debug_id: 2,
                     property: Some(num.clone())
                 })
             ]
         };
         let res = optional.parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, (Range::new(0, 0), TokenizerState(0),
-            Some((Range::new(0, 0), ParseError::ExpectedText(0)))));
+            Some((Range::new(0, 0), ParseError::ExpectedText(1)))));
         assert_eq!(tokenizer.tokens.len(), 0);
     }
 }

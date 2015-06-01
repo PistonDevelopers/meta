@@ -18,6 +18,8 @@ pub struct Node {
     pub name: Rc<String>,
     /// The body of the node.
     pub body: Vec<Rule>,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
 }
 
 impl Node {
@@ -88,13 +90,15 @@ mod tests {
         let foo: Rc<String> = Rc::new("foo".into());
         let num: Rc<String> = Rc::new("num".into());
         let node = Rc::new(RefCell::new(Node {
+            debug_id: 0,
             name: foo.clone(),
             body: vec![
                 Rule::Number(Number { debug_id: 1, property: Some(num.clone()) }),
                 Rule::Optional(Optional {
+                    debug_id: 2,
                     args: vec![
                         Rule::Whitespace(Whitespace {
-                            debug_id: 2,
+                            debug_id: 3,
                             optional: false
                         }),
                         Rule::Node(NodeRef::Name(foo.clone(), 3)),
@@ -115,7 +119,7 @@ mod tests {
         let s = TokenizerState::new();
         let res = node.borrow().parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Ok((Range::new(0, 5), TokenizerState(9),
-            Some((Range::new(5, 0), ParseError::ExpectedWhitespace(2))))));
+            Some((Range::new(5, 0), ParseError::ExpectedWhitespace(3))))));
         assert_eq!(tokenizer.tokens.len(), 9);
         assert_eq!(&tokenizer.tokens[0].0, &MetaData::StartNode(foo.clone()));
         assert_eq!(&tokenizer.tokens[1].0, &MetaData::F64(num.clone(), 1.0));
