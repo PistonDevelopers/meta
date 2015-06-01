@@ -4,6 +4,7 @@ use {
     ret_err,
     err_update,
     update,
+    DebugId,
     MetaReader,
     ParseResult,
     Rule,
@@ -19,6 +20,8 @@ pub struct SeparatedBy {
     pub optional: bool,
     /// Whether the rule can end with separator.
     pub allow_trail: bool,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
 }
 
 impl SeparatedBy {
@@ -85,6 +88,7 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let sep = SeparatedBy {
+            debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
                 any_characters: Rc::new(",)".into()),
@@ -112,6 +116,7 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let sep = SeparatedBy {
+            debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
                 any_characters: Rc::new(",)".into()),
@@ -140,6 +145,7 @@ mod tests {
         let s = TokenizerState::new();
         let arg: Rc<String> = Rc::new("arg".into());
         let sep = SeparatedBy {
+            debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
                 any_characters: Rc::new(",)".into()),
@@ -168,6 +174,7 @@ mod tests {
         let s = TokenizerState::new();
         let arg: Rc<String> = Rc::new("arg".into());
         let sep = SeparatedBy {
+            debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
                 any_characters: Rc::new(",)".into()),
@@ -203,6 +210,7 @@ mod tests {
         let s = TokenizerState::new();
         let arg: Rc<String> = Rc::new("arg".into());
         let sep = SeparatedBy {
+            debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
                 any_characters: Rc::new(",)".into()),
@@ -239,7 +247,9 @@ mod tests {
         let s = TokenizerState::new();
         let arg: Rc<String> = Rc::new("arg".into());
         let sep = SeparatedBy {
+            debug_id: 0,
             rule: Rule::SeparatedBy(Box::new(SeparatedBy {
+                debug_id: 1,
                 rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                     debug_id: 2,
                     any_characters: Rc::new(",;".into()),

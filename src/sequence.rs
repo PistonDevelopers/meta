@@ -3,6 +3,7 @@ use range::Range;
 use {
     ret_err,
     update,
+    DebugId,
     MetaReader,
     ParseResult,
     Rule,
@@ -11,7 +12,9 @@ use {
 /// Stores information about sequence.
 pub struct Sequence {
     /// The sequential rules.
-    pub args: Vec<Rule>
+    pub args: Vec<Rule>,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
 }
 
 impl Sequence {
