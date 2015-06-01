@@ -40,18 +40,11 @@ impl Token {
         if let Some(range) = read_token::token(&self.text, chars, offset) {
             match &self.property {
                 &Some(ref name) => {
-                    match tokenizer.data(
+                    Ok((range, tokenizer.data(
                         MetaData::Bool(name.clone(), !self.inverted),
                         &state,
                         range
-                    ) {
-                        Err(err) => {
-                            return Err((range, err));
-                        }
-                        Ok(state) => {
-                            return Ok((range, state, None));
-                        }
-                    }
+                    ), None))
                 }
                 _ => {
                     return Ok((range, state.clone(), None))

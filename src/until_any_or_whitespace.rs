@@ -41,14 +41,11 @@ impl UntilAnyOrWhitespace {
                 for c in chars.iter().take(range.length) {
                     text.push(*c);
                 }
-                match tokenizer.data(
+                Ok((range, tokenizer.data(
                     MetaData::String(property.clone(), text),
                     state,
                     range
-                ) {
-                    Err(err) => Err((range, err)),
-                    Ok(state) => Ok((range, state, None)),
-                }
+                ), None))
             } else {
                 Ok((range, state.clone(), None))
             }
