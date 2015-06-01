@@ -46,27 +46,27 @@ impl Display for ParseError {
             &ParseError::NotSupported =>
                 try!(fmt.write_str("This feature is not supported")),
             &ParseError::ExpectedWhitespace(debug_id) =>
-                try!(write!(fmt, "Expected whitespace (debug id `{}`)",
+                try!(write!(fmt, "#{}, Expected whitespace",
                     debug_id)),
             &ParseError::ExpectedSomething(debug_id) =>
-                try!(write!(fmt, "Expected something (debug id `{}`)",
+                try!(write!(fmt, "#{}, Expected something",
                     debug_id)),
             &ParseError::ExpectedNumber(debug_id) =>
-                try!(write!(fmt, "Expected number (debug id `{}`)", debug_id)),
+                try!(write!(fmt, "#{}, Expected number", debug_id)),
             &ParseError::ParseFloatError(ref err, debug_id) =>
                 try!(fmt.write_fmt(format_args!(
-                    "Invalid number format (debug id `{}`): {}", debug_id, err
+                    "#{}, Invalid number format: {}", debug_id, err
                 ))),
             &ParseError::ExpectedToken(ref token, debug_id) =>
-                try!(write!(fmt, "Expected (debug id `{}`): `{}`", debug_id,
+                try!(write!(fmt, "#{}, Expected: `{}`", debug_id,
                     token)),
             &ParseError::ExpectedText(debug_id) =>
-                try!(write!(fmt, "Expected text (debug id `{}`)", debug_id)),
+                try!(write!(fmt, "#{}, Expected text", debug_id)),
             &ParseError::EmptyTextNotAllowed(debug_id) =>
-                try!(write!(fmt, "Empty text not allowed (debug id `{}`)",
+                try!(write!(fmt, "#{}, Empty text not allowed",
                     debug_id)),
             &ParseError::ParseStringError(err, debug_id) =>
-                try!(write!(fmt, "Invalid string format (debug id `{}`): {}",
+                try!(write!(fmt, "#{}, Invalid string format: {}",
                     debug_id, err)),
             &ParseError::ExpectedNode(ref nodes) => {
                 try!(fmt.write_str("Expected nodes: "));
@@ -98,7 +98,7 @@ impl Display for ParseError {
             }
             &ParseError::InvalidRule(msg, debug_id) =>
                 try!(fmt.write_fmt(format_args!(
-                    "Invalid rule (debug id `{}`): {}", debug_id, msg
+                    "#{}, Invalid rule: {}", debug_id, msg
                 ))),
         }
         Ok(())
