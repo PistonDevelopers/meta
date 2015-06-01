@@ -54,17 +54,14 @@ impl Display for ParseError {
             &ParseError::ExpectedNumber(debug_id) =>
                 try!(write!(fmt, "#{}, Expected number", debug_id)),
             &ParseError::ParseFloatError(ref err, debug_id) =>
-                try!(fmt.write_fmt(format_args!(
-                    "#{}, Invalid number format: {}", debug_id, err
-                ))),
+                try!(write!(fmt, "#{}, Invalid number format: {}",
+                    debug_id, err)),
             &ParseError::ExpectedToken(ref token, debug_id) =>
-                try!(write!(fmt, "#{}, Expected: `{}`", debug_id,
-                    token)),
+                try!(write!(fmt, "#{}, Expected: `{}`", debug_id, token)),
             &ParseError::ExpectedText(debug_id) =>
                 try!(write!(fmt, "#{}, Expected text", debug_id)),
             &ParseError::EmptyTextNotAllowed(debug_id) =>
-                try!(write!(fmt, "#{}, Empty text not allowed",
-                    debug_id)),
+                try!(write!(fmt, "#{}, Empty text not allowed", debug_id)),
             &ParseError::ParseStringError(err, debug_id) =>
                 try!(write!(fmt, "#{}, Invalid string format: {}",
                     debug_id, err)),
@@ -81,9 +78,7 @@ impl Display for ParseError {
                 }
             }
             &ParseError::ExpectedPropertyType(ref ty) =>
-                try!(fmt.write_fmt(format_args!(
-                    "Expected property type: {}", ty
-                ))),
+                try!(write!(fmt, "Expected property type: {}", ty)),
             &ParseError::ExpectedMoreProperties(ref props) => {
                 try!(fmt.write_str("Expected more properties: "));
                 let mut tail = false;
@@ -97,9 +92,7 @@ impl Display for ParseError {
                 }
             }
             &ParseError::InvalidRule(msg, debug_id) =>
-                try!(fmt.write_fmt(format_args!(
-                    "#{}, Invalid rule: {}", debug_id, msg
-                ))),
+                try!(write!(fmt, "#{}, Invalid rule: {}", debug_id, msg)),
         }
         Ok(())
     }
