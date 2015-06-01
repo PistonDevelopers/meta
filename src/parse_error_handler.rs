@@ -37,7 +37,7 @@ impl<'b> ParseErrorHandler for ParseStdErr<'b> {
 
         let mut stderr = stderr();
         let mut n = 0;
-        writeln!(&mut stderr, "Error: {}", error).unwrap();
+        writeln!(&mut stderr, "Error {}", error).unwrap();
         for &(r, text) in &self.lines {
             if let Some(intersect) = range.intersect(&r) {
                 writeln!(&mut stderr, "{}: {}", n, text).unwrap();
