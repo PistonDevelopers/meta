@@ -8,7 +8,6 @@ extern crate range;
 pub use whitespace::Whitespace;
 pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
 pub use parse_error::ParseError;
-pub use ty::Type;
 pub use token::Token;
 pub use select::Select;
 pub use node::{ Node, NodeRef, NodeVisit };
@@ -29,7 +28,6 @@ use range::Range;
 
 mod parse_error;
 mod parse_error_handler;
-mod ty;
 mod token;
 mod whitespace;
 mod select;
