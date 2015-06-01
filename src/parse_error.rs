@@ -4,10 +4,7 @@ use std::num::ParseFloatError;
 use read_token::ParseStringError;
 use std::rc::Rc;
 
-use {
-    Type,
-    DebugId
-};
+use DebugId;
 
 /// Errors reporting expected values.
 #[derive(Debug, PartialEq)]
@@ -32,12 +29,6 @@ pub enum ParseError {
     ExpectedToken(Rc<String>, DebugId),
     /// An invalid rule.
     InvalidRule(&'static str, DebugId),
-    /// Expected nodes with other names.
-    ExpectedNode(Vec<String>),
-    /// Expected another propert type.
-    ExpectedPropertyType(Type),
-    /// Reaching end of node, but expected more properties.
-    ExpectedMoreProperties(Vec<String>),
 }
 
 impl Display for ParseError {
@@ -65,32 +56,6 @@ impl Display for ParseError {
             &ParseError::ParseStringError(err, debug_id) =>
                 try!(write!(fmt, "#{}, Invalid string format: {}",
                     debug_id, err)),
-            &ParseError::ExpectedNode(ref nodes) => {
-                try!(fmt.write_str("Expected nodes: "));
-                let mut tail = false;
-                for node in nodes {
-                    if tail {
-                        try!(fmt.write_str(", "));
-                    } else {
-                        tail = true;
-                    }
-                    try!(fmt.write_str(&node));
-                }
-            }
-            &ParseError::ExpectedPropertyType(ref ty) =>
-                try!(write!(fmt, "Expected property type: {}", ty)),
-            &ParseError::ExpectedMoreProperties(ref props) => {
-                try!(fmt.write_str("Expected more properties: "));
-                let mut tail = false;
-                for prop in props {
-                    if tail {
-                        try!(fmt.write_str(", "));
-                    } else {
-                        tail = true;
-                    }
-                    try!(fmt.write_str(prop));
-                }
-            }
             &ParseError::InvalidRule(msg, debug_id) =>
                 try!(write!(fmt, "#{}, Invalid rule: {}", debug_id, msg)),
         }
