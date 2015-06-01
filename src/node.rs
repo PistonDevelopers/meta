@@ -33,14 +33,11 @@ impl Node {
         start_offset: usize
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
-        let mut state = match tokenizer.data(
+        let mut state = tokenizer.data(
             MetaData::StartNode(self.name.clone()),
             state,
             Range::empty(offset)
-        ) {
-            Err(err) => { return Err((Range::new(offset, 0), err)); }
-            Ok(state) => state,
-        };
+        );
         let mut opt_error = None;
         for rule in &self.body {
             state = match rule.parse(tokenizer, &state, chars, offset) {
@@ -52,10 +49,11 @@ impl Node {
             }
         }
         let range = Range::new(start_offset, offset - start_offset);
-        match tokenizer.data(MetaData::EndNode(self.name.clone()), &state, range) {
-            Err(err) => { return Err((range, err)); }
-            Ok(state) => Ok((range, state, opt_error)),
-        }
+        Ok((
+            range,
+            tokenizer.data(MetaData::EndNode(self.name.clone()), &state, range),
+            opt_error
+        ))
     }
 }
 

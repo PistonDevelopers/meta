@@ -2,7 +2,6 @@ use range::Range;
 
 use {
     MetaData,
-    ParseError,
 };
 
 /// Stores all the meta data sequentially.
@@ -19,13 +18,13 @@ impl Tokenizer {
 
     /// Reads meta data.
     pub fn data(&mut self, data: MetaData, state: &TokenizerState, range: Range)
-        -> Result<TokenizerState, ParseError>
+        -> TokenizerState
     {
         if state.0 < self.tokens.len() {
             self.tokens.truncate(state.0);
         }
         self.tokens.push((data, range));
-        Ok(TokenizerState(self.tokens.len()))
+        TokenizerState(self.tokens.len())
     }
 }
 

@@ -41,14 +41,11 @@ impl Text {
                         ParseError::ParseStringError(err, self.debug_id))),
                     Ok(text) => {
                         if let Some(ref property) = self.property {
-                            match tokenizer.data(
+                            Ok((range, tokenizer.data(
                                 MetaData::String(property.clone(), text),
                                 state,
                                 range
-                            ) {
-                                Err(err) => Err((range, err)),
-                                Ok(state) => Ok((range, state, None)),
-                            }
+                            ), None))
                         } else {
                             Ok((range, state.clone(), None))
                         }

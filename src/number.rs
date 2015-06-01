@@ -38,14 +38,11 @@ impl Number {
                     ParseError::ParseFloatError(err, self.debug_id))),
                 Ok(val) => {
                     if let Some(ref property) = self.property {
-                        match tokenizer.data(
+                        Ok((range, tokenizer.data(
                             MetaData::F64(property.clone(), val),
                             state,
                             range
-                        ) {
-                            Err(err) => Err((range, err)),
-                            Ok(state) => Ok((range, state, None)),
-                        }
+                        ), None))
                     } else {
                         Ok((range, state.clone(), None))
                     }
