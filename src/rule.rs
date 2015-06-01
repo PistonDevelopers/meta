@@ -11,13 +11,14 @@ use {
     Node,
     NodeRef,
     NodeVisit,
-    MetaReader,
     ParseError,
     ParseResult,
     Select,
     SeparatedBy,
     Sequence,
     Optional,
+    Tokenizer,
+    TokenizerState,
 };
 
 /// A rule describes how some section of a document should be parsed.
@@ -49,39 +50,37 @@ pub enum Rule {
 
 impl Rule {
     /// Parses rule.
-    pub fn parse<M>(
+    pub fn parse(
         &self,
-        meta_reader: &mut M,
-        state: &M::State,
+        tokenizer: &mut Tokenizer,
+        state: &TokenizerState,
         chars: &[char],
         offset: usize
-    ) -> ParseResult<M::State>
-        where M: MetaReader
-    {
+    ) -> ParseResult<TokenizerState> {
         match self {
             &Rule::Whitespace(ref w) => {
                 w.parse(chars, offset).map(|r| (r, state.clone(), None))
             }
             &Rule::Token(ref t) => {
-                t.parse(meta_reader, state, chars, offset)
+                t.parse(tokenizer, state, chars, offset)
             }
             &Rule::UntilAnyOrWhitespace(ref u) => {
-                u.parse(meta_reader, state, chars, offset)
+                u.parse(tokenizer, state, chars, offset)
             }
             &Rule::Text(ref t) => {
-                t.parse(meta_reader, state, chars, offset)
+                t.parse(tokenizer, state, chars, offset)
             }
             &Rule::Number(ref n) => {
-                n.parse(meta_reader, state, chars, offset)
+                n.parse(tokenizer, state, chars, offset)
             }
             &Rule::Select(ref s) => {
-                s.parse(meta_reader, state, chars, offset)
+                s.parse(tokenizer, state, chars, offset)
             }
             &Rule::Sequence(ref s) => {
-                s.parse(meta_reader, state, chars, offset)
+                s.parse(tokenizer, state, chars, offset)
             }
             &Rule::SeparatedBy(ref s) => {
-                s.parse(meta_reader, state, chars, offset)
+                s.parse(tokenizer, state, chars, offset)
             }
             &Rule::Node(ref p) => {
                 match p {
@@ -93,12 +92,12 @@ impl Rule {
                         ))
                     }
                     &NodeRef::Ref(ref p, _) => {
-                        p.borrow().parse(meta_reader, state, chars, offset)
+                        p.borrow().parse(tokenizer, state, chars, offset)
                     }
                 }
             }
             &Rule::Optional(ref o) => {
-                Ok(o.parse(meta_reader, state, chars, offset))
+                Ok(o.parse(tokenizer, state, chars, offset))
             }
         }
     }

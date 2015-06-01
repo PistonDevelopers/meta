@@ -7,9 +7,10 @@ use {
     update,
     DebugId,
     MetaData,
-    MetaReader,
     ParseResult,
     Rule,
+    Tokenizer,
+    TokenizerState,
 };
 
 /// Stores information about a node.
@@ -24,17 +25,15 @@ pub struct Node {
 
 impl Node {
     /// Parses node.
-    pub fn parse<M>(
+    pub fn parse(
         &self,
-        meta_reader: &mut M,
-        state: &M::State,
+        tokenizer: &mut Tokenizer,
+        state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize
-    ) -> ParseResult<M::State>
-        where M: MetaReader
-    {
+    ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
-        let mut state = match meta_reader.data(
+        let mut state = match tokenizer.data(
             MetaData::StartNode(self.name.clone()),
             state,
             Range::empty(offset)
@@ -44,7 +43,7 @@ impl Node {
         };
         let mut opt_error = None;
         for rule in &self.body {
-            state = match rule.parse(meta_reader, &state, chars, offset) {
+            state = match rule.parse(tokenizer, &state, chars, offset) {
                 Err(err) => { return Err(ret_err(err, opt_error)); }
                 Ok((range, state, err)) => {
                     update(range, err, &mut chars, &mut offset, &mut opt_error);
@@ -53,7 +52,7 @@ impl Node {
             }
         }
         let range = Range::new(start_offset, offset - start_offset);
-        match meta_reader.data(MetaData::EndNode(self.name.clone()), &state, range) {
+        match tokenizer.data(MetaData::EndNode(self.name.clone()), &state, range) {
             Err(err) => { return Err((range, err)); }
             Ok(state) => Ok((range, state, opt_error)),
         }

@@ -5,8 +5,9 @@ use {
     update,
     DebugId,
     ParseError,
-    MetaReader,
     Rule,
+    Tokenizer,
+    TokenizerState,
 };
 
 /// Stores information about optional.
@@ -20,21 +21,20 @@ pub struct Optional {
 impl Optional {
     /// Parse optional.
     /// Returns the old state if any sub rule fails.
-    pub fn parse<M>(
+    pub fn parse(
         &self,
-        meta_reader: &mut M,
-        state: &M::State,
+        tokenizer: &mut Tokenizer,
+        state: &TokenizerState,
         mut chars: &[char],
         mut offset: usize
-    ) -> (Range, M::State, Option<(Range, ParseError)>)
-        where M: MetaReader
-    {
+    ) -> (Range, TokenizerState, Option<(Range, ParseError)>) {
         let start_offset = offset;
         let mut success_state = state.clone();
         let mut opt_error = None;
         for sub_rule in &self.args {
-            success_state = match sub_rule.parse(meta_reader, &success_state,
-                                         chars, offset) {
+            success_state = match sub_rule.parse(
+                tokenizer, &success_state, chars, offset
+            ) {
                 Ok((range, state, err)) => {
                     update(range, err, &mut chars, &mut offset, &mut opt_error);
                     state
