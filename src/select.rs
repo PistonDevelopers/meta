@@ -33,8 +33,8 @@ impl Select {
             match sub_rule.parse(meta_reader, state, chars, offset) {
                 Ok((range, state, err)) => {
                     err_update(err, &mut opt_error);
-                    return Ok((Range::new(offset, range.next_offset()), state,
-                        opt_error));
+                    return Ok((Range::new(offset, range.next_offset() - offset),
+                        state, opt_error));
                 }
                 Err(err) => {
                     err_update(Some(err), &mut opt_error);
