@@ -2,6 +2,7 @@ use std::fmt::{ Display, Formatter };
 use std::fmt::Error as FormatError;
 use std::num::ParseFloatError;
 use read_token::ParseStringError;
+use std::rc::Rc;
 
 use {
     Type,
@@ -28,7 +29,7 @@ pub enum ParseError {
     /// Invalid string format.
     ParseStringError(ParseStringError, DebugId),
     /// Expected token.
-    ExpectedToken(String, DebugId),
+    ExpectedToken(Rc<String>, DebugId),
     /// An invalid rule.
     InvalidRule(&'static str, DebugId),
     /// Expected nodes with other names.

@@ -220,7 +220,8 @@ mod tests {
         };
         let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
         assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3),
-            Some((Range::new(9, 0), ParseError::ExpectedToken(",".into(), 2))))));
+            Some((Range::new(9, 0),
+                ParseError::ExpectedToken(Rc::new(",".into()), 2))))));
         assert_eq!(tokenizer.tokens.len(), 3);
         assert_eq!(&tokenizer.tokens[0].0,
             &MetaData::String(arg.clone(), "a".into()));
