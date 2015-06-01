@@ -3,10 +3,11 @@ use range::Range;
 use {
     err_update,
     DebugId,
-    MetaReader,
     ParseError,
     ParseResult,
     Rule,
+    Tokenizer,
+    TokenizerState,
 };
 
 /// Stores information about select.
@@ -19,18 +20,16 @@ pub struct Select {
 
 impl Select {
     /// Parses select.
-    pub fn parse<M>(
+    pub fn parse(
         &self,
-        meta_reader: &mut M,
-        state: &M::State,
+        tokenizer: &mut Tokenizer,
+        state: &TokenizerState,
         chars: &[char],
         offset: usize
-    ) -> ParseResult<M::State>
-        where M: MetaReader
-    {
+    ) -> ParseResult<TokenizerState> {
         let mut opt_error: Option<(Range, ParseError)> = None;
         for sub_rule in &self.args {
-            match sub_rule.parse(meta_reader, state, chars, offset) {
+            match sub_rule.parse(tokenizer, state, chars, offset) {
                 Ok((range, state, err)) => {
                     err_update(err, &mut opt_error);
                     return Ok((Range::new(offset, range.next_offset() - offset),

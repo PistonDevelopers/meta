@@ -5,9 +5,10 @@ use {
     err_update,
     update,
     DebugId,
-    MetaReader,
     ParseResult,
     Rule,
+    Tokenizer,
+    TokenizerState,
 };
 
 /// Stores inforamtion about separated by.
@@ -26,21 +27,19 @@ pub struct SeparatedBy {
 
 impl SeparatedBy {
     /// Parses rule repeatedly separated by another rule.
-    pub fn parse<M>(
+    pub fn parse(
         &self,
-        meta_reader: &mut M,
-        state: &M::State,
+        tokenizer: &mut Tokenizer,
+        state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize
-    ) -> ParseResult<M::State>
-        where M: MetaReader
-    {
+    ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();
         let mut first = true;
         let mut opt_error = None;
         loop {
-            state = match self.rule.parse(meta_reader, &state, chars, offset) {
+            state = match self.rule.parse(tokenizer, &state, chars, offset) {
                 Err(err) => {
                     match (first, self.optional, self.allow_trail) {
                           (true, false, _)
@@ -59,7 +58,7 @@ impl SeparatedBy {
                     state
                 }
             };
-            state = match self.by.parse(meta_reader, &state, chars, offset) {
+            state = match self.by.parse(tokenizer, &state, chars, offset) {
                 Err(err) => {
                     err_update(Some(err), &mut opt_error);
                     break;

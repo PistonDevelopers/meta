@@ -5,9 +5,10 @@ use std::rc::Rc;
 use {
     DebugId,
     MetaData,
-    MetaReader,
     ParseError,
     ParseResult,
+    Tokenizer,
+    TokenizerState,
 };
 
 /// Stores information about text.
@@ -22,15 +23,13 @@ pub struct Text {
 
 impl Text {
     /// Parses text.
-    pub fn parse<M>(
+    pub fn parse(
         &self,
-        meta_reader: &mut M,
-        state: &M::State,
+        tokenizer: &mut Tokenizer,
+        state: &TokenizerState,
         chars: &[char],
         offset: usize
-    ) -> ParseResult<M::State>
-        where M: MetaReader
-    {
+    ) -> ParseResult<TokenizerState> {
         if let Some(range) = read_token::string(chars, offset) {
             if !self.allow_empty && range.length == 2 {
                 Err((range, ParseError::EmptyTextNotAllowed(self.debug_id)))
@@ -42,7 +41,7 @@ impl Text {
                         ParseError::ParseStringError(err, self.debug_id))),
                     Ok(text) => {
                         if let Some(ref property) = self.property {
-                            match meta_reader.data(
+                            match tokenizer.data(
                                 MetaData::String(property.clone(), text),
                                 state,
                                 range

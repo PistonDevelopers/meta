@@ -19,7 +19,6 @@ pub use until_any_or_whitespace::UntilAnyOrWhitespace;
 pub use text::Text;
 pub use number::Number;
 pub use rule::Rule;
-pub use meta_reader::MetaReader;
 pub use tokenizer::{ Tokenizer, TokenizerState };
 
 /// The type of debug id used to track down errors in rules.
@@ -42,7 +41,6 @@ mod until_any_or_whitespace;
 mod text;
 mod number;
 mod rule;
-mod meta_reader;
 mod tokenizer;
 
 /// A parse result succeeds with a new state,

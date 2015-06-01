@@ -5,9 +5,10 @@ use std::rc::Rc;
 use {
     DebugId,
     MetaData,
-    MetaReader,
     ParseError,
     ParseResult,
+    Tokenizer,
+    TokenizerState,
 };
 
 /// Contains information about number.
@@ -20,15 +21,13 @@ pub struct Number {
 
 impl Number {
     /// Parses number.
-    pub fn parse<M>(
+    pub fn parse(
         &self,
-        meta_reader: &mut M,
-        state: &M::State,
+        tokenizer: &mut Tokenizer,
+        state: &TokenizerState,
         chars: &[char],
         offset: usize
-    ) -> ParseResult<M::State>
-        where M: MetaReader
-    {
+    ) -> ParseResult<TokenizerState> {
         if let Some(range) = read_token::number(chars, offset) {
             let mut text = String::with_capacity(range.length);
             for c in chars.iter().take(range.length) {
@@ -39,7 +38,7 @@ impl Number {
                     ParseError::ParseFloatError(err, self.debug_id))),
                 Ok(val) => {
                     if let Some(ref property) = self.property {
-                        match meta_reader.data(
+                        match tokenizer.data(
                             MetaData::F64(property.clone(), val),
                             state,
                             range

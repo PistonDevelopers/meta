@@ -4,9 +4,10 @@ use std::rc::Rc;
 use {
     DebugId,
     MetaData,
-    MetaReader,
     ParseError,
     ParseResult,
+    Tokenizer,
+    TokenizerState,
 };
 
 /// Stores information about reading until whitespace or any of some character.
@@ -23,15 +24,13 @@ pub struct UntilAnyOrWhitespace {
 
 impl UntilAnyOrWhitespace {
     /// Parses until whitespace or any specified characters.
-    pub fn parse<M>(
+    pub fn parse(
         &self,
-        meta_reader: &mut M,
-        state: &M::State,
+        tokenizer: &mut Tokenizer,
+        state: &TokenizerState,
         chars: &[char],
         offset: usize
-    ) -> ParseResult<M::State>
-        where M: MetaReader
-    {
+    ) -> ParseResult<TokenizerState> {
         let (range, _) = read_token::until_any_or_whitespace(
             &self.any_characters, chars, offset);
         if range.length == 0 && !self.optional {
@@ -42,7 +41,7 @@ impl UntilAnyOrWhitespace {
                 for c in chars.iter().take(range.length) {
                     text.push(*c);
                 }
-                match meta_reader.data(
+                match tokenizer.data(
                     MetaData::String(property.clone(), text),
                     state,
                     range

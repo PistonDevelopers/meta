@@ -4,9 +4,10 @@ use {
     ret_err,
     update,
     DebugId,
-    MetaReader,
     ParseResult,
     Rule,
+    Tokenizer,
+    TokenizerState,
 };
 
 /// Stores information about sequence.
@@ -20,20 +21,18 @@ pub struct Sequence {
 impl Sequence {
     /// Parses sequence.
     /// Fails if any sub rule fails.
-    pub fn parse<M>(
+    pub fn parse(
         &self,
-        meta_reader: &mut M,
-        state: &M::State,
+        tokenizer: &mut Tokenizer,
+        state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize
-    ) -> ParseResult<M::State>
-        where M: MetaReader
-    {
+    ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();
         let mut opt_error = None;
         for sub_rule in &self.args {
-            state = match sub_rule.parse(meta_reader, &state, chars, offset) {
+            state = match sub_rule.parse(tokenizer, &state, chars, offset) {
                 Ok((range, state, err)) => {
                     update(range, err, &mut chars, &mut offset, &mut opt_error);
                     state

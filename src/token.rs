@@ -5,9 +5,10 @@ use std::rc::Rc;
 use {
     DebugId,
     MetaData,
-    MetaReader,
     ParseError,
     ParseResult,
+    Tokenizer,
+    TokenizerState,
 };
 
 /// Stores information about token.
@@ -29,19 +30,17 @@ impl Token {
     /// If the meta reader fails setting the property the error is handled.
     /// If the token is not linked to any property,
     /// the same state will be returned.
-    pub fn parse<M>(
+    pub fn parse(
         &self,
-        meta_reader: &mut M,
-        state: &M::State,
+        tokenizer: &mut Tokenizer,
+        state: &TokenizerState,
         chars: &[char],
         offset: usize
-    ) -> ParseResult<M::State>
-        where M: MetaReader
-    {
+    ) -> ParseResult<TokenizerState> {
         if let Some(range) = read_token::token(&self.text, chars, offset) {
             match &self.property {
                 &Some(ref name) => {
-                    match meta_reader.data(
+                    match tokenizer.data(
                         MetaData::Bool(name.clone(), !self.inverted),
                         &state,
                         range
