@@ -36,7 +36,10 @@ impl Lines {
             let len = chars.iter()
                 .take_while(|&c| *c != '\n' && c.is_whitespace())
                 .count();
-            if len == chars.len() { break; }
+            if len == chars.len() {
+                offset += len;
+                break;
+            }
             else if chars[len] == '\n' {
                 chars = &chars[len + 1..];
                 offset += len + 1;
@@ -51,5 +54,64 @@ impl Lines {
             }
         }
         Ok((Range::new(start_offset, offset - start_offset), state, opt_error))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::*;
+    use range::Range;
+    use std::rc::Rc;
+
+    #[test]
+    fn fail() {
+        let text = "
+1
+2
+
+3
+
+
+\"error\"
+4
+        ";
+        let chars: Vec<char> = text.chars().collect();
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let lines = Lines {
+            debug_id: 0,
+            rule: Rule::Number(Number {
+                debug_id: 1,
+                property: None,
+            }),
+        };
+        let res = lines.parse(&mut tokenizer, &s, &chars, 0);
+        assert_eq!(res, Err((Range::new(10, 0), ParseError::ExpectedNumber(1))));
+    }
+
+    #[test]
+    fn success() {
+        let text = "
+1
+2
+
+3
+
+
+4
+ ";
+        let chars: Vec<char> = text.chars().collect();
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let val: Rc<String> = Rc::new("val".into());
+        let lines = Lines {
+            debug_id: 0,
+            rule: Rule::Number(Number {
+                debug_id: 1,
+                property: Some(val.clone()),
+            }),
+        };
+        let res = lines.parse(&mut tokenizer, &s, &chars, 0);
+        assert_eq!(res, Ok((Range::new(0, 13), TokenizerState(4), None)));
     }
 }
