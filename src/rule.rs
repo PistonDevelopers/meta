@@ -15,6 +15,7 @@ use {
     ParseResult,
     Select,
     SeparatedBy,
+    Lines,
     Sequence,
     Optional,
     Tokenizer,
@@ -42,6 +43,8 @@ pub enum Rule {
     Sequence(Sequence),
     /// Repeat rule separated by another rule.
     SeparatedBy(Box<SeparatedBy>),
+    /// Repeat rule separated by one or more lines.
+    Lines(Box<Lines>),
     /// Read node.
     Node(NodeRef),
     /// Read optional.
@@ -81,6 +84,9 @@ impl Rule {
             }
             &Rule::SeparatedBy(ref s) => {
                 s.parse(tokenizer, state, chars, offset)
+            }
+            &Rule::Lines(ref l) => {
+                l.parse(tokenizer, state, chars, offset)
             }
             &Rule::Node(ref p) => {
                 match p {
@@ -160,6 +166,9 @@ impl Rule {
             &mut Rule::SeparatedBy(ref mut s) => {
                 s.rule.update_refs(refs);
                 s.by.update_refs(refs);
+            }
+            &mut Rule::Lines(ref mut l) => {
+                l.rule.update_refs(refs);
             }
             &mut Rule::Optional(ref mut o) => {
                 for sub_rule in &mut o.args {
