@@ -17,6 +17,7 @@ pub use separated_by::SeparatedBy;
 pub use until_any_or_whitespace::UntilAnyOrWhitespace;
 pub use text::Text;
 pub use number::Number;
+pub use lines::Lines;
 pub use rule::Rule;
 pub use tokenizer::{ Tokenizer, TokenizerState };
 
@@ -38,6 +39,7 @@ mod separated_by;
 mod until_any_or_whitespace;
 mod text;
 mod number;
+mod lines;
 mod rule;
 mod tokenizer;
 
