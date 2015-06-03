@@ -13,6 +13,8 @@ pub enum ParseError {
     NotSupported,
     /// Whitespace is required.
     ExpectedWhitespace(DebugId),
+    /// New line is required.
+    ExpectedNewLine(DebugId),
     /// Something is required.
     ExpectedSomething(DebugId),
     /// Expected number.
@@ -38,6 +40,9 @@ impl Display for ParseError {
                 try!(fmt.write_str("This feature is not supported")),
             &ParseError::ExpectedWhitespace(debug_id) =>
                 try!(write!(fmt, "#{}, Expected whitespace",
+                    debug_id)),
+            &ParseError::ExpectedNewLine(debug_id) =>
+                try!(write!(fmt, "#{}, Expected new line",
                     debug_id)),
             &ParseError::ExpectedSomething(debug_id) =>
                 try!(write!(fmt, "#{}, Expected something",

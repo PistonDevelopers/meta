@@ -4,6 +4,7 @@ use {
     ret_err,
     update,
     DebugId,
+    ParseError,
     ParseResult,
     Rule,
     Tokenizer,
@@ -33,6 +34,7 @@ impl Lines {
         let mut offset = start_offset;
         let mut state = state.clone();
         let mut opt_error = None;
+        let mut new_lines = true;
         loop {
             let len = chars.iter()
                 .take_while(|&c| *c != '\n' && c.is_whitespace())
@@ -40,18 +42,36 @@ impl Lines {
             if len == chars.len() {
                 offset += len;
                 break;
-            }
-            else if chars[len] == '\n' {
+            } else if chars[len] == '\n' {
                 chars = &chars[len + 1..];
                 offset += len + 1;
+                new_lines |= true;
             } else {
-                state = match self.rule.parse(tokenizer, &state, chars, offset) {
-                    Err(err) => { return Err(ret_err(err, opt_error)); }
-                    Ok((range, state, err)) => {
-                        update(range, err, &mut chars, &mut offset, &mut opt_error);
-                        state
-                    }
-                };
+                if new_lines {
+                    state = match self.rule.parse(tokenizer, &state, chars, offset) {
+                        Err(err) => { return Err(ret_err(err, opt_error)); }
+                        Ok((range, state, err)) => {
+                            // Find whether a new line occured at the end.
+                            // If it did, we do not require a new line before
+                            // reading the rule again.
+                            let end = range.next_offset() - offset;
+                            let last_new_line = chars[..end].iter()
+                                .rev()
+                                .take_while(|&c| *c != '\n' && c.is_whitespace())
+                                .count();
+                            new_lines =
+                                if end < last_new_line + 1
+                                || chars[end - last_new_line - 1] != '\n' { false }
+                                else { true };
+                            update(range, err, &mut chars, &mut offset, &mut opt_error);
+                            state
+                        }
+                    };
+                } else {
+                    let err = (Range::new(offset, 0),
+                        ParseError::ExpectedNewLine(self.debug_id));
+                    return Err(ret_err(err, opt_error));
+                }
             }
         }
         Ok((Range::new(start_offset, offset - start_offset), state, opt_error))
@@ -88,6 +108,40 @@ mod tests {
         };
         let res = lines.parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Err((Range::new(10, 0), ParseError::ExpectedNumber(1))));
+    }
+
+    #[test]
+    fn fails_same_line() {
+        let text = "
+1
+2
+
+3 4
+
+5
+ ";
+        let chars: Vec<char> = text.chars().collect();
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let val: Rc<String> = Rc::new("val".into());
+        let lines = Lines {
+            debug_id: 0,
+            rule: Rule::Sequence(Sequence {
+                debug_id: 1,
+                args: vec![
+                    Rule::Number(Number {
+                        debug_id: 1,
+                        property: Some(val.clone()),
+                    }),
+                    Rule::Whitespace(Whitespace {
+                        debug_id: 2,
+                        optional: true,
+                    })
+                ]
+            }),
+        };
+        let res = lines.parse(&mut tokenizer, &s, &chars, 0);
+        assert_eq!(res, Err((Range::new(8, 0), ParseError::ExpectedNewLine(0))));
     }
 
     #[test]
