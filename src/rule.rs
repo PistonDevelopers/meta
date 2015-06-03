@@ -121,35 +121,48 @@ impl Rule {
     pub fn update_refs(&mut self, refs: &[(Rc<String>, Rc<RefCell<Node>>)]) {
         match self {
             &mut Rule::Node(ref mut p) => {
-                *p = {
-                    match p {
-                        &mut NodeRef::Name(ref name, _) => {
-                            // Look through references and update if correct name
-                            // is found.
-                            let mut found: Option<Rc<RefCell<Node>>> = None;
-                            for r in refs {
-                                if &**name == &*r.0 {
-                                    found = Some(r.1.clone());
-                                }
-                            }
-                            match found {
-                                None => { return; }
-                                Some(r) =>
-                                    NodeRef::Ref(r, NodeVisit::Unvisited)
+                use std::cell::BorrowState;
+
+                *p = match p {
+                    &mut NodeRef::Name(ref name, _) => {
+                        // Look through references and update if correct name
+                        // is found.
+                        let mut found: Option<Rc<RefCell<Node>>> = None;
+                        for r in refs {
+                            if &**name == &*r.0 {
+                                found = Some(r.1.clone());
                             }
                         }
-                        &mut NodeRef::Ref(ref mut p, ref mut visited) => {
-                            // Update the sub rules of the reference,
-                            // but only if it has not been visited.
-                            if let NodeVisit::Unvisited = *visited {
-                                *visited = NodeVisit::Visited;
-                                p.borrow_mut().rule.update_refs(refs);
-                                return;
-                            } else {
-                                return;
+                        match found {
+                            None => { return; }
+                            Some(r) => {
+                                NodeRef::Ref(r, NodeVisit::Unvisited)
                             }
                         }
                     }
+                    &mut NodeRef::Ref(ref mut p, ref mut visited) => {
+                        // Update the sub rules of the reference,
+                        // but only if it has not been visited.
+                        if let NodeVisit::Unvisited = *visited {
+                            *visited = NodeVisit::Visited;
+                            if p.borrow_state() == BorrowState::Unused {
+                                p.borrow_mut().rule.update_refs(refs);
+                            }
+                        }
+                        return;
+                    }
+                };
+                // Make sure to visit the referenced rule when replacing a name.
+                if let &mut NodeRef::Ref(ref mut p, ref mut visited) = p {
+                    // Update the sub rules of the reference,
+                    // but only if it has not been visited.
+                    if let NodeVisit::Unvisited = *visited {
+                        *visited = NodeVisit::Visited;
+                        if p.borrow_state() == BorrowState::Unused {
+                            p.borrow_mut().rule.update_refs(refs);
+                        }
+                    }
+                    return;
                 }
             }
             &mut Rule::Whitespace(_) => {}
