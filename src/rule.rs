@@ -24,6 +24,7 @@ use {
 };
 
 /// A rule describes how some section of a document should be parsed.
+#[derive(Clone)]
 pub enum Rule {
     /// Read whitespace.
     Whitespace(Whitespace),

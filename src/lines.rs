@@ -11,6 +11,7 @@ use {
 };
 
 /// Stores information about lines.
+#[derive(Clone)]
 pub struct Lines {
     /// The rule to read lines.
     /// This can be a multi-line rule.

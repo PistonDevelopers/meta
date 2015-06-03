@@ -11,6 +11,7 @@ use {
 };
 
 /// Stores information about reading until whitespace or any of some character.
+#[derive(Clone)]
 pub struct UntilAnyOrWhitespace {
     /// The characters to stop at.
     pub any_characters: Rc<String>,
