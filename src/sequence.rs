@@ -11,6 +11,7 @@ use {
 };
 
 /// Stores information about sequence.
+#[derive(Clone)]
 pub struct Sequence {
     /// The sequential rules.
     pub args: Vec<Rule>,

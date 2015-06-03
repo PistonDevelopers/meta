@@ -12,6 +12,7 @@ use {
 };
 
 /// Stores information about text.
+#[derive(Clone)]
 pub struct Text {
     /// Whether to allow empty string.
     pub allow_empty: bool,

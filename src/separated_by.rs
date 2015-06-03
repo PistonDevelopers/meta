@@ -12,6 +12,7 @@ use {
 };
 
 /// Stores inforamtion about separated by.
+#[derive(Clone)]
 pub struct SeparatedBy {
     /// The rule to separate.
     pub rule: Rule,

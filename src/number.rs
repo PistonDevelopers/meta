@@ -12,6 +12,7 @@ use {
 };
 
 /// Contains information about number.
+#[derive(Clone)]
 pub struct Number {
     /// The property to set.
     pub property: Option<Rc<String>>,

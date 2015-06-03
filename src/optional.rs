@@ -11,6 +11,7 @@ use {
 };
 
 /// Stores information about optional.
+#[derive(Clone)]
 pub struct Optional {
     /// The optional rule.
     pub rule: Rule,

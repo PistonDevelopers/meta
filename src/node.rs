@@ -56,6 +56,7 @@ impl Node {
 }
 
 /// A node reference.
+#[derive(Clone)]
 pub enum NodeRef {
     /// Points to a node by name.
     Name(Rc<String>, DebugId),
@@ -65,6 +66,7 @@ pub enum NodeRef {
 }
 
 /// Tells whether a node is visited when updated.
+#[derive(Clone)]
 pub enum NodeVisit {
     /// The node is not being visited.
     Unvisited,
