@@ -1,4 +1,5 @@
 #![deny(missing_docs)]
+#![feature(std_misc)]
 
 //! Meta parsing and encoding for data oriented design
 
