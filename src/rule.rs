@@ -5,6 +5,7 @@ use std::cell::RefCell;
 use {
     Whitespace,
     Token,
+    UntilAny,
     UntilAnyOrWhitespace,
     Text,
     Number,
@@ -28,7 +29,9 @@ pub enum Rule {
     Whitespace(Whitespace),
     /// Match against a token.
     Token(Token),
-    /// Read until any or whitespace.
+    /// Reads until any character.
+    UntilAny(UntilAny),
+    /// Read until any character or whitespace.
     UntilAnyOrWhitespace(UntilAnyOrWhitespace),
     /// Read text.
     Text(Text),
@@ -66,6 +69,9 @@ impl Rule {
             }
             &Rule::Token(ref t) => {
                 t.parse(tokenizer, state, chars, offset)
+            }
+            &Rule::UntilAny(ref u) => {
+                u.parse(tokenizer, state, chars, offset)
             }
             &Rule::UntilAnyOrWhitespace(ref u) => {
                 u.parse(tokenizer, state, chars, offset)
@@ -150,6 +156,7 @@ impl Rule {
             }
             &mut Rule::Whitespace(_) => {}
             &mut Rule::Token(_) => {}
+            &mut Rule::UntilAny(_) => {}
             &mut Rule::UntilAnyOrWhitespace(_) => {}
             &mut Rule::Text(_) => {}
             &mut Rule::Number(_) => {}
