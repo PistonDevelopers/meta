@@ -36,21 +36,19 @@ impl<'b> ParseErrorHandler for ParseStdErr<'b> {
         use std::io::{ stderr, Write };
 
         let mut stderr = stderr();
-        let mut n = 0;
         writeln!(&mut stderr, "Error {}", error).unwrap();
-        for &(r, text) in &self.lines {
+        for (i, &(r, text)) in self.lines.iter().enumerate() {
             if let Some(intersect) = range.ends_intersect(&r) {
-                writeln!(&mut stderr, "{}: {}", n, text).unwrap();
+                writeln!(&mut stderr, "{}: {}", i + 1, text).unwrap();
                 if intersect.offset > r.offset {
-                    write!(&mut stderr, "{}: ", n).unwrap();
-                    let n = intersect.offset - r.offset;
-                    for _ in 0 .. n {
+                    write!(&mut stderr, "{}: ", i + 1).unwrap();
+                    let i = intersect.offset - r.offset;
+                    for _ in 0 .. i {
                         write!(&mut stderr, " ").unwrap();
                     }
                     writeln!(&mut stderr, "^").unwrap();
                 }
             }
-            n += 1;
         }
     }
 }
