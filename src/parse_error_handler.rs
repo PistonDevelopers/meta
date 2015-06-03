@@ -18,7 +18,7 @@ impl<'a> ParseStdErr<'a> {
     pub fn new(text: &'a str) -> ParseStdErr<'a> {
         let mut start = 0;
         let mut lines = vec![];
-        for line in text.lines() {
+        for line in text.split('\n') {
             let length = line.len();
             lines.push((Range::new(start, length), line));
             // Lines are separated by '\n'.
@@ -44,6 +44,7 @@ impl<'b> ParseErrorHandler for ParseStdErr<'b> {
             for (i, &(r, _)) in err_handler.lines.iter().enumerate() {
                 if let Some(intersect) = range.ends_intersect(&r) {
                     first_line = Some((i, intersect));
+                    break;
                 }
             }
             first_line
