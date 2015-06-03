@@ -17,8 +17,8 @@ use {
 pub struct Node {
     /// The name of the node.
     pub name: Rc<String>,
-    /// The body of the node.
-    pub body: Vec<Rule>,
+    /// The rule of the node.
+    pub rule: Rule,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
 }
@@ -39,15 +39,13 @@ impl Node {
             Range::empty(offset)
         );
         let mut opt_error = None;
-        for rule in &self.body {
-            state = match rule.parse(tokenizer, &state, chars, offset) {
-                Err(err) => { return Err(ret_err(err, opt_error)); }
-                Ok((range, state, err)) => {
-                    update(range, err, &mut chars, &mut offset, &mut opt_error);
-                    state
-                }
+        state = match self.rule.parse(tokenizer, &state, chars, offset) {
+            Err(err) => { return Err(ret_err(err, opt_error)); }
+            Ok((range, state, err)) => {
+                update(range, err, &mut chars, &mut offset, &mut opt_error);
+                state
             }
-        }
+        };
         let range = Range::new(start_offset, offset - start_offset);
         Ok((
             range,
@@ -89,26 +87,33 @@ mod tests {
         let node = Rc::new(RefCell::new(Node {
             debug_id: 0,
             name: foo.clone(),
-            body: vec![
-                Rule::Number(Number { debug_id: 1, property: Some(num.clone()) }),
-                Rule::Optional(Optional {
-                    debug_id: 2,
-                    args: vec![
-                        Rule::Whitespace(Whitespace {
-                            debug_id: 3,
-                            optional: false
+            rule: Rule::Sequence(Sequence {
+                debug_id: 1,
+                args: vec![
+                    Rule::Number(Number {
+                        debug_id: 2,
+                        property: Some(num.clone())
+                    }),
+                    Rule::Optional(Box::new(Optional {
+                        debug_id: 3,
+                        rule: Rule::Sequence(Sequence {
+                            debug_id: 4,
+                            args: vec![
+                                Rule::Whitespace(Whitespace {
+                                    debug_id: 3,
+                                    optional: false
+                                }),
+                                Rule::Node(NodeRef::Name(foo.clone(), 3)),
+                            ]
                         }),
-                        Rule::Node(NodeRef::Name(foo.clone(), 3)),
-                    ]
-                })
-            ]
+                    })),
+                ],
+            }),
         }));
 
         // Replace self referencing names with direct references.
         let refs = vec![(foo.clone(), node.clone())];
-        for sub_rule in &mut node.borrow_mut().body {
-            sub_rule.update_refs(&refs);
-        }
+        node.borrow_mut().rule.update_refs(&refs);
 
         let text = "1 2 3";
         let chars: Vec<char> = text.chars().collect();

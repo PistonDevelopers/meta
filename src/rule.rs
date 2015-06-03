@@ -51,7 +51,7 @@ pub enum Rule {
     /// Read node.
     Node(NodeRef),
     /// Read optional.
-    Optional(Optional),
+    Optional(Box<Optional>),
 }
 
 impl Rule {
@@ -143,9 +143,7 @@ impl Rule {
                             // but only if it has not been visited.
                             if let NodeVisit::Unvisited = *visited {
                                 *visited = NodeVisit::Visited;
-                                for sub_rule in &mut p.borrow_mut().body {
-                                    sub_rule.update_refs(refs);
-                                }
+                                p.borrow_mut().rule.update_refs(refs);
                                 return;
                             } else {
                                 return;
@@ -178,9 +176,7 @@ impl Rule {
                 l.rule.update_refs(refs);
             }
             &mut Rule::Optional(ref mut o) => {
-                for sub_rule in &mut o.args {
-                    sub_rule.update_refs(refs);
-                }
+                o.rule.update_refs(refs);
             }
         }
     }
