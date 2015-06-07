@@ -48,6 +48,33 @@ mod lines;
 mod rule;
 mod tokenizer;
 
+/// Parses text with rules.
+pub fn parse(rules: &Rule, text: &str)
+-> Result<Vec<(MetaData, Range)>, (Range, ParseError)> {
+    let chars: Vec<char> = text.chars().collect();
+    let mut tokenizer = Tokenizer::new();
+    let s = TokenizerState::new();
+    let res = rules.parse(&mut tokenizer, &s, &chars, 0);
+    match res {
+        Ok((range, s, Some((err_range, err)))) => {
+            // Report error if did not reach the end of text.
+            if range.next_offset() < text.len() {
+                Err((err_range, err))
+            } else {
+                tokenizer.tokens.truncate(s.0);
+                Ok(tokenizer.tokens)
+            }
+        }
+        Ok((_, s, None)) => {
+            tokenizer.tokens.truncate(s.0);
+            Ok(tokenizer.tokens)
+        }
+        Err((err_range, err)) => {
+            Err((err_range, err))
+        }
+    }
+}
+
 /// A parse result succeeds with a new state,
 /// plus an optional error to replace other errors if it is deeper.
 /// The deepest error is likely the most useful.
