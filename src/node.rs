@@ -77,7 +77,6 @@ pub enum NodeVisit {
 #[cfg(test)]
 mod tests {
     use super::super::*;
-    use range::Range;
     use std::rc::Rc;
     use std::cell::RefCell;
 
@@ -115,24 +114,20 @@ mod tests {
 
         // Replace self referencing names with direct references.
         let refs = vec![(foo.clone(), node.clone())];
-        node.borrow_mut().rule.update_refs(&refs);
+        let mut rules = Rule::Node(NodeRef::Name(foo.clone(), 0));
+        rules.update_refs(&refs);
 
         let text = "1 2 3";
-        let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
-        let s = TokenizerState::new();
-        let res = node.borrow().parse(&mut tokenizer, &s, &chars, 0);
-        assert_eq!(res, Ok((Range::new(0, 5), TokenizerState(9),
-            Some((Range::new(5, 0), ParseError::ExpectedWhitespace(3))))));
-        assert_eq!(tokenizer.tokens.len(), 9);
-        assert_eq!(&tokenizer.tokens[0].0, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&tokenizer.tokens[1].0, &MetaData::F64(num.clone(), 1.0));
-        assert_eq!(&tokenizer.tokens[2].0, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&tokenizer.tokens[3].0, &MetaData::F64(num.clone(), 2.0));
-        assert_eq!(&tokenizer.tokens[4].0, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&tokenizer.tokens[5].0, &MetaData::F64(num.clone(), 3.0));
-        assert_eq!(&tokenizer.tokens[6].0, &MetaData::EndNode(foo.clone()));
-        assert_eq!(&tokenizer.tokens[7].0, &MetaData::EndNode(foo.clone()));
-        assert_eq!(&tokenizer.tokens[8].0, &MetaData::EndNode(foo.clone()));
+        let data = parse(&rules, text).unwrap();
+        assert_eq!(data.len(), 9);
+        assert_eq!(&data[0].0, &MetaData::StartNode(foo.clone()));
+        assert_eq!(&data[1].0, &MetaData::F64(num.clone(), 1.0));
+        assert_eq!(&data[2].0, &MetaData::StartNode(foo.clone()));
+        assert_eq!(&data[3].0, &MetaData::F64(num.clone(), 2.0));
+        assert_eq!(&data[4].0, &MetaData::StartNode(foo.clone()));
+        assert_eq!(&data[5].0, &MetaData::F64(num.clone(), 3.0));
+        assert_eq!(&data[6].0, &MetaData::EndNode(foo.clone()));
+        assert_eq!(&data[7].0, &MetaData::EndNode(foo.clone()));
+        assert_eq!(&data[8].0, &MetaData::EndNode(foo.clone()));
     }
 }
