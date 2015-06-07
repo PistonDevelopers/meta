@@ -98,6 +98,6 @@ mod tests {
         assert_eq!(res, Ok((Range::new(0, 1), TokenizerState(1),
             Some((Range::new(0, 0), ParseError::ExpectedText(1))))));
         assert_eq!(tokenizer.tokens.len(), 1);
-        assert_eq!(&tokenizer.tokens[0].0, &MetaData::F64(num.clone(), 2.0));
+        assert_eq!(&tokenizer.tokens[0].1, &MetaData::F64(num.clone(), 2.0));
     }
 }
