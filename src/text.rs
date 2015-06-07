@@ -112,7 +112,7 @@ mod tests {
         let res = text.parse(&mut tokenizer, &s, &chars[4..], 4);
         assert_eq!(res, Ok((Range::new(4, 7), TokenizerState(1), None)));
         assert_eq!(tokenizer.tokens.len(), 1);
-        assert_eq!(&tokenizer.tokens[0].0,
+        assert_eq!(&tokenizer.tokens[0].1,
             &MetaData::String(foo.clone(), "hello".into()));
     }
 }

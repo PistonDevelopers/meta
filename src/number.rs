@@ -92,6 +92,6 @@ mod tests {
         let res = number.parse(&mut tokenizer, &s, &chars[15..], 15);
         assert_eq!(res, Ok((Range::new(15, 6), TokenizerState(1), None)));
         assert_eq!(tokenizer.tokens.len(), 1);
-        assert_eq!(&tokenizer.tokens[0].0, &MetaData::F64(val.clone(), 10.0e1));
+        assert_eq!(&tokenizer.tokens[0].1, &MetaData::F64(val.clone(), 10.0e1));
     }
 }

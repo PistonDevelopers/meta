@@ -7,7 +7,7 @@ use {
 /// Stores all the meta data sequentially.
 pub struct Tokenizer {
     /// The read tokens.
-    pub tokens: Vec<(MetaData, Range)>
+    pub tokens: Vec<(Range, MetaData)>
 }
 
 impl Tokenizer {
@@ -23,7 +23,7 @@ impl Tokenizer {
         if state.0 < self.tokens.len() {
             self.tokens.truncate(state.0);
         }
-        self.tokens.push((data, range));
+        self.tokens.push((range, data));
         TokenizerState(self.tokens.len())
     }
 }

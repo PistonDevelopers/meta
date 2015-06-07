@@ -50,7 +50,7 @@ mod tokenizer;
 
 /// Parses text with rules.
 pub fn parse(rules: &Rule, text: &str)
--> Result<Vec<(MetaData, Range)>, (Range, ParseError)> {
+-> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
     let chars: Vec<char> = text.chars().collect();
     let mut tokenizer = Tokenizer::new();
     let s = TokenizerState::new();

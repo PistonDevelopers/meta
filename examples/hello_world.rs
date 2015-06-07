@@ -29,7 +29,7 @@ fn main() {
     });
     let data = parse(&rules, text).unwrap();
     assert_eq!(data.len(), 1);
-    if let &MetaData::String(_, ref hello) = &data[0].0 {
+    if let &MetaData::String(_, ref hello) = &data[0].1 {
         println!("{}", hello);
     }
 }

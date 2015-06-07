@@ -120,14 +120,14 @@ mod tests {
         let text = "1 2 3";
         let data = parse(&rules, text).unwrap();
         assert_eq!(data.len(), 9);
-        assert_eq!(&data[0].0, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&data[1].0, &MetaData::F64(num.clone(), 1.0));
-        assert_eq!(&data[2].0, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&data[3].0, &MetaData::F64(num.clone(), 2.0));
-        assert_eq!(&data[4].0, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&data[5].0, &MetaData::F64(num.clone(), 3.0));
-        assert_eq!(&data[6].0, &MetaData::EndNode(foo.clone()));
-        assert_eq!(&data[7].0, &MetaData::EndNode(foo.clone()));
-        assert_eq!(&data[8].0, &MetaData::EndNode(foo.clone()));
+        assert_eq!(&data[0].1, &MetaData::StartNode(foo.clone()));
+        assert_eq!(&data[1].1, &MetaData::F64(num.clone(), 1.0));
+        assert_eq!(&data[2].1, &MetaData::StartNode(foo.clone()));
+        assert_eq!(&data[3].1, &MetaData::F64(num.clone(), 2.0));
+        assert_eq!(&data[4].1, &MetaData::StartNode(foo.clone()));
+        assert_eq!(&data[5].1, &MetaData::F64(num.clone(), 3.0));
+        assert_eq!(&data[6].1, &MetaData::EndNode(foo.clone()));
+        assert_eq!(&data[7].1, &MetaData::EndNode(foo.clone()));
+        assert_eq!(&data[8].1, &MetaData::EndNode(foo.clone()));
     }
 }
