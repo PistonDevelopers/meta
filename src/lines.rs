@@ -104,6 +104,7 @@ mod tests {
             rule: Rule::Number(Number {
                 debug_id: 1,
                 property: None,
+                allow_underscore: false,
             }),
         };
         let res = lines.parse(&mut tokenizer, &s, &chars, 0);
@@ -132,6 +133,7 @@ mod tests {
                     Rule::Number(Number {
                         debug_id: 1,
                         property: Some(val.clone()),
+                        allow_underscore: false,
                     }),
                     Rule::Whitespace(Whitespace {
                         debug_id: 2,
@@ -164,6 +166,7 @@ mod tests {
             rule: Rule::Number(Number {
                 debug_id: 1,
                 property: Some(val.clone()),
+                allow_underscore: false,
             }),
         };
         let res = lines.parse(&mut tokenizer, &s, &chars, 0);

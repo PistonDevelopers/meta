@@ -18,6 +18,8 @@ pub struct Number {
     pub property: Option<Rc<String>>,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
+    /// Whether underscore is allowed as visible separator.
+    pub allow_underscore: bool,
 }
 
 impl Number {
@@ -29,9 +31,17 @@ impl Number {
         chars: &[char],
         offset: usize
     ) -> ParseResult<TokenizerState> {
-        if let Some(range) = read_token::number(chars, offset) {
+        let res = if self.allow_underscore {
+                read_token::underscore_number(chars, offset)
+            } else {
+                read_token::number(chars, offset)
+            };
+        if let Some(range) = res {
             let mut text = String::with_capacity(range.length);
-            for c in chars.iter().take(range.length) {
+            for c in chars.iter()
+                .take(range.length)
+                .filter(|&c| *c != '_')
+            {
                 text.push(*c);
             }
             match text.parse::<f64>() {
@@ -66,7 +76,11 @@ mod tests {
     fn expected_number() {
         let text = "foo";
         let chars: Vec<char> = text.chars().collect();
-        let number = Number { debug_id: 0, property: None };
+        let number = Number {
+            debug_id: 0,
+            property: None,
+            allow_underscore: false,
+        };
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let res = number.parse(&mut tokenizer, &s, &chars, 0);
@@ -75,9 +89,13 @@ mod tests {
 
     #[test]
     fn successful() {
-        let text = "foo 1 1.1 10e1 10.0E1";
+        let text = "foo 1 1.1 10e1 10.0E1 10_000";
         let chars: Vec<char> = text.chars().collect();
-        let number = Number { debug_id: 0, property: None };
+        let number = Number {
+            debug_id: 0,
+            property: None,
+            allow_underscore: true,
+        };
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let res = number.parse(&mut tokenizer, &s, &chars[4..], 4);
@@ -86,9 +104,15 @@ mod tests {
         assert_eq!(res, Ok((Range::new(6, 3), s, None)));
         let res = number.parse(&mut tokenizer, &s, &chars[10..], 10);
         assert_eq!(res, Ok((Range::new(10, 4), s, None)));
+        let res = number.parse(&mut tokenizer, &s, &chars[22..], 22);
+        assert_eq!(res, Ok((Range::new(22, 6), s, None)));
 
         let val: Rc<String> = Rc::new("val".into());
-        let number = Number { debug_id: 0, property: Some(val.clone()) };
+        let number = Number {
+            debug_id: 0,
+            property: Some(val.clone()),
+            allow_underscore: false,
+        };
         let res = number.parse(&mut tokenizer, &s, &chars[15..], 15);
         assert_eq!(res, Ok((Range::new(15, 6), TokenizerState(1), None)));
         assert_eq!(tokenizer.tokens.len(), 1);
