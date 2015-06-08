@@ -93,7 +93,8 @@ mod tests {
                 args: vec![
                     Rule::Number(Number {
                         debug_id: 2,
-                        property: Some(num.clone())
+                        property: Some(num.clone()),
+                        allow_underscore: false,
                     }),
                     Rule::Optional(Box::new(Optional {
                         debug_id: 3,

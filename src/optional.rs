@@ -75,7 +75,8 @@ mod tests {
                     }),
                     Rule::Number(Number {
                         debug_id: 3,
-                        property: Some(num.clone())
+                        property: Some(num.clone()),
+                        allow_underscore: false,
                     })
                 ]
             }),
