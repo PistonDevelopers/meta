@@ -2,6 +2,7 @@ use range::Range;
 
 use {
     ret_err,
+    err_update,
     update,
     DebugId,
     ParseError,
@@ -49,7 +50,10 @@ impl Lines {
             } else {
                 if new_lines {
                     state = match self.rule.parse(tokenizer, &state, chars, offset) {
-                        Err(err) => { return Err(ret_err(err, opt_error)); }
+                        Err(err) => {
+                            err_update(Some(err), &mut opt_error);
+                            break;
+                        }
                         Ok((range, state, err)) => {
                             // Find whether a new line occured at the end.
                             // If it did, we do not require a new line before
@@ -108,7 +112,8 @@ mod tests {
             }),
         };
         let res = lines.parse(&mut tokenizer, &s, &chars, 0);
-        assert_eq!(res, Err((Range::new(10, 0), ParseError::ExpectedNumber(1))));
+        assert_eq!(res, Ok((Range::new(0, 10), s,
+            Some((Range::new(10, 0), ParseError::ExpectedNumber(1))))));
     }
 
     #[test]
@@ -171,5 +176,49 @@ mod tests {
         };
         let res = lines.parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Ok((Range::new(0, 13), TokenizerState(4), None)));
+    }
+
+    #[test]
+    fn sequence() {
+        let text = "
+1
+2
+3
+\"one\"
+\"two\"
+\"three\"
+        ";
+        let num: Rc<String> = Rc::new("num".into());
+        let tex: Rc<String> = Rc::new("tex".into());
+        let rules = Rule::Sequence(Sequence {
+            debug_id: 0,
+            args: vec![
+                Rule::Lines(Box::new(Lines {
+                    debug_id: 1,
+                    rule: Rule::Number(Number {
+                        debug_id: 2,
+                        allow_underscore: true,
+                        property: Some(num.clone()),
+                    })
+                })),
+                Rule::Lines(Box::new(Lines {
+                    debug_id: 3,
+                    rule: Rule::Text(Text {
+                        debug_id: 4,
+                        allow_empty: false,
+                        property: Some(tex.clone()),
+                    })
+                }))
+            ]
+        });
+        let res = parse(&rules, text);
+        assert_eq!(res, Ok(vec![
+            (Range::new(1, 1), MetaData::F64(num.clone(), 1.0)),
+            (Range::new(3, 1), MetaData::F64(num.clone(), 2.0)),
+            (Range::new(5, 1), MetaData::F64(num.clone(), 3.0)),
+            (Range::new(7, 5), MetaData::String(tex.clone(), "one".into())),
+            (Range::new(13, 5), MetaData::String(tex.clone(), "two".into())),
+            (Range::new(19, 7), MetaData::String(tex.clone(), "three".into()))
+        ]));
     }
 }
