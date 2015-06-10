@@ -1,5 +1,4 @@
 #![deny(missing_docs)]
-#![feature(std_misc)]
 
 //! Meta parsing and encoding for data oriented design
 
@@ -11,7 +10,7 @@ pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
 pub use parse_error::ParseError;
 pub use token::Token;
 pub use select::Select;
-pub use node::{ Node, NodeRef, NodeVisit };
+pub use node::{ Node, NodeVisit };
 pub use optional::Optional;
 pub use sequence::Sequence;
 pub use separated_by::SeparatedBy;
@@ -49,12 +48,15 @@ mod rule;
 mod tokenizer;
 
 /// Parses text with rules.
-pub fn parse(rules: &Rule, text: &str)
--> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
+pub fn parse(
+    rules: &Rule,
+    refs: &[(Rc<String>, Rule)],
+    text: &str
+) -> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
     let chars: Vec<char> = text.chars().collect();
     let mut tokenizer = Tokenizer::new();
     let s = TokenizerState::new();
-    let res = rules.parse(&mut tokenizer, &s, &chars, 0);
+    let res = rules.parse(&mut tokenizer, &s, &chars, 0, refs);
     match res {
         Ok((range, s, Some((err_range, err)))) => {
             // Report error if did not reach the end of text.

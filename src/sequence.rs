@@ -1,4 +1,5 @@
 use range::Range;
+use std::rc::Rc;
 
 use {
     ret_err,
@@ -27,13 +28,16 @@ impl Sequence {
         tokenizer: &mut Tokenizer,
         state: &TokenizerState,
         mut chars: &[char],
-        start_offset: usize
+        start_offset: usize,
+        refs: &[(Rc<String>, Rule)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();
         let mut opt_error = None;
         for sub_rule in &self.args {
-            state = match sub_rule.parse(tokenizer, &state, chars, offset) {
+            state = match sub_rule.parse(
+                tokenizer, &state, chars, offset, refs
+            ) {
                 Ok((range, state, err)) => {
                     update(range, err, &mut chars, &mut offset, &mut opt_error);
                     state

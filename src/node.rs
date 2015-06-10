@@ -1,26 +1,32 @@
 use range::Range;
 use std::rc::Rc;
-use std::cell::RefCell;
+use std::cell::Cell;
 
 use {
     ret_err,
     update,
     DebugId,
     MetaData,
+    ParseError,
     ParseResult,
     Rule,
     Tokenizer,
     TokenizerState,
 };
 
-/// Stores information about a node.
+/// A node reference.
+#[derive(Clone)]
 pub struct Node {
-    /// The name of the node.
+    /// Name of rule.
     pub name: Rc<String>,
-    /// The rule of the node.
-    pub rule: Rule,
+    /// The property to set.
+    pub property: Option<Rc<String>>,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
+    /// The index to the rule reference.
+    pub index: Cell<Option<usize>>,
+    /// Whether the reference has been visited.
+    pub node_visit: Cell<NodeVisit>,
 }
 
 impl Node {
@@ -30,16 +36,35 @@ impl Node {
         tokenizer: &mut Tokenizer,
         state: &TokenizerState,
         mut chars: &[char],
-        start_offset: usize
+        start_offset: usize,
+        refs: &[(Rc<String>, Rule)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
-        let mut state = tokenizer.data(
-            MetaData::StartNode(self.name.clone()),
-            state,
-            Range::empty(offset)
-        );
+        let index = match self.index.get() {
+            None => {
+                return Err((
+                    Range::empty(offset),
+                    ParseError::InvalidRule(
+                        "Node rule is not updated to reference",
+                        self.debug_id
+                    )
+                ));
+            }
+            Some(i) => i
+        };
+        let mut state = if let Some(ref prop) = self.property {
+            tokenizer.data(
+                MetaData::StartNode(prop.clone()),
+                state,
+                Range::empty(offset)
+            )
+        } else {
+            state.clone()
+        };
         let mut opt_error = None;
-        state = match self.rule.parse(tokenizer, &state, chars, offset) {
+        state = match refs[index].1.parse(
+            tokenizer, &state, chars, offset, refs
+        ) {
             Err(err) => { return Err(ret_err(err, opt_error)); }
             Ok((range, state, err)) => {
                 update(range, err, &mut chars, &mut offset, &mut opt_error);
@@ -49,24 +74,22 @@ impl Node {
         let range = Range::new(start_offset, offset - start_offset);
         Ok((
             range,
-            tokenizer.data(MetaData::EndNode(self.name.clone()), &state, range),
+            if let Some(ref prop) = self.property {
+                tokenizer.data(
+                    MetaData::EndNode(prop.clone()),
+                    &state,
+                    range
+                )
+            } else {
+                state.clone()
+            },
             opt_error
         ))
     }
 }
 
-/// A node reference.
-#[derive(Clone)]
-pub enum NodeRef {
-    /// Points to a node by name.
-    Name(Rc<String>, DebugId),
-    /// Reference to node.
-    /// The `bool` flag is used to prevent multiple visits when updating.
-    Ref(Rc<RefCell<Node>>, NodeVisit),
-}
-
 /// Tells whether a node is visited when updated.
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub enum NodeVisit {
     /// The node is not being visited.
     Unvisited,
@@ -78,48 +101,56 @@ pub enum NodeVisit {
 mod tests {
     use super::super::*;
     use std::rc::Rc;
-    use std::cell::RefCell;
+    use std::cell::Cell;
 
     #[test]
     fn node_ref() {
         // Create a node rule the refers to itself.
         let foo: Rc<String> = Rc::new("foo".into());
         let num: Rc<String> = Rc::new("num".into());
-        let node = Rc::new(RefCell::new(Node {
-            debug_id: 0,
-            name: foo.clone(),
-            rule: Rule::Sequence(Sequence {
-                debug_id: 1,
-                args: vec![
-                    Rule::Number(Number {
-                        debug_id: 2,
-                        property: Some(num.clone()),
-                        allow_underscore: false,
+        let node = Rule::Sequence(Sequence {
+            debug_id: 1,
+            args: vec![
+                Rule::Number(Number {
+                    debug_id: 2,
+                    property: Some(num.clone()),
+                    allow_underscore: false,
+                }),
+                Rule::Optional(Box::new(Optional {
+                    debug_id: 3,
+                    rule: Rule::Sequence(Sequence {
+                        debug_id: 4,
+                        args: vec![
+                            Rule::Whitespace(Whitespace {
+                                debug_id: 3,
+                                optional: false
+                            }),
+                            Rule::Node(Node {
+                                name: foo.clone(),
+                                property: Some(foo.clone()),
+                                debug_id: 3,
+                                index: Cell::new(None),
+                                node_visit: Cell::new(NodeVisit::Unvisited)
+                            }),
+                        ]
                     }),
-                    Rule::Optional(Box::new(Optional {
-                        debug_id: 3,
-                        rule: Rule::Sequence(Sequence {
-                            debug_id: 4,
-                            args: vec![
-                                Rule::Whitespace(Whitespace {
-                                    debug_id: 3,
-                                    optional: false
-                                }),
-                                Rule::Node(NodeRef::Name(foo.clone(), 3)),
-                            ]
-                        }),
-                    })),
-                ],
-            }),
-        }));
+                })),
+            ],
+        });
 
         // Replace self referencing names with direct references.
-        let refs = vec![(foo.clone(), node.clone())];
-        let mut rules = Rule::Node(NodeRef::Name(foo.clone(), 0));
+        let refs = vec![(foo.clone(), node)];
+        let rules = Rule::Node(Node {
+            name: foo.clone(),
+            property: Some(foo.clone()),
+            debug_id: 0,
+            index: Cell::new(None),
+            node_visit: Cell::new(NodeVisit::Unvisited)
+        });
         rules.update_refs(&refs);
 
         let text = "1 2 3";
-        let data = parse(&rules, text).unwrap();
+        let data = parse(&rules, &refs, text).unwrap();
         assert_eq!(data.len(), 9);
         assert_eq!(&data[0].1, &MetaData::StartNode(foo.clone()));
         assert_eq!(&data[1].1, &MetaData::F64(num.clone(), 1.0));
