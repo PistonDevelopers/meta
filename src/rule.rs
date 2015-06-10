@@ -1,4 +1,3 @@
-use range::Range;
 use std::rc::Rc;
 
 use {
@@ -10,7 +9,6 @@ use {
     Number,
     Node,
     NodeVisit,
-    ParseError,
     ParseResult,
     Select,
     SeparatedBy,
@@ -101,22 +99,7 @@ impl Rule {
                 l.parse(tokenizer, state, chars, offset, refs)
             }
             &Rule::Node(ref p) => {
-                match p.index.get() {
-                    None => {
-                        Err((
-                            Range::empty(offset),
-                            ParseError::InvalidRule(
-                                "Node rule is not updated to reference",
-                                p.debug_id
-                            )
-                        ))
-                    }
-                    Some(i) => {
-                        refs[i].1.parse(
-                            tokenizer, state, chars, offset, refs
-                        )
-                    }
-                }
+                p.parse(tokenizer, state, chars, offset, refs)
             }
             &Rule::Optional(ref o) => {
                 Ok(o.parse(tokenizer, state, chars, offset, refs))
@@ -193,64 +176,5 @@ impl Rule {
                 o.rule.update_refs(refs);
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::super::*;
-    use std::rc::Rc;
-    use std::cell::Cell;
-
-    #[test]
-    fn node_ref() {
-        // Create a node rule the refers to itself.
-        let foo: Rc<String> = Rc::new("foo".into());
-        let num: Rc<String> = Rc::new("num".into());
-        let node = Rule::Sequence(Sequence {
-            debug_id: 1,
-            args: vec![
-                Rule::Number(Number {
-                    debug_id: 2,
-                    property: Some(num.clone()),
-                    allow_underscore: false,
-                }),
-                Rule::Optional(Box::new(Optional {
-                    debug_id: 3,
-                    rule: Rule::Sequence(Sequence {
-                        debug_id: 4,
-                        args: vec![
-                            Rule::Whitespace(Whitespace {
-                                debug_id: 3,
-                                optional: false
-                            }),
-                            Rule::Node(Node {
-                                name: foo.clone(),
-                                debug_id: 3,
-                                index: Cell::new(None),
-                                node_visit: Cell::new(NodeVisit::Unvisited)
-                            }),
-                        ]
-                    }),
-                })),
-            ],
-        });
-
-        // Replace self referencing names with direct references.
-        let refs = vec![(foo.clone(), node)];
-        let rules = Rule::Node(Node {
-            name: foo.clone(),
-            debug_id: 0,
-            index: Cell::new(None),
-            node_visit: Cell::new(NodeVisit::Unvisited)
-        });
-        rules.update_refs(&refs);
-
-        let text = "1 2 3";
-        let data = parse(&rules, &refs, text).unwrap();
-        assert_eq!(data.len(), 3);
-        assert_eq!(&data[0].1, &MetaData::F64(num.clone(), 1.0));
-        assert_eq!(&data[1].1, &MetaData::F64(num.clone(), 2.0));
-        assert_eq!(&data[2].1, &MetaData::F64(num.clone(), 3.0));
     }
 }
