@@ -1,6 +1,7 @@
 use range::Range;
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::cell::Cell;
 
 use {
     Whitespace,
@@ -110,8 +111,8 @@ impl Rule {
                                 "Node rule is not updated to reference", debug_id)
                         ))
                     }
-                    &NodeRef::Ref(i, _) => {
-                        refs[i].1.borrow().parse(
+                    &NodeRef::Ref(ref i, _) => {
+                        refs[i.get()].1.borrow().parse(
                             tokenizer, state, chars, offset, refs
                         )
                     }
@@ -146,16 +147,19 @@ impl Rule {
                         match found {
                             None => { return; }
                             Some(i) => {
-                                NodeRef::Ref(i, NodeVisit::Unvisited)
+                                NodeRef::Ref(
+                                    Cell::new(i),
+                                    Cell::new(NodeVisit::Unvisited)
+                                )
                             }
                         }
                     }
-                    &mut NodeRef::Ref(i, ref mut visited) => {
+                    &mut NodeRef::Ref(ref i, ref visited) => {
                         // Update the sub rules of the reference,
                         // but only if it has not been visited.
-                        if let NodeVisit::Unvisited = *visited {
-                            *visited = NodeVisit::Visited;
-                            let p = &refs[i].1;
+                        if let NodeVisit::Unvisited = visited.get() {
+                            visited.set(NodeVisit::Visited);
+                            let p = &refs[i.get()].1;
                             if p.borrow_state() == BorrowState::Unused {
                                 p.borrow_mut().update_refs(refs);
                             }
@@ -164,12 +168,12 @@ impl Rule {
                     }
                 };
                 // Make sure to visit the referenced rule when replacing a name.
-                if let &mut NodeRef::Ref(i, ref mut visited) = p {
+                if let &mut NodeRef::Ref(ref i, ref visited) = p {
                     // Update the sub rules of the reference,
                     // but only if it has not been visited.
-                    if let NodeVisit::Unvisited = *visited {
-                        *visited = NodeVisit::Visited;
-                        let p = &refs[i].1;
+                    if let NodeVisit::Unvisited = visited.get() {
+                        visited.set(NodeVisit::Visited);
+                        let p = &refs[i.get()].1;
                         if p.borrow_state() == BorrowState::Unused {
                             p.borrow_mut().update_refs(refs);
                         }
