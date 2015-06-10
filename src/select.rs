@@ -1,8 +1,11 @@
 use range::Range;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use {
     err_update,
     DebugId,
+    Node,
     ParseError,
     ParseResult,
     Rule,
@@ -26,11 +29,12 @@ impl Select {
         tokenizer: &mut Tokenizer,
         state: &TokenizerState,
         chars: &[char],
-        offset: usize
+        offset: usize,
+        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
     ) -> ParseResult<TokenizerState> {
         let mut opt_error: Option<(Range, ParseError)> = None;
         for sub_rule in &self.args {
-            match sub_rule.parse(tokenizer, state, chars, offset) {
+            match sub_rule.parse(tokenizer, state, chars, offset, refs) {
                 Ok((range, state, err)) => {
                     err_update(err, &mut opt_error);
                     return Ok((Range::new(offset, range.next_offset() - offset),
@@ -65,7 +69,7 @@ mod tests {
             debug_id: 0,
             args: vec![]
         };
-        let res = select.parse(&mut tokenizer, &s, &chars, 0);
+        let res = select.parse(&mut tokenizer, &s, &chars, 0, &[]);
         let invalid_rule = match &res {
             &Err((_, ParseError::InvalidRule(_, _))) => true,
             _ => false
@@ -95,7 +99,7 @@ mod tests {
                 })
             ]
         };
-        let res = select.parse(&mut tokenizer, &s, &chars, 0);
+        let res = select.parse(&mut tokenizer, &s, &chars, 0, &[]);
         assert_eq!(res, Ok((Range::new(0, 1), TokenizerState(1),
             Some((Range::new(0, 0), ParseError::ExpectedText(1))))));
         assert_eq!(tokenizer.tokens.len(), 1);

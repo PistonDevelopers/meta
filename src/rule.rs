@@ -65,7 +65,8 @@ impl Rule {
         tokenizer: &mut Tokenizer,
         state: &TokenizerState,
         chars: &[char],
-        offset: usize
+        offset: usize,
+        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
     ) -> ParseResult<TokenizerState> {
         match self {
             &Rule::Whitespace(ref w) => {
@@ -87,19 +88,19 @@ impl Rule {
                 n.parse(tokenizer, state, chars, offset)
             }
             &Rule::Select(ref s) => {
-                s.parse(tokenizer, state, chars, offset)
+                s.parse(tokenizer, state, chars, offset, refs)
             }
             &Rule::Sequence(ref s) => {
-                s.parse(tokenizer, state, chars, offset)
+                s.parse(tokenizer, state, chars, offset, refs)
             }
             &Rule::SeparatedBy(ref s) => {
-                s.parse(tokenizer, state, chars, offset)
+                s.parse(tokenizer, state, chars, offset, refs)
             }
             &Rule::Repeat(ref r) => {
-                r.parse(tokenizer, state, chars, offset)
+                r.parse(tokenizer, state, chars, offset, refs)
             }
             &Rule::Lines(ref l) => {
-                l.parse(tokenizer, state, chars, offset)
+                l.parse(tokenizer, state, chars, offset, refs)
             }
             &Rule::Node(ref p) => {
                 match p {
@@ -110,13 +111,15 @@ impl Rule {
                                 "Node rule is not updated to reference", debug_id)
                         ))
                     }
-                    &NodeRef::Ref(ref p, _) => {
-                        p.borrow().parse(tokenizer, state, chars, offset)
+                    &NodeRef::Ref(i, _) => {
+                        refs[i].1.borrow().parse(
+                            tokenizer, state, chars, offset, refs
+                        )
                     }
                 }
             }
             &Rule::Optional(ref o) => {
-                Ok(o.parse(tokenizer, state, chars, offset))
+                Ok(o.parse(tokenizer, state, chars, offset, refs))
             }
         }
     }
@@ -134,24 +137,26 @@ impl Rule {
                     &mut NodeRef::Name(ref name, _) => {
                         // Look through references and update if correct name
                         // is found.
-                        let mut found: Option<Rc<RefCell<Node>>> = None;
-                        for r in refs {
+                        let mut found: Option<usize> = None;
+                        for (i, r) in refs.iter().enumerate() {
                             if &**name == &*r.0 {
-                                found = Some(r.1.clone());
+                                found = Some(i);
+                                break;
                             }
                         }
                         match found {
                             None => { return; }
-                            Some(r) => {
-                                NodeRef::Ref(r, NodeVisit::Unvisited)
+                            Some(i) => {
+                                NodeRef::Ref(i, NodeVisit::Unvisited)
                             }
                         }
                     }
-                    &mut NodeRef::Ref(ref mut p, ref mut visited) => {
+                    &mut NodeRef::Ref(i, ref mut visited) => {
                         // Update the sub rules of the reference,
                         // but only if it has not been visited.
                         if let NodeVisit::Unvisited = *visited {
                             *visited = NodeVisit::Visited;
+                            let p = &refs[i].1;
                             if p.borrow_state() == BorrowState::Unused {
                                 p.borrow_mut().rule.update_refs(refs);
                             }
@@ -160,11 +165,12 @@ impl Rule {
                     }
                 };
                 // Make sure to visit the referenced rule when replacing a name.
-                if let &mut NodeRef::Ref(ref mut p, ref mut visited) = p {
+                if let &mut NodeRef::Ref(i, ref mut visited) = p {
                     // Update the sub rules of the reference,
                     // but only if it has not been visited.
                     if let NodeVisit::Unvisited = *visited {
                         *visited = NodeVisit::Visited;
+                        let p = &refs[i].1;
                         if p.borrow_state() == BorrowState::Unused {
                             p.borrow_mut().rule.update_refs(refs);
                         }

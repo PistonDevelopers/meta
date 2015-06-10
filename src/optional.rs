@@ -1,9 +1,12 @@
 use range::Range;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use {
     ret_err,
     update,
     DebugId,
+    Node,
     ParseError,
     Rule,
     Tokenizer,
@@ -27,13 +30,14 @@ impl Optional {
         tokenizer: &mut Tokenizer,
         state: &TokenizerState,
         mut chars: &[char],
-        mut offset: usize
+        mut offset: usize,
+        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
     ) -> (Range, TokenizerState, Option<(Range, ParseError)>) {
         let start_offset = offset;
         let mut success_state = state.clone();
         let mut opt_error = None;
         success_state = match self.rule.parse(
-            tokenizer, &success_state, chars, offset
+            tokenizer, &success_state, chars, offset, refs
         ) {
             Ok((range, state, err)) => {
                 update(range, err, &mut chars, &mut offset, &mut opt_error);
@@ -81,7 +85,7 @@ mod tests {
                 ]
             }),
         };
-        let res = optional.parse(&mut tokenizer, &s, &chars, 0);
+        let res = optional.parse(&mut tokenizer, &s, &chars, 0, &[]);
         assert_eq!(res, (Range::new(0, 0), TokenizerState(0),
             Some((Range::new(0, 0), ParseError::ExpectedText(2)))));
         assert_eq!(tokenizer.tokens.len(), 0);

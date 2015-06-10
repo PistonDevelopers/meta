@@ -28,6 +28,7 @@ pub use tokenizer::{ Tokenizer, TokenizerState };
 pub type DebugId = usize;
 
 use std::rc::Rc;
+use std::cell::RefCell;
 use range::Range;
 
 mod parse_error;
@@ -49,12 +50,15 @@ mod rule;
 mod tokenizer;
 
 /// Parses text with rules.
-pub fn parse(rules: &Rule, text: &str)
--> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
+pub fn parse(
+    rules: &Rule,
+    refs: &[(Rc<String>, Rc<RefCell<Node>>)],
+    text: &str
+) -> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
     let chars: Vec<char> = text.chars().collect();
     let mut tokenizer = Tokenizer::new();
     let s = TokenizerState::new();
-    let res = rules.parse(&mut tokenizer, &s, &chars, 0);
+    let res = rules.parse(&mut tokenizer, &s, &chars, 0, refs);
     match res {
         Ok((range, s, Some((err_range, err)))) => {
             // Report error if did not reach the end of text.

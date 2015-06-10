@@ -1,10 +1,13 @@
 use range::Range;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use {
     ret_err,
     err_update,
     update,
     DebugId,
+    Node,
     ParseError,
     ParseResult,
     Rule,
@@ -30,7 +33,8 @@ impl Lines {
         tokenizer: &mut Tokenizer,
         state: &TokenizerState,
         mut chars: &[char],
-        start_offset: usize
+        start_offset: usize,
+        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();
@@ -49,7 +53,8 @@ impl Lines {
                 new_lines |= true;
             } else {
                 if new_lines {
-                    state = match self.rule.parse(tokenizer, &state, chars, offset) {
+                    state = match self.rule.parse(
+                        tokenizer, &state, chars, offset, refs) {
                         Err(err) => {
                             err_update(Some(err), &mut opt_error);
                             break;
@@ -111,7 +116,7 @@ mod tests {
                 allow_underscore: false,
             }),
         };
-        let res = lines.parse(&mut tokenizer, &s, &chars, 0);
+        let res = lines.parse(&mut tokenizer, &s, &chars, 0, &[]);
         assert_eq!(res, Ok((Range::new(0, 10), s,
             Some((Range::new(10, 0), ParseError::ExpectedNumber(1))))));
     }
@@ -147,7 +152,7 @@ mod tests {
                 ]
             }),
         };
-        let res = lines.parse(&mut tokenizer, &s, &chars, 0);
+        let res = lines.parse(&mut tokenizer, &s, &chars, 0, &[]);
         assert_eq!(res, Err((Range::new(8, 0), ParseError::ExpectedNewLine(0))));
     }
 
@@ -174,7 +179,7 @@ mod tests {
                 allow_underscore: false,
             }),
         };
-        let res = lines.parse(&mut tokenizer, &s, &chars, 0);
+        let res = lines.parse(&mut tokenizer, &s, &chars, 0, &[]);
         assert_eq!(res, Ok((Range::new(0, 13), TokenizerState(4), None)));
     }
 
@@ -211,7 +216,7 @@ mod tests {
                 }))
             ]
         });
-        let res = parse(&rules, text);
+        let res = parse(&rules, &[], text);
         assert_eq!(res, Ok(vec![
             (Range::new(1, 1), MetaData::F64(num.clone(), 1.0)),
             (Range::new(3, 1), MetaData::F64(num.clone(), 2.0)),

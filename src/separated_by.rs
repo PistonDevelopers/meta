@@ -1,10 +1,13 @@
 use range::Range;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use {
     ret_err,
     err_update,
     update,
     DebugId,
+    Node,
     ParseResult,
     Rule,
     Tokenizer,
@@ -33,14 +36,17 @@ impl SeparatedBy {
         tokenizer: &mut Tokenizer,
         state: &TokenizerState,
         mut chars: &[char],
-        start_offset: usize
+        start_offset: usize,
+        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();
         let mut first = true;
         let mut opt_error = None;
         loop {
-            state = match self.rule.parse(tokenizer, &state, chars, offset) {
+            state = match self.rule.parse(
+                tokenizer, &state, chars, offset, refs
+            ) {
                 Err(err) => {
                     match (first, self.optional, self.allow_trail) {
                           (true, false, _)
@@ -59,7 +65,9 @@ impl SeparatedBy {
                     state
                 }
             };
-            state = match self.by.parse(tokenizer, &state, chars, offset) {
+            state = match self.by.parse(
+                tokenizer, &state, chars, offset, refs
+            ) {
                 Err(err) => {
                     err_update(Some(err), &mut opt_error);
                     break;
@@ -104,7 +112,7 @@ mod tests {
             optional: false,
             allow_trail: false,
         };
-        let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
+        let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4, &[]);
         assert_eq!(res, Err((Range::new(4, 0),
             ParseError::ExpectedSomething(1))));
     }
@@ -132,7 +140,7 @@ mod tests {
             optional: true,
             allow_trail: false,
         };
-        let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
+        let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4, &[]);
         assert_eq!(res, Ok((Range::new(4, 0), s,
             Some((Range::new(4, 0), ParseError::ExpectedSomething(1))))));
     }
@@ -161,7 +169,7 @@ mod tests {
             optional: true,
             allow_trail: false,
         };
-        let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
+        let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4, &[]);
         assert_eq!(res, Err((Range::new(10, 0),
             ParseError::ExpectedSomething(1))));
     }
@@ -190,7 +198,7 @@ mod tests {
             optional: true,
             allow_trail: true,
         };
-        let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
+        let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4, &[]);
         assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3),
             Some((Range::new(10, 0), ParseError::ExpectedSomething(1))))));
         assert_eq!(tokenizer.tokens.len(), 3);
@@ -226,7 +234,7 @@ mod tests {
             optional: true,
             allow_trail: false,
         };
-        let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4);
+        let res = sep.parse(&mut tokenizer, &s, &chars[4..], 4, &[]);
         assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3),
             Some((Range::new(9, 0),
                 ParseError::ExpectedToken(Rc::new(",".into()), 2))))));
@@ -274,7 +282,7 @@ mod tests {
             optional: false,
             allow_trail: true,
         };
-        let res = sep.parse(&mut tokenizer, &s, &chars, 0);
+        let res = sep.parse(&mut tokenizer, &s, &chars, 0, &[]);
         assert_eq!(res, Ok((Range::new(0, 12), TokenizerState(6),
             Some((Range::new(12, 0), ParseError::ExpectedSomething(2))))));
         assert_eq!(tokenizer.tokens.len(), 6);

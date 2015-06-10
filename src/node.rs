@@ -30,7 +30,8 @@ impl Node {
         tokenizer: &mut Tokenizer,
         state: &TokenizerState,
         mut chars: &[char],
-        start_offset: usize
+        start_offset: usize,
+        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = tokenizer.data(
@@ -39,7 +40,9 @@ impl Node {
             Range::empty(offset)
         );
         let mut opt_error = None;
-        state = match self.rule.parse(tokenizer, &state, chars, offset) {
+        state = match self.rule.parse(
+            tokenizer, &state, chars, offset, refs
+        ) {
             Err(err) => { return Err(ret_err(err, opt_error)); }
             Ok((range, state, err)) => {
                 update(range, err, &mut chars, &mut offset, &mut opt_error);
@@ -62,7 +65,7 @@ pub enum NodeRef {
     Name(Rc<String>, DebugId),
     /// Reference to node.
     /// The `bool` flag is used to prevent multiple visits when updating.
-    Ref(Rc<RefCell<Node>>, NodeVisit),
+    Ref(usize, NodeVisit),
 }
 
 /// Tells whether a node is visited when updated.
@@ -119,7 +122,7 @@ mod tests {
         rules.update_refs(&refs);
 
         let text = "1 2 3";
-        let data = parse(&rules, text).unwrap();
+        let data = parse(&rules, &refs, text).unwrap();
         assert_eq!(data.len(), 9);
         assert_eq!(&data[0].1, &MetaData::StartNode(foo.clone()));
         assert_eq!(&data[1].1, &MetaData::F64(num.clone(), 1.0));

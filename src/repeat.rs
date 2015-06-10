@@ -1,10 +1,13 @@
 use range::Range;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use {
     ret_err,
     err_update,
     update,
     DebugId,
+    Node,
     ParseResult,
     Rule,
     Tokenizer,
@@ -29,14 +32,16 @@ impl Repeat {
         tokenizer: &mut Tokenizer,
         state: &TokenizerState,
         mut chars: &[char],
-        start_offset: usize
+        start_offset: usize,
+        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();
         let mut opt_error = None;
         let mut first = true;
         loop {
-            state = match self.rule.parse(tokenizer, &state, chars, offset) {
+            state = match self.rule.parse(
+                tokenizer, &state, chars, offset, refs) {
                 Err(err) => {
                     if first && !self.optional {
                         return Err(ret_err(err, opt_error));
@@ -79,7 +84,7 @@ mod tests {
                 property: None,
             })
         };
-        let res = rule.parse(&mut tokenizer, &s, &chars, 0);
+        let res = rule.parse(&mut tokenizer, &s, &chars, 0, &[]);
         assert_eq!(res, Err((Range::new(0, 0),
             ParseError::ExpectedToken(token.clone(), 1))))
     }
@@ -101,7 +106,7 @@ mod tests {
                 property: None,
             })
         };
-        let res = rule.parse(&mut tokenizer, &s, &chars, 0);
+        let res = rule.parse(&mut tokenizer, &s, &chars, 0, &[]);
         assert_eq!(res, Ok((Range::new(0, 9), TokenizerState(0),
             Some((Range::new(9, 0), ParseError::ExpectedToken(token.clone(), 1))))))
     }
