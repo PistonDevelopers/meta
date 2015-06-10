@@ -7,7 +7,6 @@ use {
     err_update,
     update,
     DebugId,
-    Node,
     ParseResult,
     Rule,
     Tokenizer,
@@ -33,7 +32,7 @@ impl Repeat {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
+        refs: &[(Rc<String>, Rc<RefCell<Rule>>)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();

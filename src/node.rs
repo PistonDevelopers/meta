@@ -31,7 +31,7 @@ impl Node {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
+        refs: &[(Rc<String>, Rc<RefCell<Rule>>)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = tokenizer.data(
@@ -88,33 +88,29 @@ mod tests {
         // Create a node rule the refers to itself.
         let foo: Rc<String> = Rc::new("foo".into());
         let num: Rc<String> = Rc::new("num".into());
-        let node = Rc::new(RefCell::new(Node {
-            debug_id: 0,
-            name: foo.clone(),
-            rule: Rule::Sequence(Sequence {
-                debug_id: 1,
-                args: vec![
-                    Rule::Number(Number {
-                        debug_id: 2,
-                        property: Some(num.clone()),
-                        allow_underscore: false,
+        let node = Rc::new(RefCell::new(Rule::Sequence(Sequence {
+            debug_id: 1,
+            args: vec![
+                Rule::Number(Number {
+                    debug_id: 2,
+                    property: Some(num.clone()),
+                    allow_underscore: false,
+                }),
+                Rule::Optional(Box::new(Optional {
+                    debug_id: 3,
+                    rule: Rule::Sequence(Sequence {
+                        debug_id: 4,
+                        args: vec![
+                            Rule::Whitespace(Whitespace {
+                                debug_id: 3,
+                                optional: false
+                            }),
+                            Rule::Node(NodeRef::Name(foo.clone(), 3)),
+                        ]
                     }),
-                    Rule::Optional(Box::new(Optional {
-                        debug_id: 3,
-                        rule: Rule::Sequence(Sequence {
-                            debug_id: 4,
-                            args: vec![
-                                Rule::Whitespace(Whitespace {
-                                    debug_id: 3,
-                                    optional: false
-                                }),
-                                Rule::Node(NodeRef::Name(foo.clone(), 3)),
-                            ]
-                        }),
-                    })),
-                ],
-            }),
-        }));
+                })),
+            ],
+        })));
 
         // Replace self referencing names with direct references.
         let refs = vec![(foo.clone(), node.clone())];
@@ -123,15 +119,9 @@ mod tests {
 
         let text = "1 2 3";
         let data = parse(&rules, &refs, text).unwrap();
-        assert_eq!(data.len(), 9);
-        assert_eq!(&data[0].1, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&data[1].1, &MetaData::F64(num.clone(), 1.0));
-        assert_eq!(&data[2].1, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&data[3].1, &MetaData::F64(num.clone(), 2.0));
-        assert_eq!(&data[4].1, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&data[5].1, &MetaData::F64(num.clone(), 3.0));
-        assert_eq!(&data[6].1, &MetaData::EndNode(foo.clone()));
-        assert_eq!(&data[7].1, &MetaData::EndNode(foo.clone()));
-        assert_eq!(&data[8].1, &MetaData::EndNode(foo.clone()));
+        assert_eq!(data.len(), 3);
+        assert_eq!(&data[0].1, &MetaData::F64(num.clone(), 1.0));
+        assert_eq!(&data[1].1, &MetaData::F64(num.clone(), 2.0));
+        assert_eq!(&data[2].1, &MetaData::F64(num.clone(), 3.0));
     }
 }

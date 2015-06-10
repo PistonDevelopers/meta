@@ -6,7 +6,6 @@ use {
     ret_err,
     update,
     DebugId,
-    Node,
     ParseError,
     Rule,
     Tokenizer,
@@ -31,7 +30,7 @@ impl Optional {
         state: &TokenizerState,
         mut chars: &[char],
         mut offset: usize,
-        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
+        refs: &[(Rc<String>, Rc<RefCell<Rule>>)]
     ) -> (Range, TokenizerState, Option<(Range, ParseError)>) {
         let start_offset = offset;
         let mut success_state = state.clone();

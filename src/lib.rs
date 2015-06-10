@@ -52,7 +52,7 @@ mod tokenizer;
 /// Parses text with rules.
 pub fn parse(
     rules: &Rule,
-    refs: &[(Rc<String>, Rc<RefCell<Node>>)],
+    refs: &[(Rc<String>, Rc<RefCell<Rule>>)],
     text: &str
 ) -> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
     let chars: Vec<char> = text.chars().collect();

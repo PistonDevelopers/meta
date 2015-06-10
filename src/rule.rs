@@ -9,7 +9,6 @@ use {
     UntilAnyOrWhitespace,
     Text,
     Number,
-    Node,
     NodeRef,
     NodeVisit,
     ParseError,
@@ -66,7 +65,7 @@ impl Rule {
         state: &TokenizerState,
         chars: &[char],
         offset: usize,
-        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
+        refs: &[(Rc<String>, Rc<RefCell<Rule>>)]
     ) -> ParseResult<TokenizerState> {
         match self {
             &Rule::Whitespace(ref w) => {
@@ -128,7 +127,7 @@ impl Rule {
     ///
     /// The references contains the name,
     /// but this can not be borrowed as when the same reference is updated.
-    pub fn update_refs(&mut self, refs: &[(Rc<String>, Rc<RefCell<Node>>)]) {
+    pub fn update_refs(&mut self, refs: &[(Rc<String>, Rc<RefCell<Rule>>)]) {
         match self {
             &mut Rule::Node(ref mut p) => {
                 use std::cell::BorrowState;
@@ -158,7 +157,7 @@ impl Rule {
                             *visited = NodeVisit::Visited;
                             let p = &refs[i].1;
                             if p.borrow_state() == BorrowState::Unused {
-                                p.borrow_mut().rule.update_refs(refs);
+                                p.borrow_mut().update_refs(refs);
                             }
                         }
                         return;
@@ -172,7 +171,7 @@ impl Rule {
                         *visited = NodeVisit::Visited;
                         let p = &refs[i].1;
                         if p.borrow_state() == BorrowState::Unused {
-                            p.borrow_mut().rule.update_refs(refs);
+                            p.borrow_mut().update_refs(refs);
                         }
                     }
                     return;

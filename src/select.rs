@@ -5,7 +5,6 @@ use std::cell::RefCell;
 use {
     err_update,
     DebugId,
-    Node,
     ParseError,
     ParseResult,
     Rule,
@@ -30,7 +29,7 @@ impl Select {
         state: &TokenizerState,
         chars: &[char],
         offset: usize,
-        refs: &[(Rc<String>, Rc<RefCell<Node>>)]
+        refs: &[(Rc<String>, Rc<RefCell<Rule>>)]
     ) -> ParseResult<TokenizerState> {
         let mut opt_error: Option<(Range, ParseError)> = None;
         for sub_rule in &self.args {
