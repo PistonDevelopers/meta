@@ -5,7 +5,7 @@ use DebugId;
 
 /// A node reference.
 #[derive(Clone)]
-pub struct NodeRef {
+pub struct Node {
     /// Name of rule.
     pub name: Rc<String>,
     /// A debug id to track down the rule generating an error.

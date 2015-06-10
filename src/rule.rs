@@ -8,7 +8,7 @@ use {
     UntilAnyOrWhitespace,
     Text,
     Number,
-    NodeRef,
+    Node,
     NodeVisit,
     ParseError,
     ParseResult,
@@ -51,7 +51,7 @@ pub enum Rule {
     /// Repeat rule separated by one or more lines.
     Lines(Box<Lines>),
     /// Read node.
-    Node(NodeRef),
+    Node(Node),
     /// Read optional.
     Optional(Box<Optional>),
 }
@@ -224,7 +224,7 @@ mod tests {
                                 debug_id: 3,
                                 optional: false
                             }),
-                            Rule::Node(NodeRef {
+                            Rule::Node(Node {
                                 name: foo.clone(),
                                 debug_id: 3,
                                 index: Cell::new(None),
@@ -238,7 +238,7 @@ mod tests {
 
         // Replace self referencing names with direct references.
         let refs = vec![(foo.clone(), node)];
-        let rules = Rule::Node(NodeRef {
+        let rules = Rule::Node(Node {
             name: foo.clone(),
             debug_id: 0,
             index: Cell::new(None),

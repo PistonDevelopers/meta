@@ -10,7 +10,7 @@ pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
 pub use parse_error::ParseError;
 pub use token::Token;
 pub use select::Select;
-pub use node::{ NodeRef, NodeVisit };
+pub use node::{ Node, NodeVisit };
 pub use optional::Optional;
 pub use sequence::Sequence;
 pub use separated_by::SeparatedBy;
