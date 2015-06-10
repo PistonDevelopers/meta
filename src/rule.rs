@@ -1,6 +1,5 @@
 use range::Range;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 use {
     Whitespace,
@@ -65,7 +64,7 @@ impl Rule {
         state: &TokenizerState,
         chars: &[char],
         offset: usize,
-        refs: &[(Rc<String>, Rc<RefCell<Rule>>)]
+        refs: &[(Rc<String>, Rule)]
     ) -> ParseResult<TokenizerState> {
         match self {
             &Rule::Whitespace(ref w) => {
@@ -113,7 +112,7 @@ impl Rule {
                         ))
                     }
                     Some(i) => {
-                        refs[i].1.borrow().parse(
+                        refs[i].1.parse(
                             tokenizer, state, chars, offset, refs
                         )
                     }
@@ -129,11 +128,9 @@ impl Rule {
     ///
     /// The references contains the name,
     /// but this can not be borrowed as when the same reference is updated.
-    pub fn update_refs(&self, refs: &[(Rc<String>, Rc<RefCell<Rule>>)]) {
+    pub fn update_refs(&self, refs: &[(Rc<String>, Rule)]) {
         match self {
             &Rule::Node(ref p) => {
-                use std::cell::BorrowState;
-
                 match p.index.get() {
                     None => {
                         // Look through references and update if correct name
@@ -150,10 +147,7 @@ impl Rule {
                             Some(i) => {
                                 p.index.set(Some(i));
                                 p.node_visit.set(NodeVisit::Visited);
-                                let q = &refs[i].1;
-                                if q.borrow_state() == BorrowState::Unused {
-                                    q.borrow_mut().update_refs(refs);
-                                }
+                                refs[i].1.update_refs(refs);
                                 return;
                             }
                         }
@@ -163,10 +157,7 @@ impl Rule {
                         // but only if it has not been visited.
                         if let NodeVisit::Unvisited = p.node_visit.get() {
                             p.node_visit.set(NodeVisit::Visited);
-                            let q = &refs[i].1;
-                            if q.borrow_state() == BorrowState::Unused {
-                                q.borrow_mut().update_refs(refs);
-                            }
+                            refs[i].1.update_refs(refs);
                         }
                         return;
                     }
@@ -209,7 +200,6 @@ impl Rule {
 mod tests {
     use super::super::*;
     use std::rc::Rc;
-    use std::cell::RefCell;
     use std::cell::Cell;
 
     #[test]
@@ -217,7 +207,7 @@ mod tests {
         // Create a node rule the refers to itself.
         let foo: Rc<String> = Rc::new("foo".into());
         let num: Rc<String> = Rc::new("num".into());
-        let node = Rc::new(RefCell::new(Rule::Sequence(Sequence {
+        let node = Rule::Sequence(Sequence {
             debug_id: 1,
             args: vec![
                 Rule::Number(Number {
@@ -244,10 +234,10 @@ mod tests {
                     }),
                 })),
             ],
-        })));
+        });
 
         // Replace self referencing names with direct references.
-        let refs = vec![(foo.clone(), node.clone())];
+        let refs = vec![(foo.clone(), node)];
         let rules = Rule::Node(NodeRef {
             name: foo.clone(),
             debug_id: 0,

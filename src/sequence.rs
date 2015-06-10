@@ -1,6 +1,5 @@
 use range::Range;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 use {
     ret_err,
@@ -30,7 +29,7 @@ impl Sequence {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Rc<String>, Rc<RefCell<Rule>>)]
+        refs: &[(Rc<String>, Rule)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();

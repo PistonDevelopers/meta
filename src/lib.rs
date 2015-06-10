@@ -1,5 +1,4 @@
 #![deny(missing_docs)]
-#![feature(std_misc)]
 
 //! Meta parsing and encoding for data oriented design
 
@@ -28,7 +27,6 @@ pub use tokenizer::{ Tokenizer, TokenizerState };
 pub type DebugId = usize;
 
 use std::rc::Rc;
-use std::cell::RefCell;
 use range::Range;
 
 mod parse_error;
@@ -52,7 +50,7 @@ mod tokenizer;
 /// Parses text with rules.
 pub fn parse(
     rules: &Rule,
-    refs: &[(Rc<String>, Rc<RefCell<Rule>>)],
+    refs: &[(Rc<String>, Rule)],
     text: &str
 ) -> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
     let chars: Vec<char> = text.chars().collect();

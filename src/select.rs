@@ -1,6 +1,5 @@
 use range::Range;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 use {
     err_update,
@@ -29,7 +28,7 @@ impl Select {
         state: &TokenizerState,
         chars: &[char],
         offset: usize,
-        refs: &[(Rc<String>, Rc<RefCell<Rule>>)]
+        refs: &[(Rc<String>, Rule)]
     ) -> ParseResult<TokenizerState> {
         let mut opt_error: Option<(Range, ParseError)> = None;
         for sub_rule in &self.args {

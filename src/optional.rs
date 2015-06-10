@@ -1,6 +1,5 @@
 use range::Range;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 use {
     ret_err,
@@ -30,7 +29,7 @@ impl Optional {
         state: &TokenizerState,
         mut chars: &[char],
         mut offset: usize,
-        refs: &[(Rc<String>, Rc<RefCell<Rule>>)]
+        refs: &[(Rc<String>, Rule)]
     ) -> (Range, TokenizerState, Option<(Range, ParseError)>) {
         let start_offset = offset;
         let mut success_state = state.clone();
