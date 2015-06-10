@@ -129,9 +129,9 @@ impl Rule {
     ///
     /// The references contains the name,
     /// but this can not be borrowed as when the same reference is updated.
-    pub fn update_refs(&mut self, refs: &[(Rc<String>, Rc<RefCell<Rule>>)]) {
+    pub fn update_refs(&self, refs: &[(Rc<String>, Rc<RefCell<Rule>>)]) {
         match self {
-            &mut Rule::Node(ref mut p) => {
+            &Rule::Node(ref p) => {
                 use std::cell::BorrowState;
 
                 match p.index.get() {
@@ -172,33 +172,33 @@ impl Rule {
                     }
                 };
             }
-            &mut Rule::Whitespace(_) => {}
-            &mut Rule::Token(_) => {}
-            &mut Rule::UntilAny(_) => {}
-            &mut Rule::UntilAnyOrWhitespace(_) => {}
-            &mut Rule::Text(_) => {}
-            &mut Rule::Number(_) => {}
-            &mut Rule::Select(ref mut s) => {
-                for sub_rule in &mut s.args {
+            &Rule::Whitespace(_) => {}
+            &Rule::Token(_) => {}
+            &Rule::UntilAny(_) => {}
+            &Rule::UntilAnyOrWhitespace(_) => {}
+            &Rule::Text(_) => {}
+            &Rule::Number(_) => {}
+            &Rule::Select(ref s) => {
+                for sub_rule in &s.args {
                     sub_rule.update_refs(refs);
                 }
             }
-            &mut Rule::Sequence(ref mut s) => {
-                for sub_rule in &mut s.args {
+            &Rule::Sequence(ref s) => {
+                for sub_rule in &s.args {
                     sub_rule.update_refs(refs);
                 }
             }
-            &mut Rule::SeparatedBy(ref mut s) => {
+            &Rule::SeparatedBy(ref s) => {
                 s.rule.update_refs(refs);
                 s.by.update_refs(refs);
             }
-            &mut Rule::Repeat(ref mut r) => {
+            &Rule::Repeat(ref r) => {
                 r.rule.update_refs(refs);
             }
-            &mut Rule::Lines(ref mut l) => {
+            &Rule::Lines(ref l) => {
                 l.rule.update_refs(refs);
             }
-            &mut Rule::Optional(ref mut o) => {
+            &Rule::Optional(ref o) => {
                 o.rule.update_refs(refs);
             }
         }
@@ -248,7 +248,7 @@ mod tests {
 
         // Replace self referencing names with direct references.
         let refs = vec![(foo.clone(), node.clone())];
-        let mut rules = Rule::Node(NodeRef {
+        let rules = Rule::Node(NodeRef {
             name: foo.clone(),
             debug_id: 0,
             index: Cell::new(None),
