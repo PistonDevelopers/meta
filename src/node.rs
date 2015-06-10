@@ -5,12 +5,15 @@ use DebugId;
 
 /// A node reference.
 #[derive(Clone)]
-pub enum NodeRef {
-    /// Points to a node by name.
-    Name(Rc<String>, DebugId),
-    /// Reference to node.
-    /// The `NodeVisit` flag is used to prevent multiple visits when updating.
-    Ref(Cell<usize>, Cell<NodeVisit>),
+pub struct NodeRef {
+    /// Name of rule.
+    pub name: Rc<String>,
+    /// A debug id to track down the rule generating an error.
+    pub debug_id: DebugId,
+    /// The index to the rule reference.
+    pub index: Cell<Option<usize>>,
+    /// Whether the reference has been visited.
+    pub node_visit: Cell<NodeVisit>,
 }
 
 /// Tells whether a node is visited when updated.

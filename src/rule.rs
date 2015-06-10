@@ -1,7 +1,6 @@
 use range::Range;
 use std::rc::Rc;
 use std::cell::RefCell;
-use std::cell::Cell;
 
 use {
     Whitespace,
@@ -103,16 +102,18 @@ impl Rule {
                 l.parse(tokenizer, state, chars, offset, refs)
             }
             &Rule::Node(ref p) => {
-                match p {
-                    &NodeRef::Name(_, debug_id) => {
+                match p.index.get() {
+                    None => {
                         Err((
                             Range::empty(offset),
                             ParseError::InvalidRule(
-                                "Node rule is not updated to reference", debug_id)
+                                "Node rule is not updated to reference",
+                                p.debug_id
+                            )
                         ))
                     }
-                    &NodeRef::Ref(ref i, _) => {
-                        refs[i.get()].1.borrow().parse(
+                    Some(i) => {
+                        refs[i].1.borrow().parse(
                             tokenizer, state, chars, offset, refs
                         )
                     }
@@ -133,13 +134,13 @@ impl Rule {
             &mut Rule::Node(ref mut p) => {
                 use std::cell::BorrowState;
 
-                *p = match p {
-                    &mut NodeRef::Name(ref name, _) => {
+                match p.index.get() {
+                    None => {
                         // Look through references and update if correct name
                         // is found.
                         let mut found: Option<usize> = None;
                         for (i, r) in refs.iter().enumerate() {
-                            if &**name == &*r.0 {
+                            if &**p.name == &*r.0 {
                                 found = Some(i);
                                 break;
                             }
@@ -147,39 +148,29 @@ impl Rule {
                         match found {
                             None => { return; }
                             Some(i) => {
-                                NodeRef::Ref(
-                                    Cell::new(i),
-                                    Cell::new(NodeVisit::Unvisited)
-                                )
+                                p.index.set(Some(i));
+                                p.node_visit.set(NodeVisit::Visited);
+                                let q = &refs[i].1;
+                                if q.borrow_state() == BorrowState::Unused {
+                                    q.borrow_mut().update_refs(refs);
+                                }
+                                return;
                             }
                         }
                     }
-                    &mut NodeRef::Ref(ref i, ref visited) => {
+                    Some(i) => {
                         // Update the sub rules of the reference,
                         // but only if it has not been visited.
-                        if let NodeVisit::Unvisited = visited.get() {
-                            visited.set(NodeVisit::Visited);
-                            let p = &refs[i.get()].1;
-                            if p.borrow_state() == BorrowState::Unused {
-                                p.borrow_mut().update_refs(refs);
+                        if let NodeVisit::Unvisited = p.node_visit.get() {
+                            p.node_visit.set(NodeVisit::Visited);
+                            let q = &refs[i].1;
+                            if q.borrow_state() == BorrowState::Unused {
+                                q.borrow_mut().update_refs(refs);
                             }
                         }
                         return;
                     }
                 };
-                // Make sure to visit the referenced rule when replacing a name.
-                if let &mut NodeRef::Ref(ref i, ref visited) = p {
-                    // Update the sub rules of the reference,
-                    // but only if it has not been visited.
-                    if let NodeVisit::Unvisited = visited.get() {
-                        visited.set(NodeVisit::Visited);
-                        let p = &refs[i.get()].1;
-                        if p.borrow_state() == BorrowState::Unused {
-                            p.borrow_mut().update_refs(refs);
-                        }
-                    }
-                    return;
-                }
             }
             &mut Rule::Whitespace(_) => {}
             &mut Rule::Token(_) => {}
@@ -219,6 +210,7 @@ mod tests {
     use super::super::*;
     use std::rc::Rc;
     use std::cell::RefCell;
+    use std::cell::Cell;
 
     #[test]
     fn node_ref() {
@@ -242,7 +234,12 @@ mod tests {
                                 debug_id: 3,
                                 optional: false
                             }),
-                            Rule::Node(NodeRef::Name(foo.clone(), 3)),
+                            Rule::Node(NodeRef {
+                                name: foo.clone(),
+                                debug_id: 3,
+                                index: Cell::new(None),
+                                node_visit: Cell::new(NodeVisit::Unvisited)
+                            }),
                         ]
                     }),
                 })),
@@ -251,7 +248,12 @@ mod tests {
 
         // Replace self referencing names with direct references.
         let refs = vec![(foo.clone(), node.clone())];
-        let mut rules = Rule::Node(NodeRef::Name(foo.clone(), 0));
+        let mut rules = Rule::Node(NodeRef {
+            name: foo.clone(),
+            debug_id: 0,
+            index: Cell::new(None),
+            node_visit: Cell::new(NodeVisit::Unvisited)
+        });
         rules.update_refs(&refs);
 
         let text = "1 2 3";
