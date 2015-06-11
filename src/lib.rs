@@ -101,7 +101,7 @@ pub enum MetaData {
     /// Sets f64 property.
     F64(Rc<String>, f64),
     /// Sets string property.
-    String(Rc<String>, String),
+    String(Rc<String>, Rc<String>),
 }
 
 /// Updates the parser state.

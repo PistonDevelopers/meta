@@ -201,11 +201,11 @@ mod tests {
             Some((Range::new(10, 0), ParseError::ExpectedSomething(1))))));
         assert_eq!(tokenizer.tokens.len(), 3);
         assert_eq!(&tokenizer.tokens[0].1,
-            &MetaData::String(arg.clone(), "a".into()));
+            &MetaData::String(arg.clone(), Rc::new("a".into())));
         assert_eq!(&tokenizer.tokens[1].1,
-            &MetaData::String(arg.clone(), "b".into()));
+            &MetaData::String(arg.clone(), Rc::new("b".into())));
         assert_eq!(&tokenizer.tokens[2].1,
-            &MetaData::String(arg.clone(), "c".into()));
+            &MetaData::String(arg.clone(), Rc::new("c".into())));
     }
 
     #[test]
@@ -238,11 +238,11 @@ mod tests {
                 ParseError::ExpectedToken(Rc::new(",".into()), 2))))));
         assert_eq!(tokenizer.tokens.len(), 3);
         assert_eq!(&tokenizer.tokens[0].1,
-            &MetaData::String(arg.clone(), "a".into()));
+            &MetaData::String(arg.clone(), Rc::new("a".into())));
         assert_eq!(&tokenizer.tokens[1].1,
-            &MetaData::String(arg.clone(), "b".into()));
+            &MetaData::String(arg.clone(), Rc::new("b".into())));
         assert_eq!(&tokenizer.tokens[2].1,
-            &MetaData::String(arg.clone(), "c".into()));
+            &MetaData::String(arg.clone(), Rc::new("c".into())));
     }
 
     #[test]
@@ -285,14 +285,14 @@ mod tests {
             Some((Range::new(12, 0), ParseError::ExpectedSomething(2))))));
         assert_eq!(tokenizer.tokens.len(), 6);
         assert_eq!(&tokenizer.tokens[0].1,
-            &MetaData::String(arg.clone(), "a".into()));
+            &MetaData::String(arg.clone(), Rc::new("a".into())));
         assert_eq!(&tokenizer.tokens[1].1,
-            &MetaData::String(arg.clone(), "b".into()));
+            &MetaData::String(arg.clone(), Rc::new("b".into())));
         assert_eq!(&tokenizer.tokens[2].1,
-            &MetaData::String(arg.clone(), "c".into()));
+            &MetaData::String(arg.clone(), Rc::new("c".into())));
         assert_eq!(&tokenizer.tokens[3].1,
-            &MetaData::String(arg.clone(), "d".into()));
+            &MetaData::String(arg.clone(), Rc::new("d".into())));
         assert_eq!(&tokenizer.tokens[4].1,
-            &MetaData::String(arg.clone(), "e".into()));
+            &MetaData::String(arg.clone(), Rc::new("e".into())));
     }
 }

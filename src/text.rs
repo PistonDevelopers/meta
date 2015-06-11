@@ -43,7 +43,7 @@ impl Text {
                     Ok(text) => {
                         if let Some(ref property) = self.property {
                             Ok((range, tokenizer.data(
-                                MetaData::String(property.clone(), text),
+                                MetaData::String(property.clone(), Rc::new(text)),
                                 state,
                                 range
                             ), None))
@@ -113,6 +113,6 @@ mod tests {
         assert_eq!(res, Ok((Range::new(4, 7), TokenizerState(1), None)));
         assert_eq!(tokenizer.tokens.len(), 1);
         assert_eq!(&tokenizer.tokens[0].1,
-            &MetaData::String(foo.clone(), "hello".into()));
+            &MetaData::String(foo.clone(), Rc::new("hello".into())));
     }
 }
