@@ -61,18 +61,14 @@ pub fn parse(
     };
     let res = rules[n - 1].1.parse(&mut tokenizer, &s, &chars, 0, rules);
     match res {
-        Ok((range, s, Some((err_range, err)))) => {
+        Ok((range, s, _)) => {
             // Report error if did not reach the end of text.
             if range.next_offset() < text.len() {
-                Err((err_range, err))
+                Err((Range::empty(range.next_offset()), ParseError::ExpectedEnd))
             } else {
                 tokenizer.tokens.truncate(s.0);
                 Ok(tokenizer.tokens)
             }
-        }
-        Ok((_, s, None)) => {
-            tokenizer.tokens.truncate(s.0);
-            Ok(tokenizer.tokens)
         }
         Err((err_range, err)) => {
             Err((err_range, err))
