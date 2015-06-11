@@ -64,7 +64,7 @@ mod tests {
             debug_id: 0,
             args: vec![]
         });
-        let res = parse(&select, &[], &text);
+        let res = parse(&[(Rc::new("".into()), select)], &text);
         let invalid_rule = match &res {
             &Err((_, ParseError::InvalidRule(_, _))) => true,
             _ => false
@@ -91,7 +91,7 @@ mod tests {
                 })
             ]
         });
-        let res = parse(&select, &[], &text);
+        let res = parse(&[(Rc::new("".into()), select)], &text);
         assert_eq!(res, Ok(vec![
             (Range::new(0, 1), MetaData::F64(num.clone(), 2.0))
         ]));

@@ -49,14 +49,17 @@ mod tokenizer;
 
 /// Parses text with rules.
 pub fn parse(
-    rules: &Rule,
-    refs: &[(Rc<String>, Rule)],
+    rules: &[(Rc<String>, Rule)],
     text: &str
 ) -> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
     let chars: Vec<char> = text.chars().collect();
     let mut tokenizer = Tokenizer::new();
     let s = TokenizerState::new();
-    let res = rules.parse(&mut tokenizer, &s, &chars, 0, refs);
+    let n = match rules.len() {
+        0 => { return Err((Range::empty(0), ParseError::NoRules)); }
+        x => x
+    };
+    let res = rules[n - 1].1.parse(&mut tokenizer, &s, &chars, 0, rules);
     match res {
         Ok((range, s, Some((err_range, err)))) => {
             // Report error if did not reach the end of text.
@@ -77,12 +80,11 @@ pub fn parse(
     }
 }
 
-/// Updates the rule and references such that they point to each other.
-pub fn update_refs(rule: &Rule, refs: &[(Rc<String>, Rule)]) {
-    for r in refs {
-        r.1.update_refs(refs);
+/// Updates the references such that they point to each other.
+pub fn update_refs(rules: &[(Rc<String>, Rule)]) {
+    for r in rules {
+        r.1.update_refs(rules);
     }
-    rule.update_refs(refs);
 }
 
 /// A parse result succeeds with a new state,

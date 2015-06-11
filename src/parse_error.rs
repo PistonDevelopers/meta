@@ -31,6 +31,8 @@ pub enum ParseError {
     ExpectedToken(Rc<String>, DebugId),
     /// An invalid rule.
     InvalidRule(&'static str, DebugId),
+    /// No rules are specified.
+    NoRules,
 }
 
 impl Display for ParseError {
@@ -63,6 +65,8 @@ impl Display for ParseError {
                     debug_id, err)),
             &ParseError::InvalidRule(msg, debug_id) =>
                 try!(write!(fmt, "#{}, Invalid rule: {}", debug_id, msg)),
+            &ParseError::NoRules =>
+                try!(write!(fmt, "No rules are specified")),
         }
         Ok(())
     }

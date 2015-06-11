@@ -193,7 +193,7 @@ mod tests {
         ";
         let num: Rc<String> = Rc::new("num".into());
         let tex: Rc<String> = Rc::new("tex".into());
-        let rules = Rule::Sequence(Sequence {
+        let rule = Rule::Sequence(Sequence {
             debug_id: 0,
             args: vec![
                 Rule::Lines(Box::new(Lines {
@@ -214,7 +214,7 @@ mod tests {
                 }))
             ]
         });
-        let res = parse(&rules, &[], text);
+        let res = parse(&[(Rc::new("".into()), rule)], text);
         assert_eq!(res, Ok(vec![
             (Range::new(1, 1), MetaData::F64(num.clone(), 1.0)),
             (Range::new(3, 1), MetaData::F64(num.clone(), 2.0)),
