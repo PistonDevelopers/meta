@@ -60,14 +60,11 @@ mod tests {
     #[test]
     fn invalid_rule() {
         let text = "";
-        let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
-        let s = TokenizerState::new();
-        let select = Select {
+        let select = Rule::Select(Select {
             debug_id: 0,
             args: vec![]
-        };
-        let res = select.parse(&mut tokenizer, &s, &chars, 0, &[]);
+        });
+        let res = parse(&select, &[], &text);
         let invalid_rule = match &res {
             &Err((_, ParseError::InvalidRule(_, _))) => true,
             _ => false
@@ -78,11 +75,8 @@ mod tests {
     #[test]
     fn fail_first() {
         let text = "2";
-        let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
-        let s = TokenizerState::new();
         let num: Rc<String> = Rc::new("num".into());
-        let select = Select {
+        let select = Rule::Select(Select {
             debug_id: 0,
             args: vec![
                 Rule::Text(Text {
@@ -96,11 +90,10 @@ mod tests {
                     allow_underscore: false,
                 })
             ]
-        };
-        let res = select.parse(&mut tokenizer, &s, &chars, 0, &[]);
-        assert_eq!(res, Ok((Range::new(0, 1), TokenizerState(1),
-            Some((Range::new(0, 0), ParseError::ExpectedText(1))))));
-        assert_eq!(tokenizer.tokens.len(), 1);
-        assert_eq!(&tokenizer.tokens[0].1, &MetaData::F64(num.clone(), 2.0));
+        });
+        let res = parse(&select, &[], &text);
+        assert_eq!(res, Ok(vec![
+            (Range::new(0, 1), MetaData::F64(num.clone(), 2.0))
+        ]));
     }
 }
