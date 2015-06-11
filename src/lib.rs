@@ -157,3 +157,15 @@ fn ret_err(a: (Range, ParseError), b: Option<(Range, ParseError)>) ->
         a
     }
 }
+
+#[cfg(test)]
+mod tests{
+    use range::Range;
+    use super::*;
+
+    #[test]
+    fn no_rules() {
+        assert_eq!(parse(&[], ""),
+            Err((Range::empty(0), ParseError::NoRules)));
+    }
+}
