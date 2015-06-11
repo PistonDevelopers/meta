@@ -127,17 +127,20 @@ mod tests {
         });
 
         // Replace self referencing names with direct references.
-        let refs = vec![(foo.clone(), node)];
-        let rules = Rule::Node(Node {
+        let rule = Rule::Node(Node {
             name: foo.clone(),
             property: Some(foo.clone()),
             debug_id: 0,
             index: Cell::new(None),
         });
-        update_refs(&rules, &refs);
+        let rules = vec![
+            (foo.clone(), node),
+            (Rc::new("".into()), rule)
+        ];
+        update_refs(&rules);
 
         let text = "1 2 3";
-        let data = parse(&rules, &refs, text).unwrap();
+        let data = parse(&rules, text).unwrap();
         assert_eq!(data.len(), 9);
         assert_eq!(&data[0].1, &MetaData::StartNode(foo.clone()));
         assert_eq!(&data[1].1, &MetaData::F64(num.clone(), 1.0));
