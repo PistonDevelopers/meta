@@ -8,7 +8,6 @@ use {
     Text,
     Number,
     Node,
-    NodeVisit,
     ParseResult,
     Select,
     SeparatedBy,
@@ -129,19 +128,11 @@ impl Rule {
                             None => { return; }
                             Some(i) => {
                                 p.index.set(Some(i));
-                                p.node_visit.set(NodeVisit::Visited);
-                                refs[i].1.update_refs(refs);
                                 return;
                             }
                         }
                     }
-                    Some(i) => {
-                        // Update the sub rules of the reference,
-                        // but only if it has not been visited.
-                        if let NodeVisit::Unvisited = p.node_visit.get() {
-                            p.node_visit.set(NodeVisit::Visited);
-                            refs[i].1.update_refs(refs);
-                        }
+                    Some(_) => {
                         return;
                     }
                 };

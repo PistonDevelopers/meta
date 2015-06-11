@@ -10,7 +10,7 @@ pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
 pub use parse_error::ParseError;
 pub use token::Token;
 pub use select::Select;
-pub use node::{ Node, NodeVisit };
+pub use node::Node;
 pub use optional::Optional;
 pub use sequence::Sequence;
 pub use separated_by::SeparatedBy;
@@ -75,6 +75,14 @@ pub fn parse(
             Err((err_range, err))
         }
     }
+}
+
+/// Updates the rule and references such that they point to each other.
+pub fn update_refs(rule: &Rule, refs: &[(Rc<String>, Rule)]) {
+    for r in refs {
+        r.1.update_refs(refs);
+    }
+    rule.update_refs(refs);
 }
 
 /// A parse result succeeds with a new state,
