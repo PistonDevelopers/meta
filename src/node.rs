@@ -25,8 +25,6 @@ pub struct Node {
     pub debug_id: DebugId,
     /// The index to the rule reference.
     pub index: Cell<Option<usize>>,
-    /// Whether the reference has been visited.
-    pub node_visit: Cell<NodeVisit>,
 }
 
 impl Node {
@@ -88,15 +86,6 @@ impl Node {
     }
 }
 
-/// Tells whether a node is visited when updated.
-#[derive(Copy, Clone)]
-pub enum NodeVisit {
-    /// The node is not being visited.
-    Unvisited,
-    /// The node is being visited.
-    Visited
-}
-
 #[cfg(test)]
 mod tests {
     use super::super::*;
@@ -130,7 +119,6 @@ mod tests {
                                 property: Some(foo.clone()),
                                 debug_id: 3,
                                 index: Cell::new(None),
-                                node_visit: Cell::new(NodeVisit::Unvisited)
                             }),
                         ]
                     }),
@@ -145,9 +133,8 @@ mod tests {
             property: Some(foo.clone()),
             debug_id: 0,
             index: Cell::new(None),
-            node_visit: Cell::new(NodeVisit::Unvisited)
         });
-        rules.update_refs(&refs);
+        update_refs(&rules, &refs);
 
         let text = "1 2 3";
         let data = parse(&rules, &refs, text).unwrap();
