@@ -43,7 +43,7 @@ impl UntilAnyOrWhitespace {
                     text.push(*c);
                 }
                 Ok((range, tokenizer.data(
-                    MetaData::String(property.clone(), text),
+                    MetaData::String(property.clone(), Rc::new(text)),
                     state,
                     range
                 ), None))
@@ -94,6 +94,6 @@ mod tests {
         assert_eq!(res, Ok((Range::new(3, 3), TokenizerState(1), None)));
         assert_eq!(tokenizer.tokens.len(), 1);
         assert_eq!(&tokenizer.tokens[0].1,
-            &MetaData::String(function_name.clone(), "foo".into()));
+            &MetaData::String(function_name.clone(), Rc::new("foo".into())));
     }
 }

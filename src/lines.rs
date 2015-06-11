@@ -219,9 +219,9 @@ mod tests {
             (Range::new(1, 1), MetaData::F64(num.clone(), 1.0)),
             (Range::new(3, 1), MetaData::F64(num.clone(), 2.0)),
             (Range::new(5, 1), MetaData::F64(num.clone(), 3.0)),
-            (Range::new(7, 5), MetaData::String(tex.clone(), "one".into())),
-            (Range::new(13, 5), MetaData::String(tex.clone(), "two".into())),
-            (Range::new(19, 7), MetaData::String(tex.clone(), "three".into()))
+            (Range::new(7, 5), MetaData::String(tex.clone(), Rc::new("one".into()))),
+            (Range::new(13, 5), MetaData::String(tex.clone(), Rc::new("two".into()))),
+            (Range::new(19, 7), MetaData::String(tex.clone(), Rc::new("three".into())))
         ]));
     }
 }
