@@ -9,8 +9,6 @@ use DebugId;
 /// Errors reporting expected values.
 #[derive(Debug, PartialEq)]
 pub enum ParseError {
-    /// Not supported.
-    NotSupported,
     /// Whitespace is required.
     ExpectedWhitespace(DebugId),
     /// New line is required.
@@ -40,8 +38,6 @@ pub enum ParseError {
 impl Display for ParseError {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), FormatError> {
         match self {
-            &ParseError::NotSupported =>
-                try!(fmt.write_str("This feature is not supported")),
             &ParseError::ExpectedWhitespace(debug_id) =>
                 try!(write!(fmt, "#{}, Expected whitespace",
                     debug_id)),
