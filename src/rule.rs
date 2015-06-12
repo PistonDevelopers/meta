@@ -20,7 +20,7 @@ use {
 };
 
 /// A rule describes how some section of a document should be parsed.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Rule {
     /// Read whitespace.
     Whitespace(Whitespace),

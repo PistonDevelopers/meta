@@ -12,7 +12,7 @@ use {
 };
 
 /// Stores information about token.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Token {
     /// The text to match against.
     pub text: Rc<String>,

@@ -15,7 +15,7 @@ use {
 };
 
 /// A node reference.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Node {
     /// Name of rule.
     pub name: Rc<String>,

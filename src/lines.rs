@@ -14,7 +14,7 @@ use {
 };
 
 /// Stores information about lines.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Lines {
     /// The rule to read lines.
     /// This can be a multi-line rule.
