@@ -12,7 +12,7 @@ use {
 };
 
 /// Stores information about sequence.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Sequence {
     /// The sequential rules.
     pub args: Vec<Rule>,

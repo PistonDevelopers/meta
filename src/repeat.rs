@@ -13,7 +13,7 @@ use {
 };
 
 /// Stores inforamtion about separated by.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Repeat {
     /// The rule to separate.
     pub rule: Rule,

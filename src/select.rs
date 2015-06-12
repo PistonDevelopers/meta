@@ -12,7 +12,7 @@ use {
 };
 
 /// Stores information about select.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Select {
     /// The rules to select from.
     pub args: Vec<Rule>,

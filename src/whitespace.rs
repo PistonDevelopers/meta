@@ -7,7 +7,7 @@ use {
 };
 
 /// Stores information about whitespace.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Whitespace {
     /// Whether the whitespace is optional or required.
     pub optional: bool,
