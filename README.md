@@ -1,9 +1,11 @@
 # piston_meta
-A research project of meta parsing and composing for data
+A DSL parsing library for human readable text documents
 
-Piston-Meta is a research project under the Piston project to explore the use of meta parsing and composing for data oriented design. Meta parsing is a technique where you use a rules to describe how to transform a text into a tree structure, in a similar way that a parser generator can generate code for reading a text by a grammar, except that the rules in meta parsing can be changed at run time, or even read from a text described by the same rules. Piston-Meta is inspired by OMeta (https://en.wikipedia.org/wiki/OMeta) developed at Viewpoints Research Institute in 2007.
+Piston-Meta is a research project under the Piston project to explore the use of meta parsing and composing. Meta parsing is a technique where you use a rules to describe how to transform a text into a tree structure, in a similar way that a parser generator can generate code for reading a text by a grammar, except that the rules in meta parsing can be changed at run time, or even read from a text described by the same rules. Piston-Meta is inspired by OMeta (https://en.wikipedia.org/wiki/OMeta) developed at Viewpoints Research Institute in 2007.
 
-Meta parsing and composing could be very useful in game programming, where you have lots of data with slightly different grammar. This could be domain specific languages for simple scripting, or data to feed a system that requires a specific layout, or a configuration format that you develop while working on a project. The normal way is to read and write the data using a document library, for example JSON, but there are several downsides:
+Meta parsing and composing is useful when you have lots of data with slightly different grammar. This could be Domain Specific Languages (DSL) for simple scripting, or data to feed a system that requires a specific layout, or a configuration format that you develop while working on a project.
+
+The normal way is to read and write the data using a document library, for example JSON, but there are several downsides:
 
 1. Changes in the document structure are entangled with the application code
 2. It requires one dependency for each document format
