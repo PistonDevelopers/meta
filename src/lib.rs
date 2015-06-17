@@ -29,6 +29,8 @@ pub type DebugId = usize;
 use std::rc::Rc;
 use range::Range;
 
+pub mod bootstrap;
+
 mod parse_error;
 mod parse_error_handler;
 mod token;
