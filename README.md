@@ -18,8 +18,8 @@ extern crate piston_meta;
 use piston_meta::*;
 
 fn main() {
-    let text = "say \"Hello world!\"";
-    let rules = "1 \"rule\" [\"say\" w! t?\"foo\"]";
+    let text = r#"say "Hello world!""#;
+    let rules = r#"1 "rule" ["say" w! t?"foo"]"#;
     // Parse rules with meta language and convert to rules for parsing text.
     let rules = bootstrap::convert(
         &parse(&bootstrap::rules(), rules).unwrap(),
