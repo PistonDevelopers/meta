@@ -25,10 +25,18 @@ fn main() {
         &parse(&bootstrap::rules(), rules).unwrap(),
         &mut vec![] // stores ignored meta data
     ).unwrap();
-    let data = parse(&rules, text).unwrap();
-    assert_eq!(data.len(), 1);
-    if let &MetaData::String(_, ref hello) = &data[0].1 {
-        println!("{}", hello);
+    let data = parse(&rules, text);
+    match data {
+        Ok(data) => {
+            assert_eq!(data.len(), 1);
+            if let &MetaData::String(_, ref hello) = &data[0].1 {
+                println!("{}", hello);
+            }
+        }
+        Err((range, err)) => {
+            // Report the error to standard error output.
+            ParseStdErr::new(&text).error(range, err);
+        }
     }
 }
 ```
