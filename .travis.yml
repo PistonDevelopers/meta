@@ -15,4 +15,4 @@ after_success:
 - travis-cargo --only stable doc-upload
 env:
   global:
-    - secure: cpewKWIxIogX0DDZZajvlQkXR29Mc2JHLMzNQjO1FsVA67d5fsYlhGCIzF4eb32Yz73IpNFi3yKAdDfNYIVoYwWAYDRwJX5+noV3uQy5yhPRo5c5XYEYXXrYQkqaXArShvSw2Aq+Q94jK3rKT0Q4XaL7jwjDzvzY7dTBWlpBvk0=
+    secure: aXR1pPowTuMKmq/3xwxxQxTtddu2F0kYSo3J+foiFoR/Z58K+cclTVd/rgQp/9Pvgulgi3g2u51rENbUC31EMS4TMRHwsmKMKmBwfxjrLWidYiPjVTyYXZ5UbAoXk9/4aOfMqbXDYbmm/qJ4TML2C96dOhpugmm0Uy6W4Tw9ALk=
