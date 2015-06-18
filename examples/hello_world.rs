@@ -1,33 +1,16 @@
 extern crate piston_meta;
-extern crate range;
 
-use std::rc::Rc;
 use piston_meta::*;
 
 fn main() {
-    let text = "foo \"Hello world!\"";
-    let foo: Rc<String> = Rc::new("foo".into());
-    let rules = Rule::Sequence(Sequence {
-        debug_id: 0,
-        args: vec![
-            Rule::Token(Token {
-                debug_id: 1,
-                text: foo.clone(),
-                inverted: false,
-                property: None,
-            }),
-            Rule::Whitespace(Whitespace {
-                debug_id: 2,
-                optional: false,
-            }),
-            Rule::Text(Text {
-                debug_id: 0,
-                allow_empty: true,
-                property: Some(foo.clone())
-            })
-        ]
-    });
-    let data = parse(&[(Rc::new("".into()), rules)], text).unwrap();
+    let text = "say \"Hello world!\"";
+    let rules = "1 \"rule\" [\"say\" w! t?\"foo\"]";
+    // Parse rules with meta language and convert to rules for parsing text.
+    let rules = bootstrap::convert(
+        &parse(&bootstrap::rules(), rules).unwrap(),
+        &mut vec![] // stores ignored meta data
+    ).unwrap();
+    let data = parse(&rules, text).unwrap();
     assert_eq!(data.len(), 1);
     if let &MetaData::String(_, ref hello) = &data[0].1 {
         println!("{}", hello);
