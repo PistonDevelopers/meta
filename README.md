@@ -2,6 +2,7 @@
 A DSL parsing library for human readable text documents
 
 [Why Piston-Meta?](https://github.com/PistonDevelopers/meta/issues/1)
+
 [self-syntax](https://raw.githubusercontent.com/PistonDevelopers/meta/master/assets/self-syntax.txt)
 
 *Notice: Parsing is supported but composing is not implemented yet.*
