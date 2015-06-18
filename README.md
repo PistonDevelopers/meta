@@ -2,7 +2,7 @@
 A DSL parsing library for human readable text documents
 
 [![Travis](https://img.shields.io/travis/PistonDevelopers/meta.svg?style=flat-square)](https://travis-ci.org/PistonDevelopers/meta)
-[![Crates.io](https://img.shields.io/crates/v/meta.svg?style=flat-square)](https://crates.io/crates/meta)
+[![Crates.io](https://img.shields.io/crates/v/meta.svg?style=flat-square)](https://crates.io/crates/piston_meta)
 
 [Documentation](https://PistonDevelopers.github.io/meta)
 
