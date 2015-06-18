@@ -1,9 +1,15 @@
 # piston_meta
 A DSL parsing library for human readable text documents
 
+[![Travis](https://img.shields.io/travis/PistonDevelopers/meta.svg?style=flat-square)](https://travis-ci.org/PistonDevelopers/meta)
+[![Crates.io](https://img.shields.io/crates/v/meta.svg?style=flat-square)](https://crates.io/crates/meta)
+
+[Documentation](https://PistonDevelopers.github.io/meta)
+
 [Why Piston-Meta?](https://github.com/PistonDevelopers/meta/issues/1)
 
 [self-syntax](https://raw.githubusercontent.com/PistonDevelopers/meta/master/assets/self-syntax.txt)
+
 
 *Notice: Parsing is supported but composing is not implemented yet.*
 
