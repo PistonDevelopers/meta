@@ -21,88 +21,96 @@ use {
     Whitespace,
 };
 
+/// Updates with parsed range.
+pub fn update(range: Range, data: &mut &[(Range, MetaData)], offset: &mut usize) {
+    let next_offset = range.next_offset();
+    *data = &data[next_offset - *offset..];
+    *offset = next_offset;
+}
+
+/// Reads start node.
+pub fn start_node(name: &str, data: &[(Range, MetaData)], offset: usize)
+-> Result<Range, ()> {
+    if data.len() == 0 { return Err(()); }
+    match &data[0].1 {
+        &MetaData::StartNode(ref n) if &**n == name => {
+            Ok(Range::new(offset, 1))
+        }
+        _ => Err(())
+    }
+}
+
+/// Reads end node.
+fn end_node(name: &str, data: &[(Range, MetaData)], offset: usize)
+-> Result<Range, ()> {
+    if data.len() == 0 { return Err(()); }
+    match &data[0].1 {
+        &MetaData::EndNode(ref n) if &**n == name => {
+            Ok(Range::new(offset, 1))
+        }
+        _ => Err(())
+    }
+}
+
+/// Ignores next item.
+/// If this is the start of a node, it ignores all items to the end node.
+pub fn ignore(data: &[(Range, MetaData)], offset: usize)
+-> Range {
+    let mut acc: usize = 0;
+    let mut len = 0;
+    for item in data.iter() {
+        match &item.1 {
+            &MetaData::StartNode(_) => acc += 1,
+            &MetaData::EndNode(_) => acc -= 1,
+            _ => {}
+        }
+        len += 1;
+        if acc == 0 { break; }
+    }
+    Range::new(offset, len)
+}
+
+/// Reads string.
+pub fn meta_string(name: &str, data: &[(Range, MetaData)], offset: usize)
+-> Result<(Range, Rc<String>), ()> {
+    if data.len() == 0 { return Err(()); }
+    match &data[0].1 {
+        &MetaData::String(ref n, ref val) if &**n == name => {
+            Ok((Range::new(offset, 1), val.clone()))
+        }
+        _ => Err(())
+    }
+}
+
+/// Reads f64.
+pub fn meta_f64(name: &str, data: &[(Range, MetaData)], offset: usize)
+-> Result<(Range, f64), ()> {
+    if data.len() == 0 { return Err(()); }
+    match &data[0].1 {
+        &MetaData::F64(ref n, ref val) if &**n == name => {
+            Ok((Range::new(offset, 1), *val))
+        }
+        _ => Err(())
+    }
+}
+
+/// Reads bool.
+pub fn meta_bool(name: &str, data: &[(Range, MetaData)], offset: usize)
+-> Result<(Range, bool), ()> {
+    if data.len() == 0 { return Err(()); }
+    match &data[0].1 {
+        &MetaData::Bool(ref n, ref val) if &**n == name => {
+            Ok((Range::new(offset, 1), *val))
+        }
+        _ => Err(())
+    }
+}
+
 /// Converts meta data to rules.
 pub fn convert(
     mut data: &[(Range, MetaData)],
     ignored: &mut Vec<Range>
 ) -> Result<Vec<(Rc<String>, Rule)>, ()> {
-    fn update(range: Range, data: &mut &[(Range, MetaData)], offset: &mut usize) {
-        let next_offset = range.next_offset();
-        *data = &data[next_offset - *offset..];
-        *offset = next_offset;
-    }
-
-    fn start_node(name: &str, data: &[(Range, MetaData)], offset: usize)
-    -> Result<Range, ()> {
-        if data.len() == 0 { return Err(()); }
-        match &data[0].1 {
-            &MetaData::StartNode(ref n) if &**n == name => {
-                Ok(Range::new(offset, 1))
-            }
-            _ => Err(())
-        }
-    }
-
-    fn end_node(name: &str, data: &[(Range, MetaData)], offset: usize)
-    -> Result<Range, ()> {
-        if data.len() == 0 { return Err(()); }
-        match &data[0].1 {
-            &MetaData::EndNode(ref n) if &**n == name => {
-                Ok(Range::new(offset, 1))
-            }
-            _ => Err(())
-        }
-    }
-
-    fn ignore(data: &[(Range, MetaData)], offset: usize)
-    -> Range {
-        let mut acc: usize = 0;
-        let mut len = 0;
-        for item in data.iter() {
-            match &item.1 {
-                &MetaData::StartNode(_) => acc += 1,
-                &MetaData::EndNode(_) => acc -= 1,
-                _ => {}
-            }
-            len += 1;
-            if acc == 0 { break; }
-        }
-        Range::new(offset, len)
-    }
-
-    fn meta_string(name: &str, data: &[(Range, MetaData)], offset: usize)
-    -> Result<(Range, Rc<String>), ()> {
-        if data.len() == 0 { return Err(()); }
-        match &data[0].1 {
-            &MetaData::String(ref n, ref val) if &**n == name => {
-                Ok((Range::new(offset, 1), val.clone()))
-            }
-            _ => Err(())
-        }
-    }
-
-    fn meta_f64(name: &str, data: &[(Range, MetaData)], offset: usize)
-    -> Result<(Range, f64), ()> {
-        if data.len() == 0 { return Err(()); }
-        match &data[0].1 {
-            &MetaData::F64(ref n, ref val) if &**n == name => {
-                Ok((Range::new(offset, 1), *val))
-            }
-            _ => Err(())
-        }
-    }
-
-    fn meta_bool(name: &str, data: &[(Range, MetaData)], offset: usize)
-    -> Result<(Range, bool), ()> {
-        if data.len() == 0 { return Err(()); }
-        match &data[0].1 {
-            &MetaData::Bool(ref n, ref val) if &**n == name => {
-                Ok((Range::new(offset, 1), *val))
-            }
-            _ => Err(())
-        }
-    }
-
     fn read_string(mut data: &[(Range, MetaData)], mut offset: usize)
     -> Result<(Range, (Rc<String>, Rc<String>)), ()> {
         let start_offset = offset;
