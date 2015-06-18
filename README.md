@@ -24,32 +24,29 @@ Piston-Meta allows parsing into any structure implementing `MetaReader`, for exa
 
 ```Rust
 extern crate piston_meta;
-extern crate range;
 
-use std::rc::Rc;
 use piston_meta::*;
 
 fn main() {
-    let text = "foo \"Hello world!\"";
-    let chars: Vec<char> = text.chars().collect();
-    let mut tokenizer = Tokenizer::new();
-    let s = TokenizerState::new();
-    let foo: Rc<String> = Rc::new("foo".into());
-    let text = Text {
-        allow_empty: true,
-        property: Some(foo.clone())
-    };
-    let _ = text.parse(&mut tokenizer, &s, &chars[4..], 4);
-    assert_eq!(tokenizer.tokens.len(), 1);
-    if let &MetaData::String(_, ref hello) = &tokenizer.tokens[0].0 {
+    let text = "say \"Hello world!\"";
+    let rules = "1 \"rule\" [\"say\" w! t?\"foo\"]";
+    // Parse rules with meta language and convert to rules for parsing text.
+    let rules = bootstrap::convert(
+        &parse(&bootstrap::rules(), rules).unwrap(),
+        &mut vec![] // stores ignored meta data
+    ).unwrap();
+    let data = parse(&rules, text).unwrap();
+    assert_eq!(data.len(), 1);
+    if let &MetaData::String(_, ref hello) = &data[0].1 {
         println!("{}", hello);
     }
 }
+
 ```
 
 ### New features
 
-Parsing is now working! This library contains the rules and parse algorithms. For examples, see the unit tests. 
+Parsing is now working! This library contains the rules and parse algorithms. For examples, see the unit tests.
 
 The deepest error is picked to make better error messages. When a text is parsed successfully, the result contains an optional error which can be used for additional success checks, for example whether it reached the end of a file.
 
