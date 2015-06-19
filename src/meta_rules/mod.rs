@@ -139,7 +139,7 @@ fn ret_err(a: (Range, ParseError), b: Option<(Range, ParseError)>) ->
 #[cfg(test)]
 mod tests{
     use range::Range;
-    use super::*;
+    use all::*;
 
     #[test]
     fn no_rules() {
