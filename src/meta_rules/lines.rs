@@ -88,6 +88,7 @@ impl Lines {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use meta_rules::{ Lines, Number, Sequence, Text, Whitespace };
     use range::Range;
     use std::rc::Rc;
 

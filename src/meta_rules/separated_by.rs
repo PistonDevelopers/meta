@@ -84,6 +84,7 @@ impl SeparatedBy {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use meta_rules::{ SeparatedBy, Token, UntilAnyOrWhitespace };
     use std::rc::Rc;
     use range::Range;
 

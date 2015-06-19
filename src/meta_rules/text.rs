@@ -63,6 +63,7 @@ impl Text {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use meta_rules::Text;
     use range::Range;
     use std::rc::Rc;
 

@@ -57,6 +57,7 @@ impl UntilAny {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use meta_rules::UntilAny;
     use range::Range;
     use std::rc::Rc;
 

@@ -54,6 +54,7 @@ impl Select {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use meta_rules::{ Number, Select, Text };
     use range::Range;
     use std::rc::Rc;
 

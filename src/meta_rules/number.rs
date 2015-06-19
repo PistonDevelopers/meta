@@ -69,6 +69,7 @@ impl Number {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use meta_rules::{ Number };
     use range::Range;
     use std::rc::Rc;
 

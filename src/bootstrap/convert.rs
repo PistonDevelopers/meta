@@ -2,10 +2,8 @@ use std::rc::Rc;
 use std::cell::Cell;
 use range::Range;
 
-use {
-    update_refs,
+use meta_rules::{
     Lines,
-    MetaData,
     Optional,
     Node,
     Number,
@@ -19,6 +17,10 @@ use {
     UntilAny,
     UntilAnyOrWhitespace,
     Whitespace,
+};
+use {
+    update_refs,
+    MetaData,
 };
 
 /// Updates with parsed range.

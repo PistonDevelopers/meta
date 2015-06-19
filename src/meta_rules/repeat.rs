@@ -62,6 +62,7 @@ impl Repeat {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use meta_rules::{ Repeat, Token };
     use std::rc::Rc;
     use range::Range;
 

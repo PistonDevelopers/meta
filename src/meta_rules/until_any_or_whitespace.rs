@@ -57,6 +57,7 @@ impl UntilAnyOrWhitespace {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use meta_rules::UntilAnyOrWhitespace;
     use range::Range;
     use std::rc::Rc;
 

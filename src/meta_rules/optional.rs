@@ -54,6 +54,7 @@ impl Optional {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use meta_rules::{ Number, Optional, Sequence, Text };
     use range::Range;
     use std::rc::Rc;
 

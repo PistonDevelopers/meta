@@ -34,6 +34,7 @@ impl Whitespace {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use meta_rules::Whitespace;
     use range::Range;
 
     #[test]
