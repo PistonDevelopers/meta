@@ -1,13 +1,15 @@
 use range::Range;
 use std::rc::Rc;
 
-use {
+use super::{
     ret_err,
     err_update,
     update,
+    ParseResult,
+};
+use {
     DebugId,
     ParseError,
-    ParseResult,
     Rule,
     Tokenizer,
     TokenizerState,
@@ -87,7 +89,8 @@ impl Lines {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use all::*;
+    use meta_rules::{ Lines, Number, Sequence, Text, Whitespace };
     use range::Range;
     use std::rc::Rc;
 

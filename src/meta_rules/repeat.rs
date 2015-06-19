@@ -1,12 +1,14 @@
 use range::Range;
 use std::rc::Rc;
 
-use {
+use super::{
     ret_err,
     err_update,
     update,
-    DebugId,
     ParseResult,
+};
+use {
+    DebugId,
     Rule,
     Tokenizer,
     TokenizerState,
@@ -61,7 +63,8 @@ impl Repeat {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use all::*;
+    use meta_rules::{ Repeat, Token };
     use std::rc::Rc;
     use range::Range;
 

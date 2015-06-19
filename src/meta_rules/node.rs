@@ -2,13 +2,15 @@ use range::Range;
 use std::rc::Rc;
 use std::cell::Cell;
 
-use {
+use super::{
     ret_err,
     update,
+    ParseResult,
+};
+use {
     DebugId,
     MetaData,
     ParseError,
-    ParseResult,
     Rule,
     Tokenizer,
     TokenizerState,
@@ -88,7 +90,9 @@ impl Node {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use all::*;
+    use meta_rules::{ update_refs, Node, Number, Optional, Sequence,
+        Whitespace };
     use std::rc::Rc;
     use std::cell::Cell;
 

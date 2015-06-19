@@ -1,11 +1,13 @@
 use read_token;
 use std::rc::Rc;
 
+use super::{
+    ParseResult,
+};
 use {
     DebugId,
     MetaData,
     ParseError,
-    ParseResult,
     Tokenizer,
     TokenizerState,
 };
@@ -56,7 +58,8 @@ impl UntilAny {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use all::*;
+    use meta_rules::UntilAny;
     use range::Range;
     use std::rc::Rc;
 

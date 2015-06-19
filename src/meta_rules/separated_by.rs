@@ -1,12 +1,14 @@
 use range::Range;
 use std::rc::Rc;
 
-use {
+use super::{
     ret_err,
     err_update,
     update,
-    DebugId,
     ParseResult,
+};
+use {
+    DebugId,
     Rule,
     Tokenizer,
     TokenizerState,
@@ -83,7 +85,8 @@ impl SeparatedBy {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use all::*;
+    use meta_rules::{ SeparatedBy, Token, UntilAnyOrWhitespace };
     use std::rc::Rc;
     use range::Range;
 

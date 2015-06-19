@@ -1,20 +1,22 @@
 use std::rc::Rc;
 
-use {
-    Whitespace,
+use super::{
+    Lines,
+    Node,
+    Number,
+    Optional,
+    ParseResult,
+    Repeat,
+    Select,
+    SeparatedBy,
+    Sequence,
+    Text,
     Token,
     UntilAny,
     UntilAnyOrWhitespace,
-    Text,
-    Number,
-    Node,
-    ParseResult,
-    Select,
-    SeparatedBy,
-    Repeat,
-    Lines,
-    Sequence,
-    Optional,
+    Whitespace,
+};
+use {
     Tokenizer,
     TokenizerState,
 };

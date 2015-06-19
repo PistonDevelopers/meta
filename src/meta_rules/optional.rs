@@ -1,9 +1,11 @@
 use range::Range;
 use std::rc::Rc;
 
-use {
+use super::{
     ret_err,
     update,
+};
+use {
     DebugId,
     ParseError,
     Rule,
@@ -53,7 +55,8 @@ impl Optional {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use all::*;
+    use meta_rules::{ Number, Optional, Sequence, Text };
     use range::Range;
     use std::rc::Rc;
 

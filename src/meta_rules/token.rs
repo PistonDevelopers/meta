@@ -2,11 +2,13 @@ use range::Range;
 use read_token;
 use std::rc::Rc;
 
+use super::{
+    ParseResult,
+};
 use {
     DebugId,
     MetaData,
     ParseError,
-    ParseResult,
     Tokenizer,
     TokenizerState,
 };
@@ -61,7 +63,8 @@ impl Token {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use all::*;
+    use meta_rules::Token;
     use std::rc::Rc;
     use range::Range;
 

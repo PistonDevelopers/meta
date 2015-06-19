@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use std::cell::Cell;
 
-use {
+use meta_rules::{
     update_refs,
     Lines,
     Node,

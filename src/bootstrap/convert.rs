@@ -2,10 +2,9 @@ use std::rc::Rc;
 use std::cell::Cell;
 use range::Range;
 
-use {
+use meta_rules::{
     update_refs,
     Lines,
-    MetaData,
     Optional,
     Node,
     Number,
@@ -20,6 +19,7 @@ use {
     UntilAnyOrWhitespace,
     Whitespace,
 };
+use MetaData;
 
 /// Updates with parsed range.
 pub fn update(range: Range, data: &mut &[(Range, MetaData)], offset: &mut usize) {
