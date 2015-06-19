@@ -1,6 +1,6 @@
 #![deny(missing_docs)]
 
-//! Meta parsing and encoding for data oriented design
+//! A DSL parsing library for human readable text documents
 
 extern crate read_token;
 extern crate range;
