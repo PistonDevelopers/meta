@@ -5,22 +5,11 @@
 extern crate read_token;
 extern crate range;
 
-pub use whitespace::Whitespace;
 pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
 pub use parse_error::ParseError;
-pub use token::Token;
-pub use select::Select;
-pub use node::Node;
-pub use optional::Optional;
-pub use sequence::Sequence;
-pub use separated_by::SeparatedBy;
-pub use repeat::Repeat;
-pub use until_any::UntilAny;
-pub use until_any_or_whitespace::UntilAnyOrWhitespace;
-pub use text::Text;
-pub use number::Number;
-pub use lines::Lines;
-pub use rule::Rule;
+pub use meta_rules::{ Lines, Node, Number, Optional, Repeat, Rule, Select,
+    SeparatedBy, Sequence, Text, Token, UntilAny, UntilAnyOrWhitespace,
+    Whitespace };
 pub use tokenizer::{ Tokenizer, TokenizerState };
 
 /// The type of debug id used to track down errors in rules.
@@ -30,24 +19,15 @@ use std::rc::Rc;
 use range::Range;
 
 pub mod bootstrap;
+pub mod meta_rules;
 
 mod parse_error;
 mod parse_error_handler;
-mod token;
-mod whitespace;
-mod select;
-mod node;
-mod optional;
-mod sequence;
-mod separated_by;
-mod repeat;
-mod until_any;
-mod until_any_or_whitespace;
-mod text;
-mod number;
-mod lines;
-mod rule;
 mod tokenizer;
+
+mod all {
+    pub use super::*;
+}
 
 /// Parses text with rules.
 pub fn parse(

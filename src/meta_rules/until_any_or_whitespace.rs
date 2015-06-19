@@ -12,7 +12,7 @@ use {
 
 /// Stores information about reading until whitespace or any of some character.
 #[derive(Clone, Debug, PartialEq)]
-pub struct UntilAny {
+pub struct UntilAnyOrWhitespace {
     /// The characters to stop at.
     pub any_characters: Rc<String>,
     /// Whether empty data is accepted or not.
@@ -23,7 +23,7 @@ pub struct UntilAny {
     pub debug_id: DebugId,
 }
 
-impl UntilAny {
+impl UntilAnyOrWhitespace {
     /// Parses until whitespace or any specified characters.
     pub fn parse(
         &self,
@@ -32,7 +32,7 @@ impl UntilAny {
         chars: &[char],
         offset: usize
     ) -> ParseResult<TokenizerState> {
-        let (range, _) = read_token::until_any(
+        let (range, _) = read_token::until_any_or_whitespace(
             &self.any_characters, chars, offset);
         if range.length == 0 && !self.optional {
             Err((range, ParseError::ExpectedSomething(self.debug_id)))
@@ -56,7 +56,7 @@ impl UntilAny {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use all::*;
     use range::Range;
     use std::rc::Rc;
 
@@ -66,7 +66,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
-        let name = UntilAny {
+        let name = UntilAnyOrWhitespace {
             debug_id: 0,
             any_characters: Rc::new("(".into()),
             optional: false,
@@ -84,7 +84,7 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let function_name: Rc<String> = Rc::new("function_name".into());
-        let name = UntilAny {
+        let name = UntilAnyOrWhitespace {
             debug_id: 0,
             any_characters: Rc::new("(".into()),
             optional: false,

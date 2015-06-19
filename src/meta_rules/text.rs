@@ -62,7 +62,7 @@ impl Text {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use all::*;
     use range::Range;
     use std::rc::Rc;
 

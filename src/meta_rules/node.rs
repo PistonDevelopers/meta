@@ -88,7 +88,7 @@ impl Node {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use all::*;
     use std::rc::Rc;
     use std::cell::Cell;
 
