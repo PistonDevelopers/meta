@@ -5,6 +5,7 @@ use super::{
     Node,
     Number,
     Optional,
+    ParseResult,
     Repeat,
     Select,
     SeparatedBy,
@@ -16,7 +17,6 @@ use super::{
     Whitespace,
 };
 use {
-    ParseResult,
     Tokenizer,
     TokenizerState,
 };

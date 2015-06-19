@@ -3,6 +3,7 @@ use std::cell::Cell;
 use range::Range;
 
 use meta_rules::{
+    update_refs,
     Lines,
     Optional,
     Node,
@@ -18,10 +19,7 @@ use meta_rules::{
     UntilAnyOrWhitespace,
     Whitespace,
 };
-use {
-    update_refs,
-    MetaData,
-};
+use MetaData;
 
 /// Updates with parsed range.
 pub fn update(range: Range, data: &mut &[(Range, MetaData)], offset: &mut usize) {

@@ -2,6 +2,7 @@ use std::rc::Rc;
 use std::cell::Cell;
 
 use meta_rules::{
+    update_refs,
     Lines,
     Node,
     Number,
@@ -14,9 +15,6 @@ use meta_rules::{
     Token,
     UntilAnyOrWhitespace,
     Whitespace,
-};
-use {
-    update_refs,
 };
 
 /// Returns rules for parsing meta rules.

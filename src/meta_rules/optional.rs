@@ -1,9 +1,11 @@
 use range::Range;
 use std::rc::Rc;
 
-use {
+use super::{
     ret_err,
     update,
+};
+use {
     DebugId,
     ParseError,
     Rule,

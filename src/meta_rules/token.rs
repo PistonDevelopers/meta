@@ -2,11 +2,13 @@ use range::Range;
 use read_token;
 use std::rc::Rc;
 
+use super::{
+    ParseResult,
+};
 use {
     DebugId,
     MetaData,
     ParseError,
-    ParseResult,
     Tokenizer,
     TokenizerState,
 };

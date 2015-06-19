@@ -1,12 +1,14 @@
 use range::Range;
 use std::rc::Rc;
 
-use {
+use super::{
     ret_err,
     err_update,
     update,
-    DebugId,
     ParseResult,
+};
+use {
+    DebugId,
     Rule,
     Tokenizer,
     TokenizerState,
