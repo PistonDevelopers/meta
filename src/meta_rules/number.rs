@@ -33,22 +33,13 @@ impl Number {
         chars: &[char],
         offset: usize
     ) -> ParseResult<TokenizerState> {
-        let res = if self.allow_underscore {
-                read_token::underscore_number(chars, offset)
-            } else {
-                read_token::number(chars, offset)
-            };
-        if let Some(range) = res {
-            let mut text = String::with_capacity(range.length);
-            for c in chars.iter()
-                .take(range.length)
-                .filter(|&c| *c != '_')
-            {
-                text.push(*c);
-            }
-            match text.parse::<f64>() {
+        let settings = read_token::NumberSettings {
+            allow_underscore: self.allow_underscore
+        };
+        if let Some(range) = read_token::number(&settings, chars, offset) {
+            match read_token::parse_number(&settings, &chars[..range.length]) {
                 Err(err) => Err((range,
-                    ParseError::ParseFloatError(err, self.debug_id))),
+                    ParseError::ParseNumberError(err, self.debug_id))),
                 Ok(val) => {
                     if let Some(ref property) = self.property {
                         Ok((range, tokenizer.data(

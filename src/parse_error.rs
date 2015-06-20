@@ -1,7 +1,6 @@
 use std::fmt::{ Display, Formatter };
 use std::fmt::Error as FormatError;
-use std::num::ParseFloatError;
-use read_token::ParseStringError;
+use read_token::{ ParseNumberError, ParseStringError };
 use std::rc::Rc;
 
 use DebugId;
@@ -18,7 +17,7 @@ pub enum ParseError {
     /// Expected number.
     ExpectedNumber(DebugId),
     /// Error when parsing float.
-    ParseFloatError(ParseFloatError, DebugId),
+    ParseNumberError(ParseNumberError, DebugId),
     /// Expected text.
     ExpectedText(DebugId),
     /// Empty text not allowed.
@@ -49,7 +48,7 @@ impl Display for ParseError {
                     debug_id)),
             &ParseError::ExpectedNumber(debug_id) =>
                 try!(write!(fmt, "#{}, Expected number", debug_id)),
-            &ParseError::ParseFloatError(ref err, debug_id) =>
+            &ParseError::ParseNumberError(ref err, debug_id) =>
                 try!(write!(fmt, "#{}, Invalid number format: {}",
                     debug_id, err)),
             &ParseError::ExpectedToken(ref token, debug_id) =>
