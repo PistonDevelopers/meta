@@ -76,8 +76,15 @@ impl<'b> ParseErrorHandler for ParseStdErr<'b> {
                 if intersect.offset >= r.offset {
                     write!(&mut stderr, "{}: ", i + 1).unwrap();
                     let i = intersect.offset - r.offset;
-                    for _ in 0 .. i {
-                        write!(&mut stderr, " ").unwrap();
+                    for c in text.chars().take(i) {
+                        match c {
+                            '\t' => {
+                                write!(&mut stderr, "\t").unwrap();
+                            }
+                            _ => {
+                                write!(&mut stderr, " ").unwrap();
+                            }
+                        }
                     }
                     writeln!(&mut stderr, "^").unwrap();
                 }
