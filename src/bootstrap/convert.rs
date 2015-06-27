@@ -12,7 +12,7 @@ use meta_rules::{
     Rule,
     Sequence,
     Select,
-    SeparatedBy,
+    SeparateBy,
     Text,
     Token,
     UntilAny,
@@ -607,7 +607,7 @@ pub fn convert(
             (Some(by), Some(rule)) => {
                 *debug_id += 1;
                 Ok((Range::new(start_offset, offset - start_offset),
-                Rule::SeparatedBy(Box::new(SeparatedBy {
+                Rule::SeparateBy(Box::new(SeparateBy {
                     debug_id: *debug_id,
                     optional: optional,
                     allow_trail: allow_trail,

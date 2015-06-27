@@ -9,7 +9,7 @@ use meta_rules::{
     Optional,
     Rule,
     Select,
-    SeparatedBy,
+    SeparateBy,
     Sequence,
     Text,
     Token,
@@ -232,7 +232,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 8002,
                 optional: true,
             }),
-            Rule::SeparatedBy(Box::new(SeparatedBy {
+            Rule::SeparateBy(Box::new(SeparateBy {
                 debug_id: 8003,
                 optional: false,
                 allow_trail: true,
@@ -270,7 +270,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 9002,
                 optional: true,
             }),
-            Rule::SeparatedBy(Box::new(SeparatedBy {
+            Rule::SeparateBy(Box::new(SeparateBy {
                 debug_id: 9003,
                 optional: false,
                 allow_trail: true,

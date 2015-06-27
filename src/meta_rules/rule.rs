@@ -8,7 +8,7 @@ use super::{
     ParseResult,
     Repeat,
     Select,
-    SeparatedBy,
+    SeparateBy,
     Sequence,
     Text,
     Token,
@@ -44,7 +44,7 @@ pub enum Rule {
     /// If any sub rule fails, the rule fails.
     Sequence(Sequence),
     /// Repeat rule separated by another rule.
-    SeparatedBy(Box<SeparatedBy>),
+    SeparateBy(Box<SeparateBy>),
     /// Repeat rule.
     Repeat(Box<Repeat>),
     /// Repeat rule separated by one or more lines.
@@ -90,7 +90,7 @@ impl Rule {
             &Rule::Sequence(ref s) => {
                 s.parse(tokenizer, state, chars, offset, refs)
             }
-            &Rule::SeparatedBy(ref s) => {
+            &Rule::SeparateBy(ref s) => {
                 s.parse(tokenizer, state, chars, offset, refs)
             }
             &Rule::Repeat(ref r) => {
@@ -155,7 +155,7 @@ impl Rule {
                     sub_rule.update_refs(refs);
                 }
             }
-            &Rule::SeparatedBy(ref s) => {
+            &Rule::SeparateBy(ref s) => {
                 s.rule.update_refs(refs);
                 s.by.update_refs(refs);
             }
