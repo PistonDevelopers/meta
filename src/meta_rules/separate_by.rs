@@ -16,7 +16,7 @@ use {
 
 /// Stores inforamtion about separated by.
 #[derive(Clone, Debug, PartialEq)]
-pub struct SeparatedBy {
+pub struct SeparateBy {
     /// The rule to separate.
     pub rule: Rule,
     /// The rule to separate by.
@@ -29,7 +29,7 @@ pub struct SeparatedBy {
     pub debug_id: DebugId,
 }
 
-impl SeparatedBy {
+impl SeparateBy {
     /// Parses rule repeatedly separated by another rule.
     pub fn parse(
         &self,
@@ -86,7 +86,7 @@ impl SeparatedBy {
 #[cfg(test)]
 mod tests {
     use all::*;
-    use meta_rules::{ SeparatedBy, Token, UntilAnyOrWhitespace };
+    use meta_rules::{ SeparateBy, Token, UntilAnyOrWhitespace };
     use std::rc::Rc;
     use range::Range;
 
@@ -96,7 +96,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
-        let sep = SeparatedBy {
+        let sep = SeparateBy {
             debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
@@ -124,7 +124,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
-        let sep = SeparatedBy {
+        let sep = SeparateBy {
             debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
@@ -153,7 +153,7 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let arg: Rc<String> = Rc::new("arg".into());
-        let sep = SeparatedBy {
+        let sep = SeparateBy {
             debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
@@ -182,7 +182,7 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let arg: Rc<String> = Rc::new("arg".into());
-        let sep = SeparatedBy {
+        let sep = SeparateBy {
             debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
@@ -218,7 +218,7 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let arg: Rc<String> = Rc::new("arg".into());
-        let sep = SeparatedBy {
+        let sep = SeparateBy {
             debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
@@ -255,9 +255,9 @@ mod tests {
         let mut tokenizer = Tokenizer::new();
         let s = TokenizerState::new();
         let arg: Rc<String> = Rc::new("arg".into());
-        let sep = SeparatedBy {
+        let sep = SeparateBy {
             debug_id: 0,
-            rule: Rule::SeparatedBy(Box::new(SeparatedBy {
+            rule: Rule::SeparateBy(Box::new(SeparateBy {
                 debug_id: 1,
                 rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                     debug_id: 2,
