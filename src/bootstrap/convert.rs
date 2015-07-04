@@ -320,6 +320,7 @@ pub fn convert(
 
         let mut text = None;
         let mut property = None;
+        let mut not = None;
         let mut inverted = None;
         loop {
             if let Ok(range) = end_node(node, data, offset) {
@@ -331,6 +332,9 @@ pub fn convert(
             } else if let Ok((range, val)) = read_set("property", data, offset, strings) {
                 update(range, &mut data, &mut offset);
                 property = Some(val);
+            } else if let Ok((range, val)) = meta_bool("not", data, offset) {
+                update(range, &mut data, &mut offset);
+                not = Some(val);
             } else if let Ok((range, val)) = meta_bool("inverted", data, offset) {
                 update(range, &mut data, &mut offset);
                 inverted = Some(val);
@@ -340,6 +344,7 @@ pub fn convert(
                 ignored.push(range);
             }
         }
+        let not = not.unwrap_or(false);
         let inverted = inverted.unwrap_or(false);
         match text {
             Some(text) => {
@@ -348,6 +353,7 @@ pub fn convert(
                 Rule::Token(Token {
                     debug_id: *debug_id,
                     text: text,
+                    not: not,
                     inverted: inverted,
                     property: property,
                 })))

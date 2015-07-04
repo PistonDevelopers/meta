@@ -81,6 +81,7 @@ mod tests {
             rule: Rule::Token(Token {
                 debug_id: 1,
                 text: token.clone(),
+                not: false,
                 inverted: false,
                 property: None,
             })
@@ -103,6 +104,7 @@ mod tests {
             rule: Rule::Token(Token {
                 debug_id: 1,
                 text: token.clone(),
+                not: false,
                 inverted: false,
                 property: None,
             })

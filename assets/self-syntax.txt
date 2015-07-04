@@ -14,7 +14,7 @@ seps: "[]{}():.!?\""
 9 "select" ["{" w? s!.(w!) {@"rule""rule"} "}"]
 10 "separated_by" ["s" @"opt" ?".""allow_trail"
   "(" w? @"rule""by" w? ")" w? "{" w? @"rule""rule" w? "}"]
-11 "token" [@"set""text" ?[?"!"inv @"set"prop]]
+11 "token" [?"!""not" @"set""text" ?[?"!"inv @"set"prop]]
 12 "optional" ["?" @"rule""rule"]
 13 "whitespace" ["w" @"opt"]
 14 "until_any_or_whitespace" [".." @"set"any @"opt" ?@"set"prop]

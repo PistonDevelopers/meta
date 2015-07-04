@@ -18,6 +18,8 @@ use {
 pub struct Token {
     /// The text to match against.
     pub text: Rc<String>,
+    /// Whether to fail when matching against text.
+    pub not: bool,
     /// Whether to set property to true or false (inverted).
     pub inverted: bool,
     /// Which property to set if token matches.
@@ -41,22 +43,44 @@ impl Token {
         offset: usize
     ) -> ParseResult<TokenizerState> {
         if let Some(range) = read_token::token(&self.text, chars, offset) {
-            match &self.property {
-                &Some(ref name) => {
-                    Ok((range, tokenizer.data(
-                        MetaData::Bool(name.clone(), !self.inverted),
-                        &state,
-                        range
-                    ), None))
-                }
-                _ => {
-                    return Ok((range, state.clone(), None))
+            if self.not {
+                Err((range,
+                    ParseError::DidNotExpectToken(self.text.clone(),
+                    self.debug_id)))
+            } else {
+                match &self.property {
+                    &Some(ref name) => {
+                        Ok((range, tokenizer.data(
+                            MetaData::Bool(name.clone(), !self.inverted),
+                            &state,
+                            range
+                        ), None))
+                    }
+                    _ => {
+                        Ok((range, state.clone(), None))
+                    }
                 }
             }
         } else {
-            return Err((Range::new(offset, 0),
-                ParseError::ExpectedToken(self.text.clone(),
-                self.debug_id)));
+            if self.not {
+                match &self.property {
+                    &Some(ref name) => {
+                        let range = Range::new(offset, 0);
+                        Ok((range, tokenizer.data(
+                            MetaData::Bool(name.clone(), !self.inverted),
+                            &state,
+                            range
+                        ), None))
+                    }
+                    _ => {
+                        Ok((Range::new(offset, 0), state.clone(), None))
+                    }
+                }
+            } else {
+                Err((Range::new(offset, 0),
+                    ParseError::ExpectedToken(self.text.clone(),
+                    self.debug_id)))
+            }
         }
     }
 }
@@ -75,6 +99,7 @@ mod tests {
         let start_parenthesis = Token {
             debug_id: 0,
             text: Rc::new("(".into()),
+            not: false,
             inverted: false,
             property: None
         };
@@ -89,12 +114,34 @@ mod tests {
     }
 
     #[test]
+    fn did_not_expect_token() {
+        let text = ")";
+        let chars: Vec<char> = text.chars().collect();
+        let start_parenthesis = Token {
+            debug_id: 0,
+            text: Rc::new(")".into()),
+            not: true,
+            inverted: false,
+            property: None
+        };
+        let mut tokenizer = Tokenizer::new();
+        let s = TokenizerState::new();
+        let res = start_parenthesis.parse(&mut tokenizer, &s, &chars, 0);
+        assert_eq!(res, Err((
+            Range::new(0, 1),
+            ParseError::DidNotExpectToken(Rc::new(")".into()), 0)
+            ))
+        );
+    }
+
+    #[test]
     fn successful() {
         let text = "fn foo()";
         let chars: Vec<char> = text.chars().collect();
         let fn_ = Token {
             debug_id: 0,
             text: Rc::new("fn ".into()),
+            not: false,
             inverted: false,
             property: None
         };
@@ -110,6 +157,7 @@ mod tests {
         let start_parenthesis = Token {
             debug_id: 0,
             text: Rc::new("(".into()),
+            not: false,
             inverted: false,
             property: Some(has_arguments.clone())
         };
@@ -126,6 +174,7 @@ mod tests {
         let start_parenthesis = Token {
             debug_id: 0,
             text: Rc::new("(".into()),
+            not: false,
             inverted: true,
             property: Some(has_arguments.clone())
         };
