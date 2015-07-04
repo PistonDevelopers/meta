@@ -26,6 +26,8 @@ pub enum ParseError {
     ParseStringError(ParseStringError, DebugId),
     /// Expected token.
     ExpectedToken(Rc<String>, DebugId),
+    /// Did not expected token.
+    DidNotExpectToken(Rc<String>, DebugId),
     /// An invalid rule.
     InvalidRule(&'static str, DebugId),
     /// No rules are specified.
@@ -53,6 +55,8 @@ impl Display for ParseError {
                     debug_id, err)),
             &ParseError::ExpectedToken(ref token, debug_id) =>
                 try!(write!(fmt, "#{}, Expected: `{}`", debug_id, token)),
+            &ParseError::DidNotExpectToken(ref token, debug_id) =>
+                try!(write!(fmt, "#{}, Did not expect: `{}`", debug_id, token)),
             &ParseError::ExpectedText(debug_id) =>
                 try!(write!(fmt, "#{}, Expected text", debug_id)),
             &ParseError::EmptyTextNotAllowed(debug_id) =>
