@@ -18,6 +18,8 @@ use {
 pub struct Token {
     /// The text to match against.
     pub text: Rc<String>,
+    /// Whether to fail when matching against text.
+    pub not: bool,
     /// Whether to set property to true or false (inverted).
     pub inverted: bool,
     /// Which property to set if token matches.
@@ -75,6 +77,7 @@ mod tests {
         let start_parenthesis = Token {
             debug_id: 0,
             text: Rc::new("(".into()),
+            not: false,
             inverted: false,
             property: None
         };
@@ -95,6 +98,7 @@ mod tests {
         let fn_ = Token {
             debug_id: 0,
             text: Rc::new("fn ".into()),
+            not: false,
             inverted: false,
             property: None
         };
@@ -110,6 +114,7 @@ mod tests {
         let start_parenthesis = Token {
             debug_id: 0,
             text: Rc::new("(".into()),
+            not: false,
             inverted: false,
             property: Some(has_arguments.clone())
         };
@@ -126,6 +131,7 @@ mod tests {
         let start_parenthesis = Token {
             debug_id: 0,
             text: Rc::new("(".into()),
+            not: false,
             inverted: true,
             property: Some(has_arguments.clone())
         };

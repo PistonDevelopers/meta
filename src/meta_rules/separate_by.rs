@@ -107,6 +107,7 @@ mod tests {
             by: Rule::Token(Token {
                 debug_id: 2,
                 text: Rc::new(",".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -135,6 +136,7 @@ mod tests {
             by: Rule::Token(Token {
                 debug_id: 2,
                 text: Rc::new(",".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -164,6 +166,7 @@ mod tests {
             by: Rule::Token(Token {
                 debug_id: 2,
                 text: Rc::new(",".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -193,6 +196,7 @@ mod tests {
             by: Rule::Token(Token {
                 debug_id: 2,
                 text: Rc::new(",".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -229,6 +233,7 @@ mod tests {
             by: Rule::Token(Token {
                 debug_id: 2,
                 text: Rc::new(",".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -268,6 +273,7 @@ mod tests {
                 by: Rule::Token(Token {
                     debug_id: 3,
                     text: Rc::new(",".into()),
+                    not: false,
                     inverted: false,
                     property: None,
                 }),
@@ -277,6 +283,7 @@ mod tests {
             by: Rule::Token(Token {
                 debug_id: 4,
                 text: Rc::new(";".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),

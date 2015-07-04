@@ -38,6 +38,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 1002,
                 text: Rc::new(":".into()),
+                not: false,
                 inverted: false,
                 property: None
             }),
@@ -109,12 +110,14 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 4001,
                 text: Rc::new("?".into()),
+                not: false,
                 inverted: false,
                 property: Some(opt.clone())
             }),
             Rule::Token(Token {
                 debug_id: 4002,
                 text: Rc::new("!".into()),
+                not: false,
                 inverted: true,
                 property: Some(opt.clone())
             }),
@@ -128,6 +131,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 5001,
                 text: Rc::new("$".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -136,6 +140,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 rule: Rule::Token(Token {
                     debug_id: 5003,
                     text: Rc::new("_".into()),
+                    not: false,
                     inverted: false,
                     property: Some(Rc::new("underscore".into()))
                 })
@@ -159,6 +164,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 6001,
                 text: Rc::new("t".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -168,12 +174,14 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                     Rule::Token(Token {
                         debug_id: 6003,
                         text: Rc::new("?".into()),
+                        not: false,
                         inverted: false,
                         property: Some(Rc::new("allow_empty".into())),
                     }),
                     Rule::Token(Token {
                         debug_id: 6004,
                         text: Rc::new("!".into()),
+                        not: false,
                         inverted: true,
                         property: Some(Rc::new("allow_empty".into())),
                     })
@@ -198,6 +206,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 7001,
                 text: Rc::new("@".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -225,6 +234,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 8001,
                 text: Rc::new("[".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -250,6 +260,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 8006,
                 text: Rc::new("]".into()),
+                not: false,
                 inverted: false,
                 property: None,
             })
@@ -263,6 +274,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 9001,
                 text: Rc::new("{".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -288,6 +300,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 9006,
                 text: Rc::new("}".into()),
+                not: false,
                 inverted: false,
                 property: None,
             })
@@ -302,6 +315,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 10001,
                 text: Rc::new("s".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -316,6 +330,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 rule: Rule::Token(Token {
                     debug_id: 10004,
                     text: Rc::new(".".into()),
+                    not: false,
                     inverted: false,
                     property: Some(Rc::new("allow_trail".into())),
                 })
@@ -323,6 +338,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 10004,
                 text: Rc::new("(".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -343,6 +359,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 10008,
                 text: Rc::new(")".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -353,6 +370,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 10010,
                 text: Rc::new("{".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -373,6 +391,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 10014,
                 text: Rc::new("}".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -399,6 +418,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                             rule: Rule::Token(Token {
                                 debug_id: 11007,
                                 text: Rc::new("!".into()),
+                                not: false,
                                 inverted: false,
                                 property: Some(inv.clone()),
                             })
@@ -422,6 +442,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 12002,
                 text: Rc::new("?".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -441,6 +462,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 13001,
                 text: Rc::new("w".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -460,6 +482,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 14002,
                 text: Rc::new("..".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -494,6 +517,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 15001,
                 text: Rc::new("...".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -528,6 +552,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 16001,
                 text: Rc::new("r".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -540,6 +565,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 16003,
                 text: Rc::new("(".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -552,6 +578,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 16005,
                 text: Rc::new(")".into()),
+                not: false,
                 inverted: false,
                 property: None,
             })
@@ -565,6 +592,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 17001,
                 text: Rc::new("l(".into()),
+                not: false,
                 inverted: false,
                 property: None,
             }),
@@ -585,6 +613,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Token(Token {
                 debug_id: 17005,
                 text: Rc::new(")".into()),
+                not: false,
                 inverted: false,
                 property: None,
             })

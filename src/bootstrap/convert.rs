@@ -348,6 +348,7 @@ pub fn convert(
                 Rule::Token(Token {
                     debug_id: *debug_id,
                     text: text,
+                    not: false,
                     inverted: inverted,
                     property: property,
                 })))
