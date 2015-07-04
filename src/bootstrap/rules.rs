@@ -398,20 +398,30 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         ]
     });
 
-    // 11 "token" [@"set""text" ?[?"!"inv @"set"prop]]
+    // 11 "token" [?"!""not" @"set""text" ?[?"!"inv @"set"prop]]
     let token_rule = Rule::Sequence(Sequence {
         debug_id: 11000,
         args: vec![
-            Rule::Node(Node {
+            Rule::Optional(Box::new(Optional {
                 debug_id: 11001,
+                rule: Rule::Token(Token {
+                    debug_id: 11002,
+                    text: Rc::new("!".into()),
+                    not: false,
+                    inverted: false,
+                    property: Some(Rc::new("not".into()))
+                })
+            })),
+            Rule::Node(Node {
+                debug_id: 11003,
                 name: Rc::new("set".into()),
                 property: Some(Rc::new("text".into())),
                 index: Cell::new(None),
             }),
             Rule::Optional(Box::new(Optional {
-                debug_id: 11002,
+                debug_id: 11004,
                 rule: Rule::Sequence(Sequence {
-                    debug_id: 11003,
+                    debug_id: 11005,
                     args: vec![
                         Rule::Optional(Box::new(Optional {
                             debug_id: 11006,
@@ -424,7 +434,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                             })
                         })),
                         Rule::Node(Node {
-                            debug_id: 11009,
+                            debug_id: 11008,
                             name: Rc::new("set".into()),
                             property: Some(prop.clone()),
                             index: Cell::new(None),
