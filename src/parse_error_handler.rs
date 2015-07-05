@@ -72,11 +72,17 @@ impl<'b> ParseErrorHandler for ParseStdErr<'b> {
         }
         for (i, &(r, text)) in self.lines.iter().enumerate() {
             if let Some(intersect) = range.ends_intersect(&r) {
-                writeln!(&mut stderr, "{}: {}", i + 1, text).unwrap();
                 if intersect.offset >= r.offset {
-                    write!(&mut stderr, "{}: ", i + 1).unwrap();
-                    let i = intersect.offset - r.offset;
-                    for c in text.chars().take(i) {
+                    let j = intersect.offset - r.offset;
+                    let s = if j > 100 { j - 50 } else { 0 };
+                    let e = ::std::cmp::min(s + 100, r.length);
+                    write!(&mut stderr, "{},{}: ", i + 1, j).unwrap();
+                    for c in text.chars().skip(s).take(e - s) {
+                        write!(&mut stderr, "{}", c).unwrap();
+                    }
+                    writeln!(&mut stderr, "").unwrap();
+                    write!(&mut stderr, "{},{}: ", i + 1, j).unwrap();
+                    for c in text.chars().skip(s).take(j - s) {
                         match c {
                             '\t' => {
                                 write!(&mut stderr, "\t").unwrap();
