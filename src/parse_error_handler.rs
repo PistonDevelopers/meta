@@ -19,7 +19,7 @@ impl<'a> ParseStdErr<'a> {
         let mut start = 0;
         let mut lines = vec![];
         for line in text.split('\n') {
-            let length = line.len();
+            let length = line.chars().count();
             lines.push((Range::new(start, length), line));
             // Lines are separated by '\n'.
             start += length + 1;
@@ -76,12 +76,12 @@ impl<'b> ParseErrorHandler for ParseStdErr<'b> {
                     let j = intersect.offset - r.offset;
                     let s = if j > 75 { j - 50 } else { 0 };
                     let e = ::std::cmp::min(s + 100, r.length);
-                    write!(&mut stderr, "{},{}: ", i + 1, j).unwrap();
+                    write!(&mut stderr, "{},{}: ", i + 1, j + 1).unwrap();
                     for c in text.chars().skip(s).take(e - s) {
                         write!(&mut stderr, "{}", c).unwrap();
                     }
                     writeln!(&mut stderr, "").unwrap();
-                    write!(&mut stderr, "{},{}: ", i + 1, j).unwrap();
+                    write!(&mut stderr, "{},{}: ", i + 1, j + 1).unwrap();
                     for c in text.chars().skip(s).take(j - s) {
                         match c {
                             '\t' => {
