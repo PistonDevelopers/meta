@@ -399,10 +399,10 @@ pub fn convert(
             if let Ok(range) = end_node(node, data, offset) {
                 update(range, &mut data, &mut offset);
                 break;
-            } if let Ok((range, val)) = meta_bool("allow_empty", data, offset) {
+            } else if let Ok((range, val)) = meta_bool("allow_empty", data, offset) {
                 update(range, &mut data, &mut offset);
                 allow_empty = Some(val);
-            } if let Ok((range, val)) = read_set("property", data, offset, strings) {
+            } else if let Ok((range, val)) = read_set("property", data, offset, strings) {
                 update(range, &mut data, &mut offset);
                 property = Some(val);
             } else {
