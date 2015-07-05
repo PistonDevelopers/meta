@@ -74,7 +74,7 @@ impl<'b> ParseErrorHandler for ParseStdErr<'b> {
             if let Some(intersect) = range.ends_intersect(&r) {
                 if intersect.offset >= r.offset {
                     let j = intersect.offset - r.offset;
-                    let s = if j > 100 { j - 50 } else { 0 };
+                    let s = if j > 75 { j - 50 } else { 0 };
                     let e = ::std::cmp::min(s + 100, r.length);
                     write!(&mut stderr, "{},{}: ", i + 1, j).unwrap();
                     for c in text.chars().skip(s).take(e - s) {
