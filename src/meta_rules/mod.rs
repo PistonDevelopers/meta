@@ -56,7 +56,7 @@ pub fn parse(
     match res {
         Ok((range, s, opt_error)) => {
             // Report error if did not reach the end of text.
-            if range.next_offset() < text.len() {
+            if range.next_offset() < text.chars().count() {
                 Err(ret_err(
                     (Range::empty(range.next_offset()),
                         ParseError::ExpectedEnd),
