@@ -41,7 +41,7 @@ pub fn start_node(name: &str, data: &[(Range, MetaData)], offset: usize)
 }
 
 /// Reads end node.
-fn end_node(name: &str, data: &[(Range, MetaData)], offset: usize)
+pub fn end_node(name: &str, data: &[(Range, MetaData)], offset: usize)
 -> Result<Range, ()> {
     if data.len() == 0 { return Err(()); }
     match &data[0].1 {
