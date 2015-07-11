@@ -15,6 +15,7 @@ pub type DebugId = usize;
 use std::rc::Rc;
 
 pub mod bootstrap;
+pub mod json;
 pub mod meta_rules;
 pub mod tokenizer;
 
