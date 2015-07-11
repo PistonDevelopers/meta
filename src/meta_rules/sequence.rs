@@ -8,10 +8,10 @@ use super::{
 };
 use {
     DebugId,
+    MetaData,
     Rule,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::TokenizerState;
 
 /// Stores information about sequence.
 #[derive(Clone, Debug, PartialEq)]
@@ -27,7 +27,7 @@ impl Sequence {
     /// Fails if any sub rule fails.
     pub fn parse(
         &self,
-        tokenizer: &mut Tokenizer,
+        tokens: &mut Vec<(Range, MetaData)>,
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
@@ -37,9 +37,7 @@ impl Sequence {
         let mut state = state.clone();
         let mut opt_error = None;
         for sub_rule in &self.args {
-            state = match sub_rule.parse(
-                tokenizer, &state, chars, offset, refs
-            ) {
+            state = match sub_rule.parse(tokens, &state, chars, offset, refs) {
                 Ok((range, state, err)) => {
                     update(range, err, &mut chars, &mut offset, &mut opt_error);
                     state

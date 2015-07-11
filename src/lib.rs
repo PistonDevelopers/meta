@@ -8,7 +8,6 @@ extern crate range;
 pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
 pub use parse_error::ParseError;
 pub use meta_rules::{ parse, Rule };
-pub use tokenizer::{ Tokenizer, TokenizerState };
 
 /// The type of debug id used to track down errors in rules.
 pub type DebugId = usize;
@@ -17,10 +16,10 @@ use std::rc::Rc;
 
 pub mod bootstrap;
 pub mod meta_rules;
+pub mod tokenizer;
 
 mod parse_error;
 mod parse_error_handler;
-mod tokenizer;
 
 mod all {
     pub use super::*;

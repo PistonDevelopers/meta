@@ -9,9 +9,8 @@ use {
     DebugId,
     MetaData,
     ParseError,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::{ read_data, TokenizerState };
 
 /// Stores information about text.
 #[derive(Clone, Debug, PartialEq)]
@@ -28,7 +27,7 @@ impl Text {
     /// Parses text.
     pub fn parse(
         &self,
-        tokenizer: &mut Tokenizer,
+        tokens: &mut Vec<(Range, MetaData)>,
         state: &TokenizerState,
         chars: &[char],
         offset: usize
@@ -44,7 +43,8 @@ impl Text {
                         ParseError::ParseStringError(err, self.debug_id))),
                     Ok(text) => {
                         if let Some(ref property) = self.property {
-                            Ok((range, tokenizer.data(
+                            Ok((range, read_data(
+                                tokens,
                                 MetaData::String(property.clone(), Rc::new(text)),
                                 state,
                                 range
@@ -65,6 +65,7 @@ impl Text {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use all::tokenizer::*;
     use meta_rules::Text;
     use range::Range;
     use std::rc::Rc;
@@ -73,14 +74,14 @@ mod tests {
     fn expected_text() {
         let text = "23";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
         let text = Text {
             debug_id: 0,
             allow_empty: true,
             property: None
         };
-        let res = text.parse(&mut tokenizer, &s, &chars, 0);
+        let res = text.parse(&mut tokens, &s, &chars, 0);
         assert_eq!(res, Err((Range::new(0, 0), ParseError::ExpectedText(0))));
     }
 
@@ -88,14 +89,14 @@ mod tests {
     fn empty_string() {
         let text = "\"\"";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
         let text = Text {
             debug_id: 0,
             allow_empty: false,
             property: None
         };
-        let res = text.parse(&mut tokenizer, &s, &chars, 0);
+        let res = text.parse(&mut tokens, &s, &chars, 0);
         assert_eq!(res, Err((Range::new(0, 2),
             ParseError::EmptyTextNotAllowed(0))));
     }
@@ -104,7 +105,7 @@ mod tests {
     fn successful() {
         let text = "foo \"hello\"";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
         let foo: Rc<String> = Rc::new("foo".into());
         let text = Text {
@@ -112,10 +113,10 @@ mod tests {
             allow_empty: true,
             property: Some(foo.clone())
         };
-        let res = text.parse(&mut tokenizer, &s, &chars[4..], 4);
+        let res = text.parse(&mut tokens, &s, &chars[4..], 4);
         assert_eq!(res, Ok((Range::new(4, 7), TokenizerState(1), None)));
-        assert_eq!(tokenizer.tokens.len(), 1);
-        assert_eq!(&tokenizer.tokens[0].1,
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(&tokens[0].1,
             &MetaData::String(foo.clone(), Rc::new("hello".into())));
     }
 }

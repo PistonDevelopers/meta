@@ -9,11 +9,11 @@ use super::{
 };
 use {
     DebugId,
+    MetaData,
     ParseError,
     Rule,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::TokenizerState;
 
 /// Stores information about lines.
 #[derive(Clone, Debug, PartialEq)]
@@ -30,7 +30,7 @@ impl Lines {
     /// Ignores lines that only contain whitespace characters.
     pub fn parse(
         &self,
-        tokenizer: &mut Tokenizer,
+        tokenizer: &mut Vec<(Range, MetaData)>,
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
@@ -90,6 +90,7 @@ impl Lines {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use all::tokenizer::*;
     use meta_rules::{ Lines, Number, Sequence, Text, Whitespace };
     use range::Range;
     use std::rc::Rc;
@@ -107,7 +108,7 @@ mod tests {
 4
         ";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let lines = Lines {
             debug_id: 0,
@@ -133,7 +134,7 @@ mod tests {
 5
  ";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let val: Rc<String> = Rc::new("val".into());
         let lines = Lines {
@@ -169,7 +170,7 @@ mod tests {
 4
  ";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let val: Rc<String> = Rc::new("val".into());
         let lines = Lines {
