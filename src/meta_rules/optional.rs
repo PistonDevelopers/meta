@@ -7,11 +7,11 @@ use super::{
 };
 use {
     DebugId,
+    MetaData,
     ParseError,
     Rule,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::TokenizerState;
 
 /// Stores information about optional.
 #[derive(Clone, Debug, PartialEq)]
@@ -27,7 +27,7 @@ impl Optional {
     /// Returns the old state if any sub rule fails.
     pub fn parse(
         &self,
-        tokenizer: &mut Tokenizer,
+        tokens: &mut Vec<(Range, MetaData)>,
         state: &TokenizerState,
         mut chars: &[char],
         mut offset: usize,
@@ -37,7 +37,7 @@ impl Optional {
         let mut success_state = state.clone();
         let mut opt_error = None;
         success_state = match self.rule.parse(
-            tokenizer, &success_state, chars, offset, refs
+            tokens, &success_state, chars, offset, refs
         ) {
             Ok((range, state, err)) => {
                 update(range, err, &mut chars, &mut offset, &mut opt_error);
@@ -56,6 +56,7 @@ impl Optional {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use all::tokenizer::*;
     use meta_rules::{ Number, Optional, Sequence, Text };
     use range::Range;
     use std::rc::Rc;
@@ -64,7 +65,7 @@ mod tests {
     fn fail_but_continue() {
         let text = "2";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
         let num: Rc<String> = Rc::new("num".into());
         // Will fail because text is expected first.
@@ -86,9 +87,9 @@ mod tests {
                 ]
             }),
         };
-        let res = optional.parse(&mut tokenizer, &s, &chars, 0, &[]);
+        let res = optional.parse(&mut tokens, &s, &chars, 0, &[]);
         assert_eq!(res, (Range::new(0, 0), TokenizerState(0),
             Some((Range::new(0, 0), ParseError::ExpectedText(2)))));
-        assert_eq!(tokenizer.tokens.len(), 0);
+        assert_eq!(tokens.len(), 0);
     }
 }

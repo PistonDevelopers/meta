@@ -1,31 +1,23 @@
+//! Tracking tokenizer state.
+
 use range::Range;
 
 use {
     MetaData,
 };
 
-/// Stores all the meta data sequentially.
-pub struct Tokenizer {
-    /// The read tokens.
-    pub tokens: Vec<(Range, MetaData)>
-}
-
-impl Tokenizer {
-    /// Creates a new tokenizer.
-    pub fn new() -> Tokenizer {
-        Tokenizer { tokens: vec![] }
+/// Reads meta data.
+pub fn read_data(
+    tokens: &mut Vec<(Range, MetaData)>,
+    data: MetaData,
+    state: &TokenizerState,
+    range: Range
+) -> TokenizerState {
+    if state.0 < tokens.len() {
+        tokens.truncate(state.0);
     }
-
-    /// Reads meta data.
-    pub fn data(&mut self, data: MetaData, state: &TokenizerState, range: Range)
-        -> TokenizerState
-    {
-        if state.0 < self.tokens.len() {
-            self.tokens.truncate(state.0);
-        }
-        self.tokens.push((range, data));
-        TokenizerState(self.tokens.len())
-    }
+    tokens.push((range, data));
+    TokenizerState(tokens.len())
 }
 
 /// Stores the number of tokens received.

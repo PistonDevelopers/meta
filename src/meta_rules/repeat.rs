@@ -9,10 +9,10 @@ use super::{
 };
 use {
     DebugId,
+    MetaData,
     Rule,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::TokenizerState;
 
 /// Stores inforamtion about separated by.
 #[derive(Clone, Debug, PartialEq)]
@@ -29,7 +29,7 @@ impl Repeat {
     /// Parses rule repeatedly.
     pub fn parse(
         &self,
-        tokenizer: &mut Tokenizer,
+        tokens: &mut Vec<(Range, MetaData)>,
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
@@ -40,8 +40,7 @@ impl Repeat {
         let mut opt_error = None;
         let mut first = true;
         loop {
-            state = match self.rule.parse(
-                tokenizer, &state, chars, offset, refs) {
+            state = match self.rule.parse(tokens, &state, chars, offset, refs) {
                 Err(err) => {
                     if first && !self.optional {
                         return Err(ret_err(err, opt_error));
@@ -64,6 +63,7 @@ impl Repeat {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use all::tokenizer::*;
     use meta_rules::{ Repeat, Token };
     use std::rc::Rc;
     use range::Range;
@@ -72,7 +72,7 @@ mod tests {
     fn fail() {
         let text = "[a][a][a]";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
         let token: Rc<String> = Rc::new("(a)".into());
         let rule = Repeat {
@@ -86,7 +86,7 @@ mod tests {
                 property: None,
             })
         };
-        let res = rule.parse(&mut tokenizer, &s, &chars, 0, &[]);
+        let res = rule.parse(&mut tokens, &s, &chars, 0, &[]);
         assert_eq!(res, Err((Range::new(0, 0),
             ParseError::ExpectedToken(token.clone(), 1))))
     }
@@ -95,7 +95,7 @@ mod tests {
     fn success() {
         let text = "(a)(a)(a)";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
         let token: Rc<String> = Rc::new("(a)".into());
         let rule = Repeat {
@@ -109,7 +109,7 @@ mod tests {
                 property: None,
             })
         };
-        let res = rule.parse(&mut tokenizer, &s, &chars, 0, &[]);
+        let res = rule.parse(&mut tokens, &s, &chars, 0, &[]);
         assert_eq!(res, Ok((Range::new(0, 9), TokenizerState(0),
             Some((Range::new(9, 0), ParseError::ExpectedToken(token.clone(), 1))))))
     }

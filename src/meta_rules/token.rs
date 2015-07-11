@@ -9,9 +9,8 @@ use {
     DebugId,
     MetaData,
     ParseError,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::{ read_data, TokenizerState };
 
 /// Stores information about token.
 #[derive(Clone, Debug, PartialEq)]
@@ -37,7 +36,7 @@ impl Token {
     /// the same state will be returned.
     pub fn parse(
         &self,
-        tokenizer: &mut Tokenizer,
+        tokens: &mut Vec<(Range, MetaData)>,
         state: &TokenizerState,
         chars: &[char],
         offset: usize
@@ -50,7 +49,8 @@ impl Token {
             } else {
                 match &self.property {
                     &Some(ref name) => {
-                        Ok((range, tokenizer.data(
+                        Ok((range, read_data(
+                            tokens,
                             MetaData::Bool(name.clone(), !self.inverted),
                             &state,
                             range
@@ -66,7 +66,8 @@ impl Token {
                 match &self.property {
                     &Some(ref name) => {
                         let range = Range::new(offset, 0);
-                        Ok((range, tokenizer.data(
+                        Ok((range, read_data(
+                            tokens,
                             MetaData::Bool(name.clone(), !self.inverted),
                             &state,
                             range
@@ -88,6 +89,7 @@ impl Token {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use all::tokenizer::*;
     use meta_rules::Token;
     use std::rc::Rc;
     use range::Range;
@@ -103,9 +105,9 @@ mod tests {
             inverted: false,
             property: None
         };
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
-        let res = start_parenthesis.parse(&mut tokenizer, &s, &chars, 0);
+        let res = start_parenthesis.parse(&mut tokens, &s, &chars, 0);
         assert_eq!(res, Err((
             Range::new(0, 0),
             ParseError::ExpectedToken(Rc::new("(".into()), 0)
@@ -124,9 +126,9 @@ mod tests {
             inverted: false,
             property: None
         };
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
-        let res = start_parenthesis.parse(&mut tokenizer, &s, &chars, 0);
+        let res = start_parenthesis.parse(&mut tokens, &s, &chars, 0);
         assert_eq!(res, Err((
             Range::new(0, 1),
             ParseError::DidNotExpectToken(Rc::new(")".into()), 0)
@@ -145,14 +147,14 @@ mod tests {
             inverted: false,
             property: None
         };
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
-        let res = fn_.parse(&mut tokenizer, &s, &chars, 0);
+        let res = fn_.parse(&mut tokens, &s, &chars, 0);
         assert_eq!(res, Ok((Range::new(0, 3), s, None)));
-        assert_eq!(tokenizer.tokens.len(), 0);
+        assert_eq!(tokens.len(), 0);
 
         // Set bool property.
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let has_arguments: Rc<String> = Rc::new("has_arguments".into());
         let start_parenthesis = Token {
             debug_id: 0,
@@ -162,14 +164,13 @@ mod tests {
             property: Some(has_arguments.clone())
         };
         let s = TokenizerState::new();
-        let res = start_parenthesis.parse(&mut tokenizer, &s, &chars[6..], 6);
+        let res = start_parenthesis.parse(&mut tokens, &s, &chars[6..], 6);
         assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1), None)));
-        assert_eq!(tokenizer.tokens.len(), 1);
-        assert_eq!(&tokenizer.tokens[0].1,
-            &MetaData::Bool(has_arguments.clone(), true));
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(&tokens[0].1, &MetaData::Bool(has_arguments.clone(), true));
 
         // Set inverted bool property.
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let has_arguments: Rc<String> = Rc::new("has_no_arguments".into());
         let start_parenthesis = Token {
             debug_id: 0,
@@ -179,10 +180,9 @@ mod tests {
             property: Some(has_arguments.clone())
         };
         let s = TokenizerState::new();
-        let res = start_parenthesis.parse(&mut tokenizer, &s, &chars[6..], 6);
+        let res = start_parenthesis.parse(&mut tokens, &s, &chars[6..], 6);
         assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1), None)));
-        assert_eq!(tokenizer.tokens.len(), 1);
-        assert_eq!(&tokenizer.tokens[0].1,
-            &MetaData::Bool(has_arguments.clone(), false));
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(&tokens[0].1, &MetaData::Bool(has_arguments.clone(), false));
     }
 }

@@ -1,4 +1,5 @@
 use read_token;
+use range::Range;
 use std::rc::Rc;
 
 use super::{
@@ -8,9 +9,8 @@ use {
     DebugId,
     MetaData,
     ParseError,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::{ read_data, TokenizerState };
 
 /// Stores information about reading until whitespace or any of some character.
 #[derive(Clone, Debug, PartialEq)]
@@ -29,7 +29,7 @@ impl UntilAnyOrWhitespace {
     /// Parses until whitespace or any specified characters.
     pub fn parse(
         &self,
-        tokenizer: &mut Tokenizer,
+        tokens: &mut Vec<(Range, MetaData)>,
         state: &TokenizerState,
         chars: &[char],
         offset: usize
@@ -44,7 +44,8 @@ impl UntilAnyOrWhitespace {
                 for c in chars.iter().take(range.length) {
                     text.push(*c);
                 }
-                Ok((range, tokenizer.data(
+                Ok((range, read_data(
+                    tokens,
                     MetaData::String(property.clone(), Rc::new(text)),
                     state,
                     range
@@ -59,6 +60,7 @@ impl UntilAnyOrWhitespace {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use all::tokenizer::*;
     use meta_rules::UntilAnyOrWhitespace;
     use range::Range;
     use std::rc::Rc;
@@ -67,7 +69,7 @@ mod tests {
     fn required() {
         let text = "fn ()";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let name = UntilAnyOrWhitespace {
             debug_id: 0,
@@ -84,7 +86,7 @@ mod tests {
     fn successful() {
         let text = "fn foo()";
         let chars: Vec<char> = text.chars().collect();
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
         let function_name: Rc<String> = Rc::new("function_name".into());
         let name = UntilAnyOrWhitespace {
@@ -93,10 +95,10 @@ mod tests {
             optional: false,
             property: Some(function_name.clone())
         };
-        let res = name.parse(&mut tokenizer, &s, &chars[3..], 3);
+        let res = name.parse(&mut tokens, &s, &chars[3..], 3);
         assert_eq!(res, Ok((Range::new(3, 3), TokenizerState(1), None)));
-        assert_eq!(tokenizer.tokens.len(), 1);
-        assert_eq!(&tokenizer.tokens[0].1,
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(&tokens[0].1,
             &MetaData::String(function_name.clone(), Rc::new("foo".into())));
     }
 }

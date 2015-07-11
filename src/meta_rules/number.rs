@@ -9,9 +9,8 @@ use {
     DebugId,
     MetaData,
     ParseError,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::{ read_data, TokenizerState };
 
 /// Contains information about number.
 #[derive(Clone, Debug, PartialEq)]
@@ -28,7 +27,7 @@ impl Number {
     /// Parses number.
     pub fn parse(
         &self,
-        tokenizer: &mut Tokenizer,
+        tokens: &mut Vec<(Range, MetaData)>,
         state: &TokenizerState,
         chars: &[char],
         offset: usize
@@ -42,7 +41,8 @@ impl Number {
                     ParseError::ParseNumberError(err, self.debug_id))),
                 Ok(val) => {
                     if let Some(ref property) = self.property {
-                        Ok((range, tokenizer.data(
+                        Ok((range, read_data(
+                            tokens,
                             MetaData::F64(property.clone(), val),
                             state,
                             range
@@ -62,6 +62,7 @@ impl Number {
 #[cfg(test)]
 mod tests {
     use all::*;
+    use all::tokenizer::*;
     use meta_rules::{ Number };
     use range::Range;
     use std::rc::Rc;
@@ -75,7 +76,7 @@ mod tests {
             property: None,
             allow_underscore: false,
         };
-        let mut tokenizer = Tokenizer::new();
+        let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let res = number.parse(&mut tokenizer, &s, &chars, 0);
         assert_eq!(res, Err((Range::new(0, 0), ParseError::ExpectedNumber(0))));
@@ -90,15 +91,15 @@ mod tests {
             property: None,
             allow_underscore: true,
         };
-        let mut tokenizer = Tokenizer::new();
+        let mut tokens = vec![];
         let s = TokenizerState::new();
-        let res = number.parse(&mut tokenizer, &s, &chars[4..], 4);
+        let res = number.parse(&mut tokens, &s, &chars[4..], 4);
         assert_eq!(res, Ok((Range::new(4, 1), s, None)));
-        let res = number.parse(&mut tokenizer, &s, &chars[6..], 6);
+        let res = number.parse(&mut tokens, &s, &chars[6..], 6);
         assert_eq!(res, Ok((Range::new(6, 3), s, None)));
-        let res = number.parse(&mut tokenizer, &s, &chars[10..], 10);
+        let res = number.parse(&mut tokens, &s, &chars[10..], 10);
         assert_eq!(res, Ok((Range::new(10, 4), s, None)));
-        let res = number.parse(&mut tokenizer, &s, &chars[22..], 22);
+        let res = number.parse(&mut tokens, &s, &chars[22..], 22);
         assert_eq!(res, Ok((Range::new(22, 6), s, None)));
 
         let val: Rc<String> = Rc::new("val".into());
@@ -107,9 +108,9 @@ mod tests {
             property: Some(val.clone()),
             allow_underscore: false,
         };
-        let res = number.parse(&mut tokenizer, &s, &chars[15..], 15);
+        let res = number.parse(&mut tokens, &s, &chars[15..], 15);
         assert_eq!(res, Ok((Range::new(15, 6), TokenizerState(1), None)));
-        assert_eq!(tokenizer.tokens.len(), 1);
-        assert_eq!(&tokenizer.tokens[0].1, &MetaData::F64(val.clone(), 10.0e1));
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(&tokens[0].1, &MetaData::F64(val.clone(), 10.0e1));
     }
 }

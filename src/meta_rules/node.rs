@@ -12,9 +12,8 @@ use {
     MetaData,
     ParseError,
     Rule,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::{ read_data, TokenizerState };
 
 /// A node reference.
 #[derive(Clone, Debug, PartialEq)]
@@ -33,7 +32,7 @@ impl Node {
     /// Parses node.
     pub fn parse(
         &self,
-        tokenizer: &mut Tokenizer,
+        tokens: &mut Vec<(Range, MetaData)>,
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
@@ -53,7 +52,8 @@ impl Node {
             Some(i) => i
         };
         let mut state = if let Some(ref prop) = self.property {
-            tokenizer.data(
+            read_data(
+                tokens,
                 MetaData::StartNode(prop.clone()),
                 state,
                 Range::empty(offset)
@@ -63,7 +63,7 @@ impl Node {
         };
         let mut opt_error = None;
         state = match refs[index].1.parse(
-            tokenizer, &state, chars, offset, refs
+            tokens, &state, chars, offset, refs
         ) {
             Err(err) => { return Err(ret_err(err, opt_error)); }
             Ok((range, state, err)) => {
@@ -75,7 +75,8 @@ impl Node {
         Ok((
             range,
             if let Some(ref prop) = self.property {
-                tokenizer.data(
+                read_data(
+                    tokens,
                     MetaData::EndNode(prop.clone()),
                     &state,
                     range

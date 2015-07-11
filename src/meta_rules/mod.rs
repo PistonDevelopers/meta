@@ -20,9 +20,8 @@ use range::Range;
 use {
     MetaData,
     ParseError,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::TokenizerState;
 
 mod lines;
 mod node;
@@ -46,13 +45,13 @@ pub fn parse(
     text: &str
 ) -> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
     let chars: Vec<char> = text.chars().collect();
-    let mut tokenizer = Tokenizer::new();
+    let mut tokens = vec![];
     let s = TokenizerState::new();
     let n = match rules.len() {
         0 => { return Err((Range::empty(0), ParseError::NoRules)); }
         x => x
     };
-    let res = rules[n - 1].1.parse(&mut tokenizer, &s, &chars, 0, rules);
+    let res = rules[n - 1].1.parse(&mut tokens, &s, &chars, 0, rules);
     match res {
         Ok((range, s, opt_error)) => {
             // Report error if did not reach the end of text.
@@ -63,8 +62,8 @@ pub fn parse(
                     opt_error
                 ))
             } else {
-                tokenizer.tokens.truncate(s.0);
-                Ok(tokenizer.tokens)
+                tokens.truncate(s.0);
+                Ok(tokens)
             }
         }
         Err((err_range, err)) => {

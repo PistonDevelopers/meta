@@ -7,11 +7,11 @@ use super::{
 };
 use {
     DebugId,
+    MetaData,
     ParseError,
     Rule,
-    Tokenizer,
-    TokenizerState,
 };
+use tokenizer::TokenizerState;
 
 /// Stores information about select.
 #[derive(Clone, Debug, PartialEq)]
@@ -26,7 +26,7 @@ impl Select {
     /// Parses select.
     pub fn parse(
         &self,
-        tokenizer: &mut Tokenizer,
+        tokens: &mut Vec<(Range, MetaData)>,
         state: &TokenizerState,
         chars: &[char],
         offset: usize,
@@ -34,7 +34,7 @@ impl Select {
     ) -> ParseResult<TokenizerState> {
         let mut opt_error: Option<(Range, ParseError)> = None;
         for sub_rule in &self.args {
-            match sub_rule.parse(tokenizer, state, chars, offset, refs) {
+            match sub_rule.parse(tokens, state, chars, offset, refs) {
                 Ok((range, state, err)) => {
                     err_update(err, &mut opt_error);
                     return Ok((Range::new(offset, range.next_offset() - offset),
