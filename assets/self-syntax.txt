@@ -3,8 +3,8 @@ inv: "inverted"
 prop: "property"
 any: "any_characters"
 seps: "[]{}():.!?\""
-1 "string" [..seps!"name" ":" w? t?"text"]
-2 "node" [$"id" w! t!"name" w! @"rule""rule"]
+1 "string" [w? ..seps!"name" ":" w? t?"text"]
+2 "node" [w? $"id" w! t!"name" w! @"rule""rule"]
 3 "set" {t!"value" ..seps!"ref"}
 4 "set_opt" {t?"value" ..seps!"ref"}
 5 "opt" {"?"opt "!"!opt}
