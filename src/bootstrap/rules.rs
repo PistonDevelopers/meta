@@ -25,59 +25,67 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
     let any: Rc<String> = Rc::new("any_characters".into());
     let seps: Rc<String> = Rc::new("[]{}():.!?\"".into());
 
-    // 1 "string" [..seps!"name" ":" w? t?"text"]
+    // 1 "string" [w? ..seps!"name" ":" w? t?"text"]
     let string_rule = Rule::Sequence(Sequence {
         debug_id: 1001,
         args: vec![
-            Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
+            Rule::Whitespace(Whitespace {
                 debug_id: 1002,
+                optional: true,
+            }),
+            Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
+                debug_id: 1003,
                 any_characters: seps.clone(),
                 optional: false,
                 property: Some(Rc::new("name".into()))
             }),
             Rule::Token(Token {
-                debug_id: 1003,
+                debug_id: 1004,
                 text: Rc::new(":".into()),
                 not: false,
                 inverted: false,
                 property: None
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 1004,
+                debug_id: 1005,
                 optional: true,
             }),
             Rule::Text(Text {
-                debug_id: 1005,
+                debug_id: 1006,
                 allow_empty: true,
                 property: Some(Rc::new("text".into())),
             })
         ]
     });
 
-    // 2 "node" [$"id" w! t!"name" w! @"rule""rule"]
+    // 2 "node" [w? $"id" w! t!"name" w! @"rule""rule"]
     let node_rule = Rule::Sequence(Sequence {
         debug_id: 2001,
         args: vec![
-            Rule::Number(Number {
+            Rule::Whitespace(Whitespace {
                 debug_id: 2002,
+                optional: true,
+            }),
+            Rule::Number(Number {
+                debug_id: 2003,
                 allow_underscore: false,
                 property: Some(Rc::new("id".into())),
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 2003,
+                debug_id: 2004,
                 optional: false,
             }),
             Rule::Text(Text {
-                debug_id: 2004,
+                debug_id: 2005,
                 allow_empty: false,
                 property: Some(Rc::new("name".into())),
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 2005,
+                debug_id: 2006,
                 optional: false,
             }),
             Rule::Node(Node {
-                debug_id: 2006,
+                debug_id: 2007,
                 name: Rc::new("rule".into()),
                 property: Some(Rc::new("rule".into())),
                 index: Cell::new(None),
