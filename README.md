@@ -47,8 +47,8 @@ If you get an error `#4003`, then it was caused by a rule in the node starting w
 |s?(by_rule) {rule}|Separates rule by another rule, allows zero repetitions.|
 |s!(by_rule) {rule}|Separates rule by another rule, requires at least one repetition.|
 |s?.(by_rule) {rule}|Separates rule by another rule, allows trailing.|
-|{rules}|Selects a rule. Tries the first rule, then the second etc.|
-|[rules]|A sequence of rules.|
+|{rules}|Selects a rule. Tries the first rule, then the second etc. Rules are separated by whitespace.|
+|[rules]|A sequence of rules. Rules are separated by whitespace.|
 |@"node"|Uses a node without a name. The read data is put in the current node.|
 |@"node"name|Uses a node with a name. The read data is put in a new node with the name.|
 |t?name|Reads a JSON string with a name. The string can be empty. Name is optional.|
