@@ -73,13 +73,15 @@ impl<'a> Search<'a> {
                 } else {
                     Err((
                         range,
-                        ParseError::Conversion(format!("Expected f64 `{}`", name))
+                        ParseError::Conversion(
+                            format!("Expected name `{}`, found `{}`", name, n))
                     ))
                 }
             }
-            &(range, _) => { Err((
+            &(range, ref val) => { Err((
                 range,
-                ParseError::Conversion(format!("Expected f64 `{}`", name))
+                ParseError::Conversion(
+                    format!("Expected f64 `{}`, found `{:?}`", name, val))
             )) }
         }
     }
