@@ -5,14 +5,16 @@
 extern crate read_token;
 extern crate range;
 
-pub use parse_error_handler::{ ParseErrorHandler, ParseStdErr };
+pub use parse_error_handler::{ stderr_unwrap, ParseErrorHandler, ParseStdErr };
 pub use parse_error::ParseError;
 pub use meta_rules::{ parse, Rule };
+pub use search::Search;
 
 /// The type of debug id used to track down errors in rules.
 pub type DebugId = usize;
 
 use std::rc::Rc;
+use range::Range;
 
 pub mod bootstrap;
 pub mod json;
@@ -21,6 +23,7 @@ pub mod tokenizer;
 
 mod parse_error;
 mod parse_error_handler;
+mod search;
 
 mod all {
     pub use super::*;
@@ -40,3 +43,16 @@ pub enum MetaData {
     /// Sets string property.
     String(Rc<String>, Rc<String>),
 }
+
+/// Reads syntax from text.
+pub fn syntax(rules: &str) -> Result<Vec<(Rc<String>, Rule)>, (Range, ParseError)> {
+    match bootstrap::convert(
+        &try!(parse(&bootstrap::rules(), rules)),
+        &mut vec![] // Ignored meta data
+    ) {
+        Ok(res) => Ok(res),
+        Err(()) => Err((Range::empty(0), ParseError::Conversion(
+            format!("Bootstrapping rules are incorrect"))))
+    }
+}
+
