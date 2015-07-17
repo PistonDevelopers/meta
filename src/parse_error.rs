@@ -34,6 +34,8 @@ pub enum ParseError {
     NoRules,
     /// Expected to reach the end.
     ExpectedEnd,
+    /// Conversion error.
+    Conversion(String),
 }
 
 impl Display for ParseError {
@@ -70,6 +72,8 @@ impl Display for ParseError {
                 try!(write!(fmt, "No rules are specified")),
             &ParseError::ExpectedEnd =>
                 try!(write!(fmt, "Expected end")),
+            &ParseError::Conversion(ref msg) =>
+                try!(write!(fmt, "Conversion, {}", msg)),
         }
         Ok(())
     }

@@ -2,6 +2,17 @@ use range::Range;
 
 use ParseError;
 
+/// When an error happens, reports to standard error and then panics.
+pub fn stderr_unwrap<T>(source: &str, res: Result<T, (Range, ParseError)>) -> T {
+    match res {
+        Err((range, err)) => {
+            ParseStdErr::new(source).error(range, err);
+            panic!();
+        }
+        Ok(val) => val,
+    }
+}
+
 /// Implemented by error handlers.
 pub trait ParseErrorHandler {
     /// Report an error.

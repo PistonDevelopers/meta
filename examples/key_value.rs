@@ -22,30 +22,19 @@ fn main() {
             } w?]
         })"##;
     // Parse rules with meta language and convert to rules for parsing text.
-    let rules = bootstrap::convert(
-        &parse(&bootstrap::rules(), rules).unwrap(),
-        &mut vec![] // stores ignored meta data
-    ).unwrap();
-    let data = parse(&rules, text);
-    match data {
-        Ok(data) => {
-            /* prints
+    let rules = stderr_unwrap(rules, syntax(rules));
+    let data = stderr_unwrap(text, parse(&rules, text));
+    /* prints
 
-            "key":"age",
-            "number":250,
-            "key":"strength",
-            "number":200,
-            "key":"name",
-            "string":"Big Dragon",
-            "key":"violent",
-            "bool":true
+    "key":"age",
+    "number":250,
+    "key":"strength",
+    "number":200,
+    "key":"name",
+    "string":"Big Dragon",
+    "key":"violent",
+    "bool":true
 
-            */
-            json::print(&data);
-        }
-        Err((range, err)) => {
-            // Report the error to standard error output.
-            ParseStdErr::new(&text).error(range, err);
-        }
-    }
+    */
+    json::print(&data);
 }
