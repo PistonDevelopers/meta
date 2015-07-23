@@ -10,9 +10,6 @@ A DSL parsing library for human readable text documents
 
 [self-syntax](https://raw.githubusercontent.com/PistonDevelopers/meta/master/assets/self-syntax.txt)
 
-
-*Notice: Parsing is supported but composing is not implemented yet.*
-
 ### Rules
 
 The meta language is used to describe how to read other documents.
