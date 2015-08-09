@@ -1,3 +1,7 @@
+#![deny(missing_docs)]
+
+//! A search API for piston_meta
+
 extern crate piston_meta;
 extern crate range;
 
