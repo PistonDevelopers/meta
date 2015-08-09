@@ -12,7 +12,6 @@ pub use parse_error_handler::{
 };
 pub use parse_error::ParseError;
 pub use meta_rules::{ parse, Rule };
-pub use search::Search;
 
 /// The type of debug id used to track down errors in rules.
 pub type DebugId = usize;
@@ -29,7 +28,6 @@ pub mod tokenizer;
 
 mod parse_error;
 mod parse_error_handler;
-mod search;
 
 mod all {
     pub use super::*;
@@ -83,4 +81,3 @@ pub fn load_syntax_data<A, B>(
     data_file.read_to_string(&mut d).unwrap();
     stderr_unwrap(&d, parse(&rules, &d))
 }
-
