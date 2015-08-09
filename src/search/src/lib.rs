@@ -1,6 +1,9 @@
+extern crate piston_meta;
+extern crate range;
+
 use range::Range;
 use std::rc::Rc;
-use { MetaData, ParseError };
+use piston_meta::{ MetaData, ParseError };
 
 /// Used to search through meta data.
 pub struct Search<'a> {
