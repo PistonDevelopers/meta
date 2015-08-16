@@ -13,12 +13,6 @@ pub fn stderr_unwrap<T>(source: &str, res: Result<T, (Range, ParseError)>) -> T 
     }
 }
 
-/// Implemented by error handlers.
-pub trait ParseErrorHandler {
-    /// Report an error.
-    fn error(&mut self, range: Range, error: ParseError);
-}
-
 /// Reports error to standard error output.
 pub struct ParseStdErr<'a> {
     lines: Vec<(Range, &'a str)>,
@@ -40,10 +34,9 @@ impl<'a> ParseStdErr<'a> {
             lines: lines,
         }
     }
-}
 
-impl<'b> ParseErrorHandler for ParseStdErr<'b> {
-    fn error(&mut self, range: Range, error: ParseError) {
+    /// Prints error message.
+    pub fn error(&mut self, range: Range, error: ParseError) {
         use std::io::{ stderr, Write };
 
         // Gets the first line of error message.
