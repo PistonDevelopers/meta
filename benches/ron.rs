@@ -54,7 +54,7 @@ fn json(bencher: &mut Bencher) {
     match data {
         Err((range, err)) => {
             // Report the error to standard error output.
-            ParseStdErr::new(&text).error(range, err);
+            ParseErrorHandler::new(&text).error(range, err);
         }
         _ => {}
     }
@@ -112,7 +112,7 @@ fn ron(bencher: &mut Bencher) {
     match data {
         Err((range, err)) => {
             // Report the error to standard error output.
-            ParseStdErr::new(&text).error(range, err);
+            ParseErrorHandler::new(&text).error(range, err);
         }
         _ => {}
     }
