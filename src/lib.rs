@@ -7,8 +7,7 @@ extern crate range;
 
 pub use parse_error_handler::{
     stderr_unwrap,
-    ParseErrorHandler,
-    ParseStdErr
+    ParseErrorHandler
 };
 pub use parse_error::ParseError;
 pub use meta_rules::{ parse, Rule };

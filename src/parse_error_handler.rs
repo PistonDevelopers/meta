@@ -6,27 +6,21 @@ use ParseError;
 pub fn stderr_unwrap<T>(source: &str, res: Result<T, (Range, ParseError)>) -> T {
     match res {
         Err((range, err)) => {
-            ParseStdErr::new(source).error(range, err);
+            ParseErrorHandler::new(source).error(range, err);
             panic!();
         }
         Ok(val) => val,
     }
 }
 
-/// Implemented by error handlers.
-pub trait ParseErrorHandler {
-    /// Report an error.
-    fn error(&mut self, range: Range, error: ParseError);
-}
-
 /// Reports error to standard error output.
-pub struct ParseStdErr<'a> {
+pub struct ParseErrorHandler<'a> {
     lines: Vec<(Range, &'a str)>,
 }
 
-impl<'a> ParseStdErr<'a> {
+impl<'a> ParseErrorHandler<'a> {
     /// Creates a new error handler for standard error output.
-    pub fn new(text: &'a str) -> ParseStdErr<'a> {
+    pub fn new(text: &'a str) -> ParseErrorHandler<'a> {
         let mut start = 0;
         let mut lines = vec![];
         for line in text.split('\n') {
@@ -36,19 +30,18 @@ impl<'a> ParseStdErr<'a> {
             start += length + 1;
         }
 
-        ParseStdErr {
+        ParseErrorHandler {
             lines: lines,
         }
     }
-}
 
-impl<'b> ParseErrorHandler for ParseStdErr<'b> {
-    fn error(&mut self, range: Range, error: ParseError) {
+    /// Prints error message.
+    pub fn error(&mut self, range: Range, error: ParseError) {
         use std::io::{ stderr, Write };
 
         // Gets the first line of error message.
         fn first_line(
-            err_handler: &ParseStdErr,
+            err_handler: &ParseErrorHandler,
             range: Range
         ) -> Option<(usize, Range)> {
             let mut first_line = None;
