@@ -3,14 +3,14 @@ _inv: "inverted"
 _prop: "property"
 _any: "any_characters"
 _seps: "[]{}():.!?\""
-1 string = [.w? "_" .._seps!"name" ":" .w? .t?:"text"]
-2 node = [.w? .$:"id" .w! !"_" !"." .._seps!"name" .w? "=" .w? rule:"rule"]
-3 set = {.t!:"value" ["_" .._seps!"ref"]}
-4 set_opt = {.t?:"value" ["_" .._seps!"ref"]}
+1 string = [.w? "_" .._seps!:"name" ":" .w? .t?:"text"]
+2 node = [.w? .$:"id" .w! !"_" !"." .._seps!:"name" .w? "=" .w? rule:"rule"]
+3 set = {.t!:"value" ["_" .._seps!:"ref"]}
+4 set_opt = {.t?:"value" ["_" .._seps!:"ref"]}
 5 opt = {"?":_opt "!":!_opt}
 6 number = [".$" ?"_":"underscore" ?[":" set:_prop]]
 7 text = [".t" {"?":"allow_empty" "!":!"allow_empty"} ?[":" set:_prop]]
-8 reference = [!"_" !"." .._seps!"name" ?[":" set:_prop]]
+8 reference = [!"_" !"." .._seps!:"name" ?[":" set:_prop]]
 9 sequence = ["[" .w? .s!.(.w! rule:"rule") "]"]
 10 select = ["{" .w? .s!.(.w! rule:"rule") "}"]
 11 separated_by = [".s" opt ?".":"allow_trail"
@@ -18,8 +18,8 @@ _seps: "[]{}():.!?\""
 12 token = [?"!":"not" set:"text" ?[":" ?"!":_inv set:_prop]]
 13 optional = ["?" rule:"rule"]
 14 whitespace = [".w" opt]
-15 until_any_or_whitespace = [".." set_opt:_any opt ?set:_prop]
-16 until_any = ["..." set_opt:_any opt ?set:_prop]
+15 until_any_or_whitespace = [".." set_opt:_any opt ?[":" set:_prop]]
+16 until_any = ["..." set_opt:_any opt ?[":" set:_prop]]
 17 repeat = [".r" opt "(" rule:"rule" ")"]
 18 lines = [".l(" .w? rule:"rule" .w? ")"]
 19 rule = {
