@@ -21,7 +21,7 @@ seps: "[]{}():.!?\""
 15 until_any_or_whitespace = [".." @"set_opt"any @"opt" ?@"set"prop]
 16 until_any = ["..." @"set_opt"any @"opt" ?@"set"prop]
 17 repeat = [".r" @"opt" "(" @"rule""rule" ")"]
-18 lines = ["l(" .w? @"rule""rule" .w? ")"]
+18 lines = [".l(" .w? @"rule""rule" .w? ")"]
 19 rule = {
   @"whitespace""whitespace"
   @"until_any_or_whitespace""until_any_or_whitespace"
@@ -37,4 +37,4 @@ seps: "[]{}():.!?\""
   @"token""token"
   @"optional""optional"
 }
-20 document = [l(@"string""string") l(@"node""node") .w?]
+20 document = [.l(@"string""string") .l(@"node""node") .w?]
