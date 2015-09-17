@@ -1,8 +1,22 @@
+// PISTON-META syntax 2
+
+/* Strings
+You can reuse strings through the rules.
+All strings starts with `_` to distinguish them from rules.
+*/
+
 _opt: "optional"
 _inv: "inverted"
 _prop: "property"
 _any: "any_characters"
 _seps: "[]{}():.!?\""
+
+/* Rules
+Each rule is assigned a number.
+The number is used to generate debug ids, starting at 1000x number.
+*/
+
+0 comment = {["/*" ..."*/"? "*/"] ["//" ..."\n"?]}
 1 string = ["_" .._seps!:"name" ":" .w? .t?:"text"]
 2 node = [.$:"id" .w! !"_" !"." .._seps!:"name" .w? "=" .w? rule:"rule"]
 3 set = {.t!:"value" ["_" .._seps!:"ref"]}
@@ -37,4 +51,8 @@ _seps: "[]{}():.!?\""
   token:"token"
   optional:"optional"
 }
-20 document = [.l([.w? string:"string"]) .l([.w? node:"node"]) .w?]
+20 document = [
+    .l([.w? {string:"string" comment}])
+    .l([.w? {node:"node" comment}])
+    .w?
+]

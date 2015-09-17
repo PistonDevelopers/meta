@@ -3,6 +3,7 @@ inv: "inverted"
 prop: "property"
 any: "any_characters"
 seps: "[]{}():.!?\""
+0 "comment" {["/*" ..."*/"? "*/"] ["//" ..."\n"?]}
 1 "string" ["_" ..seps!"name" ":" w? t?"text"]
 2 "node" [$"id" w! !"_" !"." ..seps!"name" w? "=" w? @"rule""rule"]
 3 "set" {t!"value" ["_" ..seps!"ref"]}
@@ -37,4 +38,7 @@ seps: "[]{}():.!?\""
   @"token""token"
   @"optional""optional"
 }
-20 "document" [l([w? @"string""string"]) l([w? @"node""node"]) w?]
+20 "document" [
+    l([w? {@"string""string" @"comment"}])
+    l([w? {@"node""node" @"comment"}]) w?
+]
