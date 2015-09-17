@@ -4,13 +4,13 @@ _prop: "property"
 _any: "any_characters"
 _seps: "[]{}():.!?\""
 1 string = [.w? "_" .._seps!"name" ":" .w? .t?:"text"]
-2 node = [.w? .$"id" .w! !"_" .._seps!"name" .w? "=" .w? rule:"rule"]
+2 node = [.w? .$"id" .w! !"_" !"." .._seps!"name" .w? "=" .w? rule:"rule"]
 3 set = {.t!:"value" ["_" .._seps!"ref"]}
 4 set_opt = {.t?:"value" ["_" .._seps!"ref"]}
 5 opt = {"?":_opt "!":!_opt}
 6 number = [".$" ?"_":"underscore" ?set:_prop]
 7 text = [".t" {"?":"allow_empty" "!":!"allow_empty"} ?[":" set:_prop]]
-8 reference = [!"_" .._seps!"name" ?[":" set:_prop]]
+8 reference = [!"_" !"." .._seps!"name" ?[":" set:_prop]]
 9 sequence = ["[" .w? .s!.(.w! rule:"rule") "]"]
 10 select = ["{" .w? .s!.(.w! rule:"rule") "}"]
 11 separated_by = [".s" opt ?".":"allow_trail"
