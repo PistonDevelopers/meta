@@ -20,7 +20,7 @@ Built-in rules:
             `.t?` allows empty string and `.t!` disallow empty string.
             `.t?:"message"` generates a meta string with name "message".
 
-    .$      Number.
+    .$      Floating number of double precision (64 bit).
             `.$_` allows underscore `_` as visible seperator, eg. `1_000`
             `.$:"message"` generates a meta number with name "message".
 
@@ -29,6 +29,80 @@ Built-in rules:
 
     ..._any  Reads until any of the characters in the string.
              `..._any?` allows empty and `..._any!` disallow empty.
+
+Tokens:
+
+    A token is a sequence of characters defined by a string.
+    Generates boolean values `true` or `false`.
+
+    "hello"     Expects "hello".
+                `"hello":"message"` generates `true` with name "message".
+                `"hello":!"message"` generates `false` with name "message".
+
+    !"hello"    Expects anything but "hello".
+                `!"hello":"message"` generates `true` with name "message".
+                `!"hello":!"message"` generates `false` with name "message".
+
+Composition rules:
+
+    [...]       Parses a sequence of rules, seperated by whitespace.
+
+    {...}       Tries the first rule, then the second if the first fails etc.
+
+    ?           Parses a rule optionally.
+                `?$:"value"` generates a number with name "value", if any.
+
+    .s          Separates a rule by another rule.
+                `.s?.("," $)`   Allows zero repetitions, allows trailing.
+                `.s?("," $)`    Allows zero repetitions, no trailing.
+                `.s!.("," $)`   At least one repetition, allows trailing.
+                `.s!("," $)`    At least one repetition, no trailing.
+
+    .r          Repeats a rule by another rule.
+                `.r?("ha")`     Allows zero repitions.
+                `.r!("ha")`     At least one repition.
+
+    .l          Separates a rule by one or more new lines.
+                Handles edge cases nicely for the intended use.
+                `.l($)`         List of numbers, one per line.
+
+Generating meta data:
+
+    The following parses the sentences "hi James!" and "hi Peter!".
+
+        1 say_hi = ["hi" .w! {"James" "Peter"} "!"]
+        2 document = say_hi
+
+    To generate data, we need to assign `say_hi` to a message.
+
+        1 say_hi = ["hi" .w! {"James":"james" "Peter":"peter"}]
+        2 document = say_hi:"say_hi"
+
+    The sentence "hi James!" then generates the equivalent JSON:
+
+        {
+            "say_hi": {
+                "james": true
+            }
+        }
+
+    By removing `:"say_hi"`, you can "lift" the sub data up one level:
+
+        {
+            "james":true
+        }
+
+    Numbers in front of the rules are used to improve error reporting.
+    For example, the following was reported by the 1st rule and 6th sub rule.
+
+        Error #1006, Expected: `!`
+        1,9: hi James
+        1,9:         ^
+
+    The last node is used to parse the entire document.
+
+Each sub rule in the node is assigned a debug id used in error reporting.
+The debug ids for a sub rule starts with `1000n` where `n` is the id.
 
 */
 
