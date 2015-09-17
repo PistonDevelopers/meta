@@ -59,6 +59,19 @@ pub fn syntax(rules: &str) -> Result<Vec<(Rc<String>, Rule)>, (Range, ParseError
     }
 }
 
+/// Reads syntax from text, using the new meta language.
+pub fn syntax2(rules: &str) -> Result<Vec<(Rc<String>, Rule)>, (Range, ParseError)> {
+    let new_bootstrap_rules = try!(syntax(include_str!("../assets/better-syntax.txt")));
+    match bootstrap::convert(
+        &try!(parse(&new_bootstrap_rules, rules)),
+        &mut vec![] // Ignored meta data
+    ) {
+        Ok(res) => Ok(res),
+        Err(()) => Err((Range::empty(0), ParseError::Conversion(
+            format!("Bootstrapping rules are incorrect"))))
+    }
+}
+
 /// Convenience method for loading data.
 /// Panics if there is an error, and writes error message to
 /// standard error output.
