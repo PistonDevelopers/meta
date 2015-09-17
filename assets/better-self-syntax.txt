@@ -20,7 +20,7 @@ seps: "[]{}():.!?\""
 14 whitespace = [".w" @"opt"]
 15 until_any_or_whitespace = [".." @"set_opt"any @"opt" ?@"set"prop]
 16 until_any = ["..." @"set_opt"any @"opt" ?@"set"prop]
-17 repeat = ["r" @"opt" "(" @"rule""rule" ")"]
+17 repeat = [".r" @"opt" "(" @"rule""rule" ")"]
 18 lines = ["l(" .w? @"rule""rule" .w? ")"]
 19 rule = {
   @"whitespace""whitespace"
