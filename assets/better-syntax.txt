@@ -10,7 +10,7 @@ seps: "[]{}():.!?\""
 5 "opt" {"?"opt "!"!opt}
 6 "number" [".$" ?"_""underscore" ?@"set"prop]
 7 "text" [".t" {"?""allow_empty" "!"!"allow_empty"} ?@"set"prop]
-8 "reference" [..seps!"name" ?["." @"set"prop]]
+8 "reference" [..seps!"name" ?[":" @"set"prop]]
 9 "sequence" ["[" w? s!.(w!) {@"rule""rule"} "]"]
 10 "select" ["{" w? s!.(w!) {@"rule""rule"} "}"]
 11 "separated_by" [".s" @"opt" ?".""allow_trail"
