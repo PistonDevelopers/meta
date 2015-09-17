@@ -9,7 +9,7 @@ seps: "[]{}():.!?\""
 4 "set_opt" {t?"value" ..seps!"ref"}
 5 "opt" {"?"opt "!"!opt}
 6 "number" ["$" ?"_""underscore" ?@"set"prop]
-7 "text" ["t" {"?""allow_empty" "!"!"allow_empty"} ?@"set"prop]
+7 "text" [".t" {"?""allow_empty" "!"!"allow_empty"} ?@"set"prop]
 8 "reference" ["@" t!"name" ?@"set"prop]
 9 "sequence" ["[" w? s!.(w!) {@"rule""rule"} "]"]
 10 "select" ["{" w? s!.(w!) {@"rule""rule"} "}"]
