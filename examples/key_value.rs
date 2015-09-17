@@ -12,17 +12,17 @@ fn main() {
         violent = true
     "#;
     let rules = r##"
-        0 "document" l({
-            [w? "#" ..."\n"?]
-            [w? .."="!"key" w? "=" w? {
-                $_"number"
-                {"true""bool" "false"!"bool"}
-                t?"string"
-                ..""!"value"
-            } w?]
+        0 document = .l({
+            [.w? "#" ..."\n"?]
+            [.w? .."="!:"key" .w? "=" .w? {
+                .$_:"number"
+                {"true":"bool" "false":!"bool"}
+                .t?:"string"
+                ..""!:"value"
+            } .w?]
         })"##;
     // Parse rules with meta language and convert to rules for parsing text.
-    let rules = stderr_unwrap(rules, syntax(rules));
+    let rules = stderr_unwrap(rules, syntax2(rules));
     let data = stderr_unwrap(text, parse(&rules, text));
     /* prints
 
