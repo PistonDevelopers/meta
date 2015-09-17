@@ -3,8 +3,8 @@ inv: "inverted"
 prop: "property"
 any: "any_characters"
 seps: "[]{}():.!?\""
-1 "string" [w? "_" ..seps!"name" ":" w? t?"text"]
-2 "node" [w? $"id" w! !"_" !"." ..seps!"name" w? "=" w? @"rule""rule"]
+1 "string" ["_" ..seps!"name" ":" w? t?"text"]
+2 "node" [$"id" w! !"_" !"." ..seps!"name" w? "=" w? @"rule""rule"]
 3 "set" {t!"value" ["_" ..seps!"ref"]}
 4 "set_opt" {t?"value" ["_" ..seps!"ref"]}
 5 "opt" {"?"opt "!"!opt}
@@ -37,4 +37,4 @@ seps: "[]{}():.!?\""
   @"token""token"
   @"optional""optional"
 }
-20 "document" [l(@"string""string") l(@"node""node") w?]
+20 "document" [l([w? @"string""string"]) l([w? @"node""node"]) w?]
