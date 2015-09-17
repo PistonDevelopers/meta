@@ -3,10 +3,10 @@ inv: "inverted"
 prop: "property"
 any: "any_characters"
 seps: "[]{}():.!?\""
-1 "string" [w? ..seps!"name" ":" w? t?"text"]
+1 "string" [w? "_" ..seps!"name" ":" w? t?"text"]
 2 "node" [w? $"id" w! ..seps!"name" w? "=" w? @"rule""rule"]
-3 "set" {t!"value" ..seps!"ref"}
-4 "set_opt" {t?"value" ..seps!"ref"}
+3 "set" {t!"value" ["_" ..seps!"ref"]}
+4 "set_opt" {t?"value" ["_" ..seps!"ref"]}
 5 "opt" {"?"opt "!"!opt}
 6 "number" [".$" ?"_""underscore" ?@"set"prop]
 7 "text" [".t" {"?""allow_empty" "!"!"allow_empty"} ?@"set"prop]
