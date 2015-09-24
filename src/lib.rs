@@ -93,3 +93,25 @@ pub fn load_syntax_data<A, B>(
     data_file.read_to_string(&mut d).unwrap();
     stderr_unwrap(&d, parse(&rules, &d))
 }
+
+/// Convenience method for loading data, using the new meta language.
+/// Panics if there is an error, and writes error message to
+/// standard error output.
+pub fn load_syntax_data2<A, B>(
+    syntax_path: A,
+    data_path: B
+) -> Vec<(Range, MetaData)>
+    where A: AsRef<Path>, B: AsRef<Path>
+{
+    use std::io::Read;
+
+    let mut syntax_file = File::open(syntax_path).unwrap();
+    let mut s = String::new();
+    syntax_file.read_to_string(&mut s).unwrap();
+    let rules = stderr_unwrap(&s, syntax2(&s));
+
+    let mut data_file = File::open(data_path).unwrap();
+    let mut d = String::new();
+    data_file.read_to_string(&mut d).unwrap();
+    stderr_unwrap(&d, parse(&rules, &d))
+}
