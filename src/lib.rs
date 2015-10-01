@@ -47,8 +47,33 @@ pub enum MetaData {
     String(Arc<String>, Arc<String>),
 }
 
+/// Stores syntax.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Syntax {
+    /// Rule data.
+    pub rules: Vec<Rule>,
+    /// Name of rules.
+    pub names: Vec<Arc<String>>,
+}
+
+impl Syntax {
+    /// Creates a new syntax.
+    pub fn new() -> Syntax {
+        Syntax {
+            rules: vec![],
+            names: vec![]
+        }
+    }
+
+    /// Adds a new rule.
+    pub fn push(&mut self, (name, rule): (Arc<String>, Rule)) {
+        self.rules.push(rule);
+        self.names.push(name);
+    }
+}
+
 /// Reads syntax from text.
-pub fn syntax(rules: &str) -> Result<Vec<(Arc<String>, Rule)>, (Range, ParseError)> {
+pub fn syntax(rules: &str) -> Result<Syntax, (Range, ParseError)> {
     match bootstrap::convert(
         &try!(parse(&bootstrap::rules(), rules)),
         &mut vec![] // Ignored meta data
@@ -60,7 +85,7 @@ pub fn syntax(rules: &str) -> Result<Vec<(Arc<String>, Rule)>, (Range, ParseErro
 }
 
 /// Reads syntax from text, using the new meta language.
-pub fn syntax2(rules: &str) -> Result<Vec<(Arc<String>, Rule)>, (Range, ParseError)> {
+pub fn syntax2(rules: &str) -> Result<Syntax, (Range, ParseError)> {
     let new_bootstrap_rules = try!(syntax(include_str!("../assets/better-syntax.txt")));
     match bootstrap::convert(
         &try!(parse(&new_bootstrap_rules, rules)),

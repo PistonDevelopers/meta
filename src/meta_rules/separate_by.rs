@@ -1,5 +1,4 @@
 use range::Range;
-use std::sync::Arc;
 
 use super::{
     ret_err,
@@ -37,7 +36,7 @@ impl SeparateBy {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Arc<String>, Rule)]
+        refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();

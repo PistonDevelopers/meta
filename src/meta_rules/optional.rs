@@ -1,5 +1,4 @@
 use range::Range;
-use std::sync::Arc;
 
 use super::{
     ret_err,
@@ -31,7 +30,7 @@ impl Optional {
         state: &TokenizerState,
         mut chars: &[char],
         mut offset: usize,
-        refs: &[(Arc<String>, Rule)]
+        refs: &[Rule]
     ) -> (Range, TokenizerState, Option<(Range, ParseError)>) {
         let start_offset = offset;
         let mut success_state = state.clone();

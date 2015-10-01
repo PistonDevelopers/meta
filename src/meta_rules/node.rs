@@ -36,7 +36,7 @@ impl Node {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Arc<String>, Rule)]
+        refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let index = match self.index.get() {
@@ -62,7 +62,7 @@ impl Node {
             state.clone()
         };
         let mut opt_error = None;
-        state = match refs[index].1.parse(
+        state = match refs[index].parse(
             tokens, &state, chars, offset, refs
         ) {
             Err(err) => { return Err(ret_err(err, opt_error)); }
@@ -138,11 +138,10 @@ mod tests {
             debug_id: 0,
             index: Cell::new(None),
         });
-        let rules = vec![
-            (foo.clone(), node),
-            (Arc::new("".into()), rule)
-        ];
-        update_refs(&rules);
+        let mut rules = Syntax::new();
+        rules.push((foo.clone(), node));
+        rules.push((Arc::new("".into()), rule));
+        update_refs(&mut rules);
 
         let text = "1 2 3";
         let data = parse(&rules, text).unwrap();

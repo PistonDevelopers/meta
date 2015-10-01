@@ -1,5 +1,4 @@
 use range::Range;
-use std::sync::Arc;
 
 use super::{
     ret_err,
@@ -34,7 +33,7 @@ impl Lines {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Arc<String>, Rule)]
+        refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();
@@ -218,7 +217,10 @@ mod tests {
                 }))
             ]
         });
-        let res = parse(&[(Arc::new("".into()), rule)], text);
+
+        let mut syntax = Syntax::new();
+        syntax.push((Arc::new("".into()), rule));
+        let res = parse(&syntax, text);
         assert_eq!(res, Ok(vec![
             (Range::new(1, 1), MetaData::F64(num.clone(), 1.0)),
             (Range::new(3, 1), MetaData::F64(num.clone(), 2.0)),

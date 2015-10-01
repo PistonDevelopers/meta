@@ -16,9 +16,10 @@ use meta_rules::{
     UntilAnyOrWhitespace,
     Whitespace,
 };
+use Syntax;
 
 /// Returns rules for parsing meta rules.
-pub fn rules() -> Vec<(Arc<String>, Rule)> {
+pub fn rules() -> Syntax {
     let opt: Arc<String> = Arc::new("optional".into());
     let inv: Arc<String> = Arc::new("inverted".into());
     let prop: Arc<String> = Arc::new("property".into());
@@ -786,28 +787,30 @@ pub fn rules() -> Vec<(Arc<String>, Rule)> {
         ]
     });
 
-    let rules = vec![
-        (Arc::new("string".into()), string_rule),
-        (Arc::new("node".into()), node_rule),
-        (Arc::new("set".into()), set_rule),
-        (Arc::new("set_opt".into()), set_opt_rule),
-        (Arc::new("opt".into()), opt_rule),
-        (Arc::new("number".into()), number_rule),
-        (Arc::new("text".into()), text_rule),
-        (Arc::new("reference".into()), reference_rule),
-        (Arc::new("sequence".into()), sequence_rule),
-        (Arc::new("select".into()), select_rule),
-        (Arc::new("separated_by".into()), separated_by_rule),
-        (Arc::new("token".into()), token_rule),
-        (Arc::new("optional".into()), optional_rule),
-        (Arc::new("whitespace".into()), whitespace_rule),
-        (Arc::new("until_any_or_whitespace".into()), until_any_or_whitespace_rule),
-        (Arc::new("until_any".into()), until_any_rule),
-        (Arc::new("repeat".into()), repeat_rule),
-        (Arc::new("lines".into()), lines_rule),
-        (Arc::new("rule".into()), rule_rule),
-        (Arc::new("document".into()), document_rule),
-    ];
-    update_refs(&rules);
-    rules
+    let mut syntax = Syntax {
+        rules: Vec::with_capacity(20),
+        names: Vec::with_capacity(20)
+    };
+    syntax.push((Arc::new("string".into()), string_rule));
+    syntax.push((Arc::new("node".into()), node_rule));
+    syntax.push((Arc::new("set".into()), set_rule));
+    syntax.push((Arc::new("set_opt".into()), set_opt_rule));
+    syntax.push((Arc::new("opt".into()), opt_rule));
+    syntax.push((Arc::new("number".into()), number_rule));
+    syntax.push((Arc::new("text".into()), text_rule));
+    syntax.push((Arc::new("reference".into()), reference_rule));
+    syntax.push((Arc::new("sequence".into()), sequence_rule));
+    syntax.push((Arc::new("select".into()), select_rule));
+    syntax.push((Arc::new("separated_by".into()), separated_by_rule));
+    syntax.push((Arc::new("token".into()), token_rule));
+    syntax.push((Arc::new("optional".into()), optional_rule));
+    syntax.push((Arc::new("whitespace".into()), whitespace_rule));
+    syntax.push((Arc::new("until_any_or_whitespace".into()), until_any_or_whitespace_rule));
+    syntax.push((Arc::new("until_any".into()), until_any_rule));
+    syntax.push((Arc::new("repeat".into()), repeat_rule));
+    syntax.push((Arc::new("lines".into()), lines_rule));
+    syntax.push((Arc::new("rule".into()), rule_rule));
+    syntax.push((Arc::new("document".into()), document_rule));
+    update_refs(&mut syntax);
+    syntax
 }

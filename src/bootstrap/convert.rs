@@ -20,6 +20,7 @@ use meta_rules::{
     Whitespace,
 };
 use MetaData;
+use Syntax;
 
 /// Updates with parsed range.
 pub fn update(range: Range, data: &mut &[(Range, MetaData)], offset: &mut usize) {
@@ -110,7 +111,7 @@ pub fn meta_bool(name: &str, data: &[(Range, MetaData)], offset: usize)
 pub fn convert(
     mut data: &[(Range, MetaData)],
     ignored: &mut Vec<Range>
-) -> Result<Vec<(Arc<String>, Rule)>, ()> {
+) -> Result<Syntax, ()> {
     fn read_string(mut data: &[(Range, MetaData)], mut offset: usize)
     -> Result<(Range, (Arc<String>, Arc<String>)), ()> {
         let start_offset = offset;
@@ -838,7 +839,7 @@ pub fn convert(
             break;
         }
     }
-    let mut res = vec![];
+    let mut res = Syntax::new();
     loop {
         if let Ok((range, val)) = read_node(data, offset, &strings, ignored) {
             update(range, &mut data, &mut offset);
@@ -849,6 +850,6 @@ pub fn convert(
             break;
         }
     }
-    update_refs(&res);
+    update_refs(&mut res);
     Ok(res)
 }
