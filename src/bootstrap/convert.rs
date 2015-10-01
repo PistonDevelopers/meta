@@ -842,7 +842,7 @@ pub fn convert(
     loop {
         if let Ok((range, val)) = read_node(data, offset, &strings, ignored) {
             update(range, &mut data, &mut offset);
-            res.push(val);
+            res.push(val.0, val.1);
         } else if offset < data.len() {
             return Err(());
         } else {

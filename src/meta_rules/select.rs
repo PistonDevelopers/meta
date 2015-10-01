@@ -67,7 +67,7 @@ mod tests {
             args: vec![]
         });
         let mut syntax = Syntax::new();
-        syntax.push((Arc::new("".into()), select));
+        syntax.push(Arc::new("".into()), select);
         let res = parse(&syntax, &text);
         let invalid_rule = match &res {
             &Err((_, ParseError::InvalidRule(_, _))) => true,
@@ -96,7 +96,7 @@ mod tests {
             ]
         });
         let mut syntax = Syntax::new();
-        syntax.push((Arc::new("".into()), select));
+        syntax.push(Arc::new("".into()), select);
         let res = parse(&syntax, &text);
         assert_eq!(res, Ok(vec![
             (Range::new(0, 1), MetaData::F64(num.clone(), 2.0))

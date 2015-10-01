@@ -219,7 +219,7 @@ mod tests {
         });
 
         let mut syntax = Syntax::new();
-        syntax.push((Arc::new("".into()), rule));
+        syntax.push(Arc::new("".into()), rule);
         let res = parse(&syntax, text);
         assert_eq!(res, Ok(vec![
             (Range::new(1, 1), MetaData::F64(num.clone(), 1.0)),

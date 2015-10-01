@@ -66,7 +66,7 @@ impl Syntax {
     }
 
     /// Adds a new rule.
-    pub fn push(&mut self, (name, rule): (Arc<String>, Rule)) {
+    pub fn push(&mut self, name: Arc<String>, rule: Rule) {
         self.rules.push(rule);
         self.names.push(name);
     }
@@ -157,10 +157,13 @@ mod tests {
         is_thread_safe::<ParseError>();
     }
 
-    /*
     #[test]
     fn rule_thread_safe() {
         is_thread_safe::<Rule>();
     }
-    */
+
+    #[test]
+    fn syntax_thread_safe() {
+        is_thread_safe::<Syntax>();
+    }
 }

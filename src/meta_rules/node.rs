@@ -137,8 +137,8 @@ mod tests {
             index: None,
         });
         let mut rules = Syntax::new();
-        rules.push((foo.clone(), node));
-        rules.push((Arc::new("".into()), rule));
+        rules.push(foo.clone(), node);
+        rules.push(Arc::new("".into()), rule);
         update_refs(&mut rules);
 
         let text = "1 2 3";
