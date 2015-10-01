@@ -1,5 +1,5 @@
 use range::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::{
     Lines,
@@ -62,7 +62,7 @@ impl Rule {
         state: &TokenizerState,
         chars: &[char],
         offset: usize,
-        refs: &[(Rc<String>, Rule)]
+        refs: &[(Arc<String>, Rule)]
     ) -> ParseResult<TokenizerState> {
         match self {
             &Rule::Whitespace(ref w) => {
@@ -111,7 +111,7 @@ impl Rule {
     ///
     /// The references contains the name,
     /// but this can not be borrowed as when the same reference is updated.
-    pub fn update_refs(&self, refs: &[(Rc<String>, Rule)]) {
+    pub fn update_refs(&self, refs: &[(Arc<String>, Rule)]) {
         match self {
             &Rule::Node(ref p) => {
                 match p.index.get() {

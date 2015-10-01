@@ -1,7 +1,7 @@
 use std::fmt::{ Display, Formatter };
 use std::fmt::Error as FormatError;
 use read_token::{ ParseNumberError, ParseStringError };
-use std::rc::Rc;
+use std::sync::Arc;
 
 use DebugId;
 
@@ -25,9 +25,9 @@ pub enum ParseError {
     /// Invalid string format.
     ParseStringError(ParseStringError, DebugId),
     /// Expected token.
-    ExpectedToken(Rc<String>, DebugId),
+    ExpectedToken(Arc<String>, DebugId),
     /// Did not expected token.
-    DidNotExpectToken(Rc<String>, DebugId),
+    DidNotExpectToken(Arc<String>, DebugId),
     /// An invalid rule.
     InvalidRule(&'static str, DebugId),
     /// No rules are specified.

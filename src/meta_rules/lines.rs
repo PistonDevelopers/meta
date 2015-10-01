@@ -1,5 +1,5 @@
 use range::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::{
     ret_err,
@@ -34,7 +34,7 @@ impl Lines {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Rc<String>, Rule)]
+        refs: &[(Arc<String>, Rule)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();
@@ -93,7 +93,7 @@ mod tests {
     use all::tokenizer::*;
     use meta_rules::{ Lines, Number, Sequence, Text, Whitespace };
     use range::Range;
-    use std::rc::Rc;
+    use std::sync::Arc;
 
     #[test]
     fn fail() {
@@ -136,7 +136,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
-        let val: Rc<String> = Rc::new("val".into());
+        let val: Arc<String> = Arc::new("val".into());
         let lines = Lines {
             debug_id: 0,
             rule: Rule::Sequence(Sequence {
@@ -172,7 +172,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
-        let val: Rc<String> = Rc::new("val".into());
+        let val: Arc<String> = Arc::new("val".into());
         let lines = Lines {
             debug_id: 0,
             rule: Rule::Number(Number {
@@ -195,8 +195,8 @@ mod tests {
 \"two\"
 \"three\"
         ";
-        let num: Rc<String> = Rc::new("num".into());
-        let tex: Rc<String> = Rc::new("tex".into());
+        let num: Arc<String> = Arc::new("num".into());
+        let tex: Arc<String> = Arc::new("tex".into());
         let rule = Rule::Sequence(Sequence {
             debug_id: 0,
             args: vec![
@@ -218,14 +218,14 @@ mod tests {
                 }))
             ]
         });
-        let res = parse(&[(Rc::new("".into()), rule)], text);
+        let res = parse(&[(Arc::new("".into()), rule)], text);
         assert_eq!(res, Ok(vec![
             (Range::new(1, 1), MetaData::F64(num.clone(), 1.0)),
             (Range::new(3, 1), MetaData::F64(num.clone(), 2.0)),
             (Range::new(5, 1), MetaData::F64(num.clone(), 3.0)),
-            (Range::new(7, 5), MetaData::String(tex.clone(), Rc::new("one".into()))),
-            (Range::new(13, 5), MetaData::String(tex.clone(), Rc::new("two".into()))),
-            (Range::new(19, 7), MetaData::String(tex.clone(), Rc::new("three".into())))
+            (Range::new(7, 5), MetaData::String(tex.clone(), Arc::new("one".into()))),
+            (Range::new(13, 5), MetaData::String(tex.clone(), Arc::new("two".into()))),
+            (Range::new(19, 7), MetaData::String(tex.clone(), Arc::new("three".into())))
         ]));
     }
 }

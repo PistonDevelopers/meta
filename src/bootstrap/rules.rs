@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 use std::cell::Cell;
 
 use meta_rules::{
@@ -18,12 +18,12 @@ use meta_rules::{
 };
 
 /// Returns rules for parsing meta rules.
-pub fn rules() -> Vec<(Rc<String>, Rule)> {
-    let opt: Rc<String> = Rc::new("optional".into());
-    let inv: Rc<String> = Rc::new("inverted".into());
-    let prop: Rc<String> = Rc::new("property".into());
-    let any: Rc<String> = Rc::new("any_characters".into());
-    let seps: Rc<String> = Rc::new("[]{}():.!?\"".into());
+pub fn rules() -> Vec<(Arc<String>, Rule)> {
+    let opt: Arc<String> = Arc::new("optional".into());
+    let inv: Arc<String> = Arc::new("inverted".into());
+    let prop: Arc<String> = Arc::new("property".into());
+    let any: Arc<String> = Arc::new("any_characters".into());
+    let seps: Arc<String> = Arc::new("[]{}():.!?\"".into());
 
     // 1 "string" [w? ..seps!"name" ":" w? t?"text"]
     let string_rule = Rule::Sequence(Sequence {
@@ -37,11 +37,11 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 1003,
                 any_characters: seps.clone(),
                 optional: false,
-                property: Some(Rc::new("name".into()))
+                property: Some(Arc::new("name".into()))
             }),
             Rule::Token(Token {
                 debug_id: 1004,
-                text: Rc::new(":".into()),
+                text: Arc::new(":".into()),
                 not: false,
                 inverted: false,
                 property: None
@@ -53,7 +53,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Text(Text {
                 debug_id: 1006,
                 allow_empty: true,
-                property: Some(Rc::new("text".into())),
+                property: Some(Arc::new("text".into())),
             })
         ]
     });
@@ -69,7 +69,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Number(Number {
                 debug_id: 2003,
                 allow_underscore: false,
-                property: Some(Rc::new("id".into())),
+                property: Some(Arc::new("id".into())),
             }),
             Rule::Whitespace(Whitespace {
                 debug_id: 2004,
@@ -78,7 +78,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Text(Text {
                 debug_id: 2005,
                 allow_empty: false,
-                property: Some(Rc::new("name".into())),
+                property: Some(Arc::new("name".into())),
             }),
             Rule::Whitespace(Whitespace {
                 debug_id: 2006,
@@ -86,8 +86,8 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             }),
             Rule::Node(Node {
                 debug_id: 2007,
-                name: Rc::new("rule".into()),
-                property: Some(Rc::new("rule".into())),
+                name: Arc::new("rule".into()),
+                property: Some(Arc::new("rule".into())),
                 index: Cell::new(None),
             })
         ]
@@ -100,13 +100,13 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Text(Text {
                 debug_id: 3002,
                 allow_empty: false,
-                property: Some(Rc::new("value".into())),
+                property: Some(Arc::new("value".into())),
             }),
             Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 3003,
                 any_characters: seps.clone(),
                 optional: false,
-                property: Some(Rc::new("ref".into())),
+                property: Some(Arc::new("ref".into())),
             })
         ]
     });
@@ -118,13 +118,13 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Text(Text {
                 debug_id: 4002,
                 allow_empty: true,
-                property: Some(Rc::new("value".into())),
+                property: Some(Arc::new("value".into())),
             }),
             Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 4003,
                 any_characters: seps.clone(),
                 optional: false,
-                property: Some(Rc::new("ref".into())),
+                property: Some(Arc::new("ref".into())),
             })
         ]
     });
@@ -135,14 +135,14 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 5002,
-                text: Rc::new("?".into()),
+                text: Arc::new("?".into()),
                 not: false,
                 inverted: false,
                 property: Some(opt.clone())
             }),
             Rule::Token(Token {
                 debug_id: 5003,
-                text: Rc::new("!".into()),
+                text: Arc::new("!".into()),
                 not: false,
                 inverted: true,
                 property: Some(opt.clone())
@@ -156,7 +156,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 6002,
-                text: Rc::new("$".into()),
+                text: Arc::new("$".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -165,18 +165,18 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 6003,
                 rule: Rule::Token(Token {
                     debug_id: 6004,
-                    text: Rc::new("_".into()),
+                    text: Arc::new("_".into()),
                     not: false,
                     inverted: false,
-                    property: Some(Rc::new("underscore".into()))
+                    property: Some(Arc::new("underscore".into()))
                 })
             })),
             Rule::Optional(Box::new(Optional {
                 debug_id: 6005,
                 rule: Rule::Node(Node {
                     debug_id: 6006,
-                    name: Rc::new("set".into()),
-                    property: Some(Rc::new("property".into())),
+                    name: Arc::new("set".into()),
+                    property: Some(Arc::new("property".into())),
                     index: Cell::new(None),
                 })
             }))
@@ -189,7 +189,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 7002,
-                text: Rc::new("t".into()),
+                text: Arc::new("t".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -199,17 +199,17 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 args: vec![
                     Rule::Token(Token {
                         debug_id: 7004,
-                        text: Rc::new("?".into()),
+                        text: Arc::new("?".into()),
                         not: false,
                         inverted: false,
-                        property: Some(Rc::new("allow_empty".into())),
+                        property: Some(Arc::new("allow_empty".into())),
                     }),
                     Rule::Token(Token {
                         debug_id: 7005,
-                        text: Rc::new("!".into()),
+                        text: Arc::new("!".into()),
                         not: false,
                         inverted: true,
-                        property: Some(Rc::new("allow_empty".into())),
+                        property: Some(Arc::new("allow_empty".into())),
                     })
                 ]
             }),
@@ -217,7 +217,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 7006,
                 rule: Rule::Node(Node {
                     debug_id: 7007,
-                    name: Rc::new("set".into()),
+                    name: Arc::new("set".into()),
                     property: Some(prop.clone()),
                     index: Cell::new(None),
                 })
@@ -231,7 +231,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 8002,
-                text: Rc::new("@".into()),
+                text: Arc::new("@".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -239,13 +239,13 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             Rule::Text(Text {
                 debug_id: 8003,
                 allow_empty: false,
-                property: Some(Rc::new("name".into())),
+                property: Some(Arc::new("name".into())),
             }),
             Rule::Optional(Box::new(Optional {
                 debug_id: 8004,
                 rule: Rule::Node(Node {
                     debug_id: 8005,
-                    name: Rc::new("set".into()),
+                    name: Arc::new("set".into()),
                     property: Some(prop.clone()),
                     index: Cell::new(None)
                 })
@@ -259,7 +259,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 9002,
-                text: Rc::new("[".into()),
+                text: Arc::new("[".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -278,14 +278,14 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 }),
                 rule: Rule::Node(Node {
                     debug_id: 9006,
-                    name: Rc::new("rule".into()),
-                    property: Some(Rc::new("rule".into())),
+                    name: Arc::new("rule".into()),
+                    property: Some(Arc::new("rule".into())),
                     index: Cell::new(None)
                 })
             })),
             Rule::Token(Token {
                 debug_id: 9007,
-                text: Rc::new("]".into()),
+                text: Arc::new("]".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -299,7 +299,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 10002,
-                text: Rc::new("{".into()),
+                text: Arc::new("{".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -318,14 +318,14 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 }),
                 rule: Rule::Node(Node {
                     debug_id: 10006,
-                    name: Rc::new("rule".into()),
-                    property: Some(Rc::new("rule".into())),
+                    name: Arc::new("rule".into()),
+                    property: Some(Arc::new("rule".into())),
                     index: Cell::new(None),
                 })
             })),
             Rule::Token(Token {
                 debug_id: 10007,
-                text: Rc::new("}".into()),
+                text: Arc::new("}".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -340,14 +340,14 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 11002,
-                text: Rc::new("s".into()),
+                text: Arc::new("s".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
                 debug_id: 11003,
-                name: Rc::new("opt".into()),
+                name: Arc::new("opt".into()),
                 property: None,
                 index: Cell::new(None),
             }),
@@ -355,15 +355,15 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 11004,
                 rule: Rule::Token(Token {
                     debug_id: 11005,
-                    text: Rc::new(".".into()),
+                    text: Arc::new(".".into()),
                     not: false,
                     inverted: false,
-                    property: Some(Rc::new("allow_trail".into())),
+                    property: Some(Arc::new("allow_trail".into())),
                 })
             })),
             Rule::Token(Token {
                 debug_id: 11006,
-                text: Rc::new("(".into()),
+                text: Arc::new("(".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -374,8 +374,8 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             }),
             Rule::Node(Node {
                 debug_id: 11008,
-                name: Rc::new("rule".into()),
-                property: Some(Rc::new("by".into())),
+                name: Arc::new("rule".into()),
+                property: Some(Arc::new("by".into())),
                 index: Cell::new(None),
             }),
             Rule::Whitespace(Whitespace {
@@ -384,7 +384,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             }),
             Rule::Token(Token {
                 debug_id: 11010,
-                text: Rc::new(")".into()),
+                text: Arc::new(")".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -395,7 +395,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             }),
             Rule::Token(Token {
                 debug_id: 11012,
-                text: Rc::new("{".into()),
+                text: Arc::new("{".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -406,8 +406,8 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             }),
             Rule::Node(Node {
                 debug_id: 11014,
-                name: Rc::new("rule".into()),
-                property: Some(Rc::new("rule".into())),
+                name: Arc::new("rule".into()),
+                property: Some(Arc::new("rule".into())),
                 index: Cell::new(None),
             }),
             Rule::Whitespace(Whitespace {
@@ -416,7 +416,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             }),
             Rule::Token(Token {
                 debug_id: 11016,
-                text: Rc::new("}".into()),
+                text: Arc::new("}".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -432,16 +432,16 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 12002,
                 rule: Rule::Token(Token {
                     debug_id: 12003,
-                    text: Rc::new("!".into()),
+                    text: Arc::new("!".into()),
                     not: false,
                     inverted: false,
-                    property: Some(Rc::new("not".into()))
+                    property: Some(Arc::new("not".into()))
                 })
             })),
             Rule::Node(Node {
                 debug_id: 12004,
-                name: Rc::new("set".into()),
-                property: Some(Rc::new("text".into())),
+                name: Arc::new("set".into()),
+                property: Some(Arc::new("text".into())),
                 index: Cell::new(None),
             }),
             Rule::Optional(Box::new(Optional {
@@ -453,7 +453,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                             debug_id: 12007,
                             rule: Rule::Token(Token {
                                 debug_id: 12008,
-                                text: Rc::new("!".into()),
+                                text: Arc::new("!".into()),
                                 not: false,
                                 inverted: false,
                                 property: Some(inv.clone()),
@@ -461,7 +461,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                         })),
                         Rule::Node(Node {
                             debug_id: 12009,
-                            name: Rc::new("set".into()),
+                            name: Arc::new("set".into()),
                             property: Some(prop.clone()),
                             index: Cell::new(None),
                         })
@@ -477,15 +477,15 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 13002,
-                text: Rc::new("?".into()),
+                text: Arc::new("?".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
                 debug_id: 13003,
-                name: Rc::new("rule".into()),
-                property: Some(Rc::new("rule".into())),
+                name: Arc::new("rule".into()),
+                property: Some(Arc::new("rule".into())),
                 index: Cell::new(None),
             })
         ]
@@ -497,14 +497,14 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 14002,
-                text: Rc::new("w".into()),
+                text: Arc::new("w".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
                 debug_id: 14003,
-                name: Rc::new("opt".into()),
+                name: Arc::new("opt".into()),
                 property: None,
                 index: Cell::new(None),
             })
@@ -517,20 +517,20 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 15002,
-                text: Rc::new("..".into()),
+                text: Arc::new("..".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
                 debug_id: 15003,
-                name: Rc::new("set_opt".into()),
+                name: Arc::new("set_opt".into()),
                 property: Some(any.clone()),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 15004,
-                name: Rc::new("opt".into()),
+                name: Arc::new("opt".into()),
                 property: None,
                 index: Cell::new(None),
             }),
@@ -538,7 +538,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 15005,
                 rule: Rule::Node(Node {
                     debug_id: 15006,
-                    name: Rc::new("set".into()),
+                    name: Arc::new("set".into()),
                     property: Some(prop.clone()),
                     index: Cell::new(None),
                 })
@@ -552,20 +552,20 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 16002,
-                text: Rc::new("...".into()),
+                text: Arc::new("...".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
                 debug_id: 16003,
-                name: Rc::new("set_opt".into()),
+                name: Arc::new("set_opt".into()),
                 property: Some(any.clone()),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 16004,
-                name: Rc::new("opt".into()),
+                name: Arc::new("opt".into()),
                 property: None,
                 index: Cell::new(None),
             }),
@@ -573,7 +573,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 16005,
                 rule: Rule::Node(Node {
                     debug_id: 16006,
-                    name: Rc::new("set".into()),
+                    name: Arc::new("set".into()),
                     property: Some(prop.clone()),
                     index: Cell::new(None),
                 })
@@ -587,33 +587,33 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 17002,
-                text: Rc::new("r".into()),
+                text: Arc::new("r".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
                 debug_id: 17003,
-                name: Rc::new("opt".into()),
+                name: Arc::new("opt".into()),
                 property: None,
                 index: Cell::new(None),
             }),
             Rule::Token(Token {
                 debug_id: 17004,
-                text: Rc::new("(".into()),
+                text: Arc::new("(".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
                 debug_id: 17005,
-                name: Rc::new("rule".into()),
-                property: Some(Rc::new("rule".into())),
+                name: Arc::new("rule".into()),
+                property: Some(Arc::new("rule".into())),
                 index: Cell::new(None),
             }),
             Rule::Token(Token {
                 debug_id: 17006,
-                text: Rc::new(")".into()),
+                text: Arc::new(")".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -627,7 +627,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Token(Token {
                 debug_id: 18002,
-                text: Rc::new("l(".into()),
+                text: Arc::new("l(".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -638,8 +638,8 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             }),
             Rule::Node(Node {
                 debug_id: 18004,
-                name: Rc::new("rule".into()),
-                property: Some(Rc::new("rule".into())),
+                name: Arc::new("rule".into()),
+                property: Some(Arc::new("rule".into())),
                 index: Cell::new(None),
             }),
             Rule::Whitespace(Whitespace {
@@ -648,7 +648,7 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
             }),
             Rule::Token(Token {
                 debug_id: 18006,
-                text: Rc::new(")".into()),
+                text: Arc::new(")".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -678,80 +678,80 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
         args: vec![
             Rule::Node(Node {
                 debug_id: 19001,
-                name: Rc::new("whitespace".into()),
-                property: Some(Rc::new("whitespace".into())),
+                name: Arc::new("whitespace".into()),
+                property: Some(Arc::new("whitespace".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19002,
-                name: Rc::new("until_any_or_whitespace".into()),
-                property: Some(Rc::new("until_any_or_whitespace".into())),
+                name: Arc::new("until_any_or_whitespace".into()),
+                property: Some(Arc::new("until_any_or_whitespace".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19003,
-                name: Rc::new("until_any".into()),
-                property: Some(Rc::new("until_any".into())),
+                name: Arc::new("until_any".into()),
+                property: Some(Arc::new("until_any".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19004,
-                name: Rc::new("lines".into()),
-                property: Some(Rc::new("lines".into())),
+                name: Arc::new("lines".into()),
+                property: Some(Arc::new("lines".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19005,
-                name: Rc::new("repeat".into()),
-                property: Some(Rc::new("repeat".into())),
+                name: Arc::new("repeat".into()),
+                property: Some(Arc::new("repeat".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19006,
-                name: Rc::new("number".into()),
-                property: Some(Rc::new("number".into())),
+                name: Arc::new("number".into()),
+                property: Some(Arc::new("number".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19007,
-                name: Rc::new("text".into()),
-                property: Some(Rc::new("text".into())),
+                name: Arc::new("text".into()),
+                property: Some(Arc::new("text".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19008,
-                name: Rc::new("reference".into()),
-                property: Some(Rc::new("reference".into())),
+                name: Arc::new("reference".into()),
+                property: Some(Arc::new("reference".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19009,
-                name: Rc::new("sequence".into()),
-                property: Some(Rc::new("sequence".into())),
+                name: Arc::new("sequence".into()),
+                property: Some(Arc::new("sequence".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19010,
-                name: Rc::new("select".into()),
-                property: Some(Rc::new("select".into())),
+                name: Arc::new("select".into()),
+                property: Some(Arc::new("select".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19011,
-                name: Rc::new("separated_by".into()),
-                property: Some(Rc::new("separated_by".into())),
+                name: Arc::new("separated_by".into()),
+                property: Some(Arc::new("separated_by".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19012,
-                name: Rc::new("token".into()),
-                property: Some(Rc::new("token".into())),
+                name: Arc::new("token".into()),
+                property: Some(Arc::new("token".into())),
                 index: Cell::new(None),
             }),
             Rule::Node(Node {
                 debug_id: 19013,
-                name: Rc::new("optional".into()),
-                property: Some(Rc::new("optional".into())),
+                name: Arc::new("optional".into()),
+                property: Some(Arc::new("optional".into())),
                 index: Cell::new(None),
             }),
         ]
@@ -765,8 +765,8 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 20002,
                 rule: Rule::Node(Node {
                     debug_id: 20003,
-                    name: Rc::new("string".into()),
-                    property: Some(Rc::new("string".into())),
+                    name: Arc::new("string".into()),
+                    property: Some(Arc::new("string".into())),
                     index: Cell::new(None),
                 })
             })),
@@ -774,8 +774,8 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
                 debug_id: 20004,
                 rule: Rule::Node(Node {
                     debug_id: 20005,
-                    name: Rc::new("node".into()),
-                    property: Some(Rc::new("node".into())),
+                    name: Arc::new("node".into()),
+                    property: Some(Arc::new("node".into())),
                     index: Cell::new(None),
                 })
             })),
@@ -787,26 +787,26 @@ pub fn rules() -> Vec<(Rc<String>, Rule)> {
     });
 
     let rules = vec![
-        (Rc::new("string".into()), string_rule),
-        (Rc::new("node".into()), node_rule),
-        (Rc::new("set".into()), set_rule),
-        (Rc::new("set_opt".into()), set_opt_rule),
-        (Rc::new("opt".into()), opt_rule),
-        (Rc::new("number".into()), number_rule),
-        (Rc::new("text".into()), text_rule),
-        (Rc::new("reference".into()), reference_rule),
-        (Rc::new("sequence".into()), sequence_rule),
-        (Rc::new("select".into()), select_rule),
-        (Rc::new("separated_by".into()), separated_by_rule),
-        (Rc::new("token".into()), token_rule),
-        (Rc::new("optional".into()), optional_rule),
-        (Rc::new("whitespace".into()), whitespace_rule),
-        (Rc::new("until_any_or_whitespace".into()), until_any_or_whitespace_rule),
-        (Rc::new("until_any".into()), until_any_rule),
-        (Rc::new("repeat".into()), repeat_rule),
-        (Rc::new("lines".into()), lines_rule),
-        (Rc::new("rule".into()), rule_rule),
-        (Rc::new("document".into()), document_rule),
+        (Arc::new("string".into()), string_rule),
+        (Arc::new("node".into()), node_rule),
+        (Arc::new("set".into()), set_rule),
+        (Arc::new("set_opt".into()), set_opt_rule),
+        (Arc::new("opt".into()), opt_rule),
+        (Arc::new("number".into()), number_rule),
+        (Arc::new("text".into()), text_rule),
+        (Arc::new("reference".into()), reference_rule),
+        (Arc::new("sequence".into()), sequence_rule),
+        (Arc::new("select".into()), select_rule),
+        (Arc::new("separated_by".into()), separated_by_rule),
+        (Arc::new("token".into()), token_rule),
+        (Arc::new("optional".into()), optional_rule),
+        (Arc::new("whitespace".into()), whitespace_rule),
+        (Arc::new("until_any_or_whitespace".into()), until_any_or_whitespace_rule),
+        (Arc::new("until_any".into()), until_any_rule),
+        (Arc::new("repeat".into()), repeat_rule),
+        (Arc::new("lines".into()), lines_rule),
+        (Arc::new("rule".into()), rule_rule),
+        (Arc::new("document".into()), document_rule),
     ];
     update_refs(&rules);
     rules

@@ -1,6 +1,6 @@
 use range::Range;
 use read_token;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::{
     ParseResult,
@@ -16,13 +16,13 @@ use tokenizer::{ read_data, TokenizerState };
 #[derive(Clone, Debug, PartialEq)]
 pub struct Token {
     /// The text to match against.
-    pub text: Rc<String>,
+    pub text: Arc<String>,
     /// Whether to fail when matching against text.
     pub not: bool,
     /// Whether to set property to true or false (inverted).
     pub inverted: bool,
     /// Which property to set if token matches.
-    pub property: Option<Rc<String>>,
+    pub property: Option<Arc<String>>,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
 }
@@ -91,7 +91,7 @@ mod tests {
     use all::*;
     use all::tokenizer::*;
     use meta_rules::Token;
-    use std::rc::Rc;
+    use std::sync::Arc;
     use range::Range;
 
     #[test]
@@ -100,7 +100,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let start_parenthesis = Token {
             debug_id: 0,
-            text: Rc::new("(".into()),
+            text: Arc::new("(".into()),
             not: false,
             inverted: false,
             property: None
@@ -110,7 +110,7 @@ mod tests {
         let res = start_parenthesis.parse(&mut tokens, &s, &chars, 0);
         assert_eq!(res, Err((
             Range::new(0, 0),
-            ParseError::ExpectedToken(Rc::new("(".into()), 0)
+            ParseError::ExpectedToken(Arc::new("(".into()), 0)
             ))
         );
     }
@@ -121,7 +121,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let start_parenthesis = Token {
             debug_id: 0,
-            text: Rc::new(")".into()),
+            text: Arc::new(")".into()),
             not: true,
             inverted: false,
             property: None
@@ -131,7 +131,7 @@ mod tests {
         let res = start_parenthesis.parse(&mut tokens, &s, &chars, 0);
         assert_eq!(res, Err((
             Range::new(0, 1),
-            ParseError::DidNotExpectToken(Rc::new(")".into()), 0)
+            ParseError::DidNotExpectToken(Arc::new(")".into()), 0)
             ))
         );
     }
@@ -142,7 +142,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let fn_ = Token {
             debug_id: 0,
-            text: Rc::new("fn ".into()),
+            text: Arc::new("fn ".into()),
             not: false,
             inverted: false,
             property: None
@@ -155,10 +155,10 @@ mod tests {
 
         // Set bool property.
         let mut tokens = vec![];
-        let has_arguments: Rc<String> = Rc::new("has_arguments".into());
+        let has_arguments: Arc<String> = Arc::new("has_arguments".into());
         let start_parenthesis = Token {
             debug_id: 0,
-            text: Rc::new("(".into()),
+            text: Arc::new("(".into()),
             not: false,
             inverted: false,
             property: Some(has_arguments.clone())
@@ -171,10 +171,10 @@ mod tests {
 
         // Set inverted bool property.
         let mut tokens = vec![];
-        let has_arguments: Rc<String> = Rc::new("has_no_arguments".into());
+        let has_arguments: Arc<String> = Arc::new("has_no_arguments".into());
         let start_parenthesis = Token {
             debug_id: 0,
-            text: Rc::new("(".into()),
+            text: Arc::new("(".into()),
             not: false,
             inverted: true,
             property: Some(has_arguments.clone())

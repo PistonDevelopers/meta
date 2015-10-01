@@ -1,5 +1,5 @@
 use range::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::{
     ret_err,
@@ -31,7 +31,7 @@ impl Sequence {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Rc<String>, Rule)]
+        refs: &[(Arc<String>, Rule)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();

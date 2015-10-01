@@ -15,7 +15,7 @@ pub use self::until_any::UntilAny;
 pub use self::until_any_or_whitespace::UntilAnyOrWhitespace;
 pub use self::whitespace::Whitespace;
 
-use std::rc::Rc;
+use std::sync::Arc;
 use range::Range;
 use {
     MetaData,
@@ -41,7 +41,7 @@ mod whitespace;
 
 /// Parses text with rules.
 pub fn parse(
-    rules: &[(Rc<String>, Rule)],
+    rules: &[(Arc<String>, Rule)],
     text: &str
 ) -> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
     let chars: Vec<char> = text.chars().collect();
@@ -73,7 +73,7 @@ pub fn parse(
 }
 
 /// Updates the references such that they point to each other.
-pub fn update_refs(rules: &[(Rc<String>, Rule)]) {
+pub fn update_refs(rules: &[(Arc<String>, Rule)]) {
     for r in rules {
         r.1.update_refs(rules);
     }

@@ -1,5 +1,5 @@
 use range::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 use std::cell::Cell;
 
 use super::{
@@ -19,9 +19,9 @@ use tokenizer::{ read_data, TokenizerState };
 #[derive(Clone, Debug, PartialEq)]
 pub struct Node {
     /// Name of rule.
-    pub name: Rc<String>,
+    pub name: Arc<String>,
     /// The property to set.
-    pub property: Option<Rc<String>>,
+    pub property: Option<Arc<String>>,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
     /// The index to the rule reference.
@@ -36,7 +36,7 @@ impl Node {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Rc<String>, Rule)]
+        refs: &[(Arc<String>, Rule)]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let index = match self.index.get() {
@@ -94,14 +94,14 @@ mod tests {
     use all::*;
     use meta_rules::{ update_refs, Node, Number, Optional, Sequence,
         Whitespace };
-    use std::rc::Rc;
+    use std::sync::Arc;
     use std::cell::Cell;
 
     #[test]
     fn node_ref() {
         // Create a node rule the refers to itself.
-        let foo: Rc<String> = Rc::new("foo".into());
-        let num: Rc<String> = Rc::new("num".into());
+        let foo: Arc<String> = Arc::new("foo".into());
+        let num: Arc<String> = Arc::new("num".into());
         let node = Rule::Sequence(Sequence {
             debug_id: 1,
             args: vec![
@@ -140,7 +140,7 @@ mod tests {
         });
         let rules = vec![
             (foo.clone(), node),
-            (Rc::new("".into()), rule)
+            (Arc::new("".into()), rule)
         ];
         update_refs(&rules);
 

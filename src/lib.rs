@@ -15,7 +15,7 @@ pub use meta_rules::{ parse, Rule };
 /// The type of debug id used to track down errors in rules.
 pub type DebugId = usize;
 
-use std::rc::Rc;
+use std::sync::Arc;
 use std::fs::File;
 use std::path::Path;
 use range::Range;
@@ -36,19 +36,19 @@ mod all {
 #[derive(PartialEq, Clone, Debug)]
 pub enum MetaData {
     /// Starts node.
-    StartNode(Rc<String>),
+    StartNode(Arc<String>),
     /// Ends node.
-    EndNode(Rc<String>),
+    EndNode(Arc<String>),
     /// Sets bool property.
-    Bool(Rc<String>, bool),
+    Bool(Arc<String>, bool),
     /// Sets f64 property.
-    F64(Rc<String>, f64),
+    F64(Arc<String>, f64),
     /// Sets string property.
-    String(Rc<String>, Rc<String>),
+    String(Arc<String>, Arc<String>),
 }
 
 /// Reads syntax from text.
-pub fn syntax(rules: &str) -> Result<Vec<(Rc<String>, Rule)>, (Range, ParseError)> {
+pub fn syntax(rules: &str) -> Result<Vec<(Arc<String>, Rule)>, (Range, ParseError)> {
     match bootstrap::convert(
         &try!(parse(&bootstrap::rules(), rules)),
         &mut vec![] // Ignored meta data
@@ -60,7 +60,7 @@ pub fn syntax(rules: &str) -> Result<Vec<(Rc<String>, Rule)>, (Range, ParseError
 }
 
 /// Reads syntax from text, using the new meta language.
-pub fn syntax2(rules: &str) -> Result<Vec<(Rc<String>, Rule)>, (Range, ParseError)> {
+pub fn syntax2(rules: &str) -> Result<Vec<(Arc<String>, Rule)>, (Range, ParseError)> {
     let new_bootstrap_rules = try!(syntax(include_str!("../assets/better-syntax.txt")));
     match bootstrap::convert(
         &try!(parse(&new_bootstrap_rules, rules)),
@@ -114,4 +114,28 @@ pub fn load_syntax_data2<A, B>(
     let mut d = String::new();
     data_file.read_to_string(&mut d).unwrap();
     stderr_unwrap(&d, parse(&rules, &d))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn is_thread_safe<T: Send + Sync>() {}
+
+    #[test]
+    fn meta_data_thread_safe() {
+        is_thread_safe::<MetaData>();
+    }
+
+    #[test]
+    fn parse_error_thread_safe() {
+        is_thread_safe::<ParseError>();
+    }
+
+    /*
+    #[test]
+    fn rule_thread_safe() {
+        is_thread_safe::<Rule>();
+    }
+    */
 }

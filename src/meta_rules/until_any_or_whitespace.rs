@@ -1,6 +1,6 @@
 use read_token;
 use range::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::{
     ParseResult,
@@ -16,11 +16,11 @@ use tokenizer::{ read_data, TokenizerState };
 #[derive(Clone, Debug, PartialEq)]
 pub struct UntilAnyOrWhitespace {
     /// The characters to stop at.
-    pub any_characters: Rc<String>,
+    pub any_characters: Arc<String>,
     /// Whether empty data is accepted or not.
     pub optional: bool,
     /// The property to store read text.
-    pub property: Option<Rc<String>>,
+    pub property: Option<Arc<String>>,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
 }
@@ -46,7 +46,7 @@ impl UntilAnyOrWhitespace {
                 }
                 Ok((range, read_data(
                     tokens,
-                    MetaData::String(property.clone(), Rc::new(text)),
+                    MetaData::String(property.clone(), Arc::new(text)),
                     state,
                     range
                 ), None))
@@ -63,7 +63,7 @@ mod tests {
     use all::tokenizer::*;
     use meta_rules::UntilAnyOrWhitespace;
     use range::Range;
-    use std::rc::Rc;
+    use std::sync::Arc;
 
     #[test]
     fn required() {
@@ -73,7 +73,7 @@ mod tests {
         let s = TokenizerState::new();
         let name = UntilAnyOrWhitespace {
             debug_id: 0,
-            any_characters: Rc::new("(".into()),
+            any_characters: Arc::new("(".into()),
             optional: false,
             property: None
         };
@@ -88,10 +88,10 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let function_name: Rc<String> = Rc::new("function_name".into());
+        let function_name: Arc<String> = Arc::new("function_name".into());
         let name = UntilAnyOrWhitespace {
             debug_id: 0,
-            any_characters: Rc::new("(".into()),
+            any_characters: Arc::new("(".into()),
             optional: false,
             property: Some(function_name.clone())
         };
@@ -99,6 +99,6 @@ mod tests {
         assert_eq!(res, Ok((Range::new(3, 3), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].1,
-            &MetaData::String(function_name.clone(), Rc::new("foo".into())));
+            &MetaData::String(function_name.clone(), Arc::new("foo".into())));
     }
 }
