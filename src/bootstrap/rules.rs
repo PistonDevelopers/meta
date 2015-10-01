@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use std::cell::Cell;
 
 use meta_rules::{
     update_refs,
@@ -89,7 +88,7 @@ pub fn rules() -> Syntax {
                 debug_id: 2007,
                 name: Arc::new("rule".into()),
                 property: Some(Arc::new("rule".into())),
-                index: Cell::new(None),
+                index: None,
             })
         ]
     });
@@ -178,7 +177,7 @@ pub fn rules() -> Syntax {
                     debug_id: 6006,
                     name: Arc::new("set".into()),
                     property: Some(Arc::new("property".into())),
-                    index: Cell::new(None),
+                    index: None,
                 })
             }))
         ]
@@ -220,7 +219,7 @@ pub fn rules() -> Syntax {
                     debug_id: 7007,
                     name: Arc::new("set".into()),
                     property: Some(prop.clone()),
-                    index: Cell::new(None),
+                    index: None,
                 })
             })),
         ]
@@ -248,7 +247,7 @@ pub fn rules() -> Syntax {
                     debug_id: 8005,
                     name: Arc::new("set".into()),
                     property: Some(prop.clone()),
-                    index: Cell::new(None)
+                    index: None
                 })
             }))
         ]
@@ -281,7 +280,7 @@ pub fn rules() -> Syntax {
                     debug_id: 9006,
                     name: Arc::new("rule".into()),
                     property: Some(Arc::new("rule".into())),
-                    index: Cell::new(None)
+                    index: None
                 })
             })),
             Rule::Token(Token {
@@ -321,7 +320,7 @@ pub fn rules() -> Syntax {
                     debug_id: 10006,
                     name: Arc::new("rule".into()),
                     property: Some(Arc::new("rule".into())),
-                    index: Cell::new(None),
+                    index: None,
                 })
             })),
             Rule::Token(Token {
@@ -350,7 +349,7 @@ pub fn rules() -> Syntax {
                 debug_id: 11003,
                 name: Arc::new("opt".into()),
                 property: None,
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Optional(Box::new(Optional {
                 debug_id: 11004,
@@ -377,7 +376,7 @@ pub fn rules() -> Syntax {
                 debug_id: 11008,
                 name: Arc::new("rule".into()),
                 property: Some(Arc::new("by".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Whitespace(Whitespace {
                 debug_id: 11009,
@@ -409,7 +408,7 @@ pub fn rules() -> Syntax {
                 debug_id: 11014,
                 name: Arc::new("rule".into()),
                 property: Some(Arc::new("rule".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Whitespace(Whitespace {
                 debug_id: 11015,
@@ -443,7 +442,7 @@ pub fn rules() -> Syntax {
                 debug_id: 12004,
                 name: Arc::new("set".into()),
                 property: Some(Arc::new("text".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Optional(Box::new(Optional {
                 debug_id: 12005,
@@ -464,7 +463,7 @@ pub fn rules() -> Syntax {
                             debug_id: 12009,
                             name: Arc::new("set".into()),
                             property: Some(prop.clone()),
-                            index: Cell::new(None),
+                            index: None,
                         })
                     ]
                 })
@@ -487,7 +486,7 @@ pub fn rules() -> Syntax {
                 debug_id: 13003,
                 name: Arc::new("rule".into()),
                 property: Some(Arc::new("rule".into())),
-                index: Cell::new(None),
+                index: None,
             })
         ]
     });
@@ -507,7 +506,7 @@ pub fn rules() -> Syntax {
                 debug_id: 14003,
                 name: Arc::new("opt".into()),
                 property: None,
-                index: Cell::new(None),
+                index: None,
             })
         ]
     });
@@ -527,13 +526,13 @@ pub fn rules() -> Syntax {
                 debug_id: 15003,
                 name: Arc::new("set_opt".into()),
                 property: Some(any.clone()),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 15004,
                 name: Arc::new("opt".into()),
                 property: None,
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Optional(Box::new(Optional {
                 debug_id: 15005,
@@ -541,7 +540,7 @@ pub fn rules() -> Syntax {
                     debug_id: 15006,
                     name: Arc::new("set".into()),
                     property: Some(prop.clone()),
-                    index: Cell::new(None),
+                    index: None,
                 })
             }))
         ]
@@ -562,13 +561,13 @@ pub fn rules() -> Syntax {
                 debug_id: 16003,
                 name: Arc::new("set_opt".into()),
                 property: Some(any.clone()),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 16004,
                 name: Arc::new("opt".into()),
                 property: None,
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Optional(Box::new(Optional {
                 debug_id: 16005,
@@ -576,7 +575,7 @@ pub fn rules() -> Syntax {
                     debug_id: 16006,
                     name: Arc::new("set".into()),
                     property: Some(prop.clone()),
-                    index: Cell::new(None),
+                    index: None,
                 })
             }))
         ]
@@ -597,7 +596,7 @@ pub fn rules() -> Syntax {
                 debug_id: 17003,
                 name: Arc::new("opt".into()),
                 property: None,
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Token(Token {
                 debug_id: 17004,
@@ -610,7 +609,7 @@ pub fn rules() -> Syntax {
                 debug_id: 17005,
                 name: Arc::new("rule".into()),
                 property: Some(Arc::new("rule".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Token(Token {
                 debug_id: 17006,
@@ -641,7 +640,7 @@ pub fn rules() -> Syntax {
                 debug_id: 18004,
                 name: Arc::new("rule".into()),
                 property: Some(Arc::new("rule".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Whitespace(Whitespace {
                 debug_id: 18005,
@@ -681,79 +680,79 @@ pub fn rules() -> Syntax {
                 debug_id: 19001,
                 name: Arc::new("whitespace".into()),
                 property: Some(Arc::new("whitespace".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19002,
                 name: Arc::new("until_any_or_whitespace".into()),
                 property: Some(Arc::new("until_any_or_whitespace".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19003,
                 name: Arc::new("until_any".into()),
                 property: Some(Arc::new("until_any".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19004,
                 name: Arc::new("lines".into()),
                 property: Some(Arc::new("lines".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19005,
                 name: Arc::new("repeat".into()),
                 property: Some(Arc::new("repeat".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19006,
                 name: Arc::new("number".into()),
                 property: Some(Arc::new("number".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19007,
                 name: Arc::new("text".into()),
                 property: Some(Arc::new("text".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19008,
                 name: Arc::new("reference".into()),
                 property: Some(Arc::new("reference".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19009,
                 name: Arc::new("sequence".into()),
                 property: Some(Arc::new("sequence".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19010,
                 name: Arc::new("select".into()),
                 property: Some(Arc::new("select".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19011,
                 name: Arc::new("separated_by".into()),
                 property: Some(Arc::new("separated_by".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19012,
                 name: Arc::new("token".into()),
                 property: Some(Arc::new("token".into())),
-                index: Cell::new(None),
+                index: None,
             }),
             Rule::Node(Node {
                 debug_id: 19013,
                 name: Arc::new("optional".into()),
                 property: Some(Arc::new("optional".into())),
-                index: Cell::new(None),
+                index: None,
             }),
         ]
     });
@@ -768,7 +767,7 @@ pub fn rules() -> Syntax {
                     debug_id: 20003,
                     name: Arc::new("string".into()),
                     property: Some(Arc::new("string".into())),
-                    index: Cell::new(None),
+                    index: None,
                 })
             })),
             Rule::Lines(Box::new(Lines {
@@ -777,7 +776,7 @@ pub fn rules() -> Syntax {
                     debug_id: 20005,
                     name: Arc::new("node".into()),
                     property: Some(Arc::new("node".into())),
-                    index: Cell::new(None),
+                    index: None,
                 })
             })),
             Rule::Whitespace(Whitespace {

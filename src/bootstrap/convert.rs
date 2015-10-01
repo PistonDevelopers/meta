@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use std::cell::Cell;
 use range::Range;
 
 use meta_rules::{
@@ -500,7 +499,7 @@ pub fn convert(
                     debug_id: *debug_id,
                     name: name,
                     property: property,
-                    index: Cell::new(None),
+                    index: None,
                 })))
             }
             None => Err(())

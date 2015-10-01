@@ -113,8 +113,8 @@ impl Rule {
     /// but this can not be borrowed as when the same reference is updated.
     pub fn update_refs(&mut self, names: &[Arc<String>]) {
         match self {
-            &mut Rule::Node(ref p) => {
-                match p.index.get() {
+            &mut Rule::Node(ref mut p) => {
+                match p.index {
                     None => {
                         // Look through references and update if correct name
                         // is found.
@@ -128,7 +128,7 @@ impl Rule {
                         match found {
                             None => { return; }
                             Some(i) => {
-                                p.index.set(Some(i));
+                                p.index = Some(i);
                                 return;
                             }
                         }

@@ -1,6 +1,5 @@
 use range::Range;
 use std::sync::Arc;
-use std::cell::Cell;
 
 use super::{
     ret_err,
@@ -25,7 +24,7 @@ pub struct Node {
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
     /// The index to the rule reference.
-    pub index: Cell<Option<usize>>,
+    pub index: Option<usize>,
 }
 
 impl Node {
@@ -39,7 +38,7 @@ impl Node {
         refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
-        let index = match self.index.get() {
+        let index = match self.index {
             None => {
                 return Err((
                     Range::empty(offset),
@@ -95,7 +94,6 @@ mod tests {
     use meta_rules::{ update_refs, Node, Number, Optional, Sequence,
         Whitespace };
     use std::sync::Arc;
-    use std::cell::Cell;
 
     #[test]
     fn node_ref() {
@@ -123,7 +121,7 @@ mod tests {
                                 name: foo.clone(),
                                 property: Some(foo.clone()),
                                 debug_id: 3,
-                                index: Cell::new(None),
+                                index: None,
                             }),
                         ]
                     }),
@@ -136,7 +134,7 @@ mod tests {
             name: foo.clone(),
             property: Some(foo.clone()),
             debug_id: 0,
-            index: Cell::new(None),
+            index: None,
         });
         let mut rules = Syntax::new();
         rules.push((foo.clone(), node));
