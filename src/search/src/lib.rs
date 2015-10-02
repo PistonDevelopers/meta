@@ -6,7 +6,7 @@ extern crate piston_meta;
 extern crate range;
 
 use range::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 use piston_meta::{ MetaData, ParseError };
 
 /// Used to search through meta data.
@@ -275,7 +275,7 @@ impl<'a> Search<'a> {
     pub fn string(
         &mut self,
         name: &str
-    ) -> Result<Rc<String>, (Range, ParseError)> {
+    ) -> Result<Arc<String>, (Range, ParseError)> {
         if self.data.len() == 0 {
             return Err((
                 self.range.unwrap_or(Range::empty(0)),
