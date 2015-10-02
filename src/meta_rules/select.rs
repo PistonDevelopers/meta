@@ -1,5 +1,4 @@
 use range::Range;
-use std::rc::Rc;
 
 use super::{
     err_update,
@@ -30,7 +29,7 @@ impl Select {
         state: &TokenizerState,
         chars: &[char],
         offset: usize,
-        refs: &[(Rc<String>, Rule)]
+        refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         let mut opt_error: Option<(Range, ParseError)> = None;
         for sub_rule in &self.args {
@@ -58,7 +57,7 @@ mod tests {
     use all::*;
     use meta_rules::{ Number, Select, Text };
     use range::Range;
-    use std::rc::Rc;
+    use std::sync::Arc;
 
     #[test]
     fn invalid_rule() {
@@ -67,7 +66,9 @@ mod tests {
             debug_id: 0,
             args: vec![]
         });
-        let res = parse(&[(Rc::new("".into()), select)], &text);
+        let mut syntax = Syntax::new();
+        syntax.push(Arc::new("".into()), select);
+        let res = parse(&syntax, &text);
         let invalid_rule = match &res {
             &Err((_, ParseError::InvalidRule(_, _))) => true,
             _ => false
@@ -78,7 +79,7 @@ mod tests {
     #[test]
     fn fail_first() {
         let text = "2";
-        let num: Rc<String> = Rc::new("num".into());
+        let num: Arc<String> = Arc::new("num".into());
         let select = Rule::Select(Select {
             debug_id: 0,
             args: vec![
@@ -94,7 +95,9 @@ mod tests {
                 })
             ]
         });
-        let res = parse(&[(Rc::new("".into()), select)], &text);
+        let mut syntax = Syntax::new();
+        syntax.push(Arc::new("".into()), select);
+        let res = parse(&syntax, &text);
         assert_eq!(res, Ok(vec![
             (Range::new(0, 1), MetaData::F64(num.clone(), 2.0))
         ]));

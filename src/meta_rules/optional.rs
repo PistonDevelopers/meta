@@ -1,5 +1,4 @@
 use range::Range;
-use std::rc::Rc;
 
 use super::{
     ret_err,
@@ -31,7 +30,7 @@ impl Optional {
         state: &TokenizerState,
         mut chars: &[char],
         mut offset: usize,
-        refs: &[(Rc<String>, Rule)]
+        refs: &[Rule]
     ) -> (Range, TokenizerState, Option<(Range, ParseError)>) {
         let start_offset = offset;
         let mut success_state = state.clone();
@@ -59,7 +58,7 @@ mod tests {
     use all::tokenizer::*;
     use meta_rules::{ Number, Optional, Sequence, Text };
     use range::Range;
-    use std::rc::Rc;
+    use std::sync::Arc;
 
     #[test]
     fn fail_but_continue() {
@@ -67,7 +66,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let num: Rc<String> = Rc::new("num".into());
+        let num: Arc<String> = Arc::new("num".into());
         // Will fail because text is expected first.
         let optional = Optional {
             debug_id: 0,

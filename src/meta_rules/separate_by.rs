@@ -1,5 +1,4 @@
 use range::Range;
-use std::rc::Rc;
 
 use super::{
     ret_err,
@@ -37,7 +36,7 @@ impl SeparateBy {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Rc<String>, Rule)]
+        refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();
@@ -88,7 +87,7 @@ mod tests {
     use all::*;
     use all::tokenizer::*;
     use meta_rules::{ SeparateBy, Token, UntilAnyOrWhitespace };
-    use std::rc::Rc;
+    use std::sync::Arc;
     use range::Range;
 
     #[test]
@@ -101,13 +100,13 @@ mod tests {
             debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
-                any_characters: Rc::new(",)".into()),
+                any_characters: Arc::new(",)".into()),
                 optional: false,
                 property: None,
             }),
             by: Rule::Token(Token {
                 debug_id: 2,
-                text: Rc::new(",".into()),
+                text: Arc::new(",".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -130,13 +129,13 @@ mod tests {
             debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
-                any_characters: Rc::new(",)".into()),
+                any_characters: Arc::new(",)".into()),
                 optional: false,
                 property: None,
             }),
             by: Rule::Token(Token {
                 debug_id: 2,
-                text: Rc::new(",".into()),
+                text: Arc::new(",".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -155,18 +154,18 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let arg: Rc<String> = Rc::new("arg".into());
+        let arg: Arc<String> = Arc::new("arg".into());
         let sep = SeparateBy {
             debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
-                any_characters: Rc::new(",)".into()),
+                any_characters: Arc::new(",)".into()),
                 optional: false,
                 property: Some(arg.clone()),
             }),
             by: Rule::Token(Token {
                 debug_id: 2,
-                text: Rc::new(",".into()),
+                text: Arc::new(",".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -185,18 +184,18 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let arg: Rc<String> = Rc::new("arg".into());
+        let arg: Arc<String> = Arc::new("arg".into());
         let sep = SeparateBy {
             debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
-                any_characters: Rc::new(",)".into()),
+                any_characters: Arc::new(",)".into()),
                 optional: false,
                 property: Some(arg.clone()),
             }),
             by: Rule::Token(Token {
                 debug_id: 2,
-                text: Rc::new(",".into()),
+                text: Arc::new(",".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -208,9 +207,9 @@ mod tests {
         assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3),
             Some((Range::new(10, 0), ParseError::ExpectedSomething(1))))));
         assert_eq!(tokens.len(), 3);
-        assert_eq!(&tokens[0].1, &MetaData::String(arg.clone(), Rc::new("a".into())));
-        assert_eq!(&tokens[1].1, &MetaData::String(arg.clone(), Rc::new("b".into())));
-        assert_eq!(&tokens[2].1, &MetaData::String(arg.clone(), Rc::new("c".into())));
+        assert_eq!(&tokens[0].1, &MetaData::String(arg.clone(), Arc::new("a".into())));
+        assert_eq!(&tokens[1].1, &MetaData::String(arg.clone(), Arc::new("b".into())));
+        assert_eq!(&tokens[2].1, &MetaData::String(arg.clone(), Arc::new("c".into())));
     }
 
     #[test]
@@ -219,18 +218,18 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let arg: Rc<String> = Rc::new("arg".into());
+        let arg: Arc<String> = Arc::new("arg".into());
         let sep = SeparateBy {
             debug_id: 0,
             rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                 debug_id: 1,
-                any_characters: Rc::new(",)".into()),
+                any_characters: Arc::new(",)".into()),
                 optional: false,
                 property: Some(arg.clone()),
             }),
             by: Rule::Token(Token {
                 debug_id: 2,
-                text: Rc::new(",".into()),
+                text: Arc::new(",".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -241,11 +240,11 @@ mod tests {
         let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
         assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3),
             Some((Range::new(9, 0),
-                ParseError::ExpectedToken(Rc::new(",".into()), 2))))));
+                ParseError::ExpectedToken(Arc::new(",".into()), 2))))));
         assert_eq!(tokens.len(), 3);
-        assert_eq!(&tokens[0].1, &MetaData::String(arg.clone(), Rc::new("a".into())));
-        assert_eq!(&tokens[1].1, &MetaData::String(arg.clone(), Rc::new("b".into())));
-        assert_eq!(&tokens[2].1, &MetaData::String(arg.clone(), Rc::new("c".into())));
+        assert_eq!(&tokens[0].1, &MetaData::String(arg.clone(), Arc::new("a".into())));
+        assert_eq!(&tokens[1].1, &MetaData::String(arg.clone(), Arc::new("b".into())));
+        assert_eq!(&tokens[2].1, &MetaData::String(arg.clone(), Arc::new("c".into())));
     }
 
     #[test]
@@ -254,20 +253,20 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let arg: Rc<String> = Rc::new("arg".into());
+        let arg: Arc<String> = Arc::new("arg".into());
         let sep = SeparateBy {
             debug_id: 0,
             rule: Rule::SeparateBy(Box::new(SeparateBy {
                 debug_id: 1,
                 rule: Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                     debug_id: 2,
-                    any_characters: Rc::new(",;".into()),
+                    any_characters: Arc::new(",;".into()),
                     optional: false,
                     property: Some(arg.clone()),
                 }),
                 by: Rule::Token(Token {
                     debug_id: 3,
-                    text: Rc::new(",".into()),
+                    text: Arc::new(",".into()),
                     not: false,
                     inverted: false,
                     property: None,
@@ -277,7 +276,7 @@ mod tests {
             })),
             by: Rule::Token(Token {
                 debug_id: 4,
-                text: Rc::new(";".into()),
+                text: Arc::new(";".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -289,10 +288,10 @@ mod tests {
         assert_eq!(res, Ok((Range::new(0, 12), TokenizerState(6),
             Some((Range::new(12, 0), ParseError::ExpectedSomething(2))))));
         assert_eq!(tokens.len(), 6);
-        assert_eq!(&tokens[0].1, &MetaData::String(arg.clone(), Rc::new("a".into())));
-        assert_eq!(&tokens[1].1, &MetaData::String(arg.clone(), Rc::new("b".into())));
-        assert_eq!(&tokens[2].1, &MetaData::String(arg.clone(), Rc::new("c".into())));
-        assert_eq!(&tokens[3].1, &MetaData::String(arg.clone(), Rc::new("d".into())));
-        assert_eq!(&tokens[4].1, &MetaData::String(arg.clone(), Rc::new("e".into())));
+        assert_eq!(&tokens[0].1, &MetaData::String(arg.clone(), Arc::new("a".into())));
+        assert_eq!(&tokens[1].1, &MetaData::String(arg.clone(), Arc::new("b".into())));
+        assert_eq!(&tokens[2].1, &MetaData::String(arg.clone(), Arc::new("c".into())));
+        assert_eq!(&tokens[3].1, &MetaData::String(arg.clone(), Arc::new("d".into())));
+        assert_eq!(&tokens[4].1, &MetaData::String(arg.clone(), Arc::new("e".into())));
     }
 }

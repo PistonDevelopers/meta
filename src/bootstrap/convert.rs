@@ -1,5 +1,4 @@
-use std::rc::Rc;
-use std::cell::Cell;
+use std::sync::Arc;
 use range::Range;
 
 use meta_rules::{
@@ -20,6 +19,7 @@ use meta_rules::{
     Whitespace,
 };
 use MetaData;
+use Syntax;
 
 /// Updates with parsed range.
 pub fn update(range: Range, data: &mut &[(Range, MetaData)], offset: &mut usize) {
@@ -72,7 +72,7 @@ pub fn ignore(data: &[(Range, MetaData)], offset: usize)
 
 /// Reads string.
 pub fn meta_string(name: &str, data: &[(Range, MetaData)], offset: usize)
--> Result<(Range, Rc<String>), ()> {
+-> Result<(Range, Arc<String>), ()> {
     if data.len() == 0 { return Err(()); }
     match &data[0].1 {
         &MetaData::String(ref n, ref val) if &**n == name => {
@@ -110,9 +110,9 @@ pub fn meta_bool(name: &str, data: &[(Range, MetaData)], offset: usize)
 pub fn convert(
     mut data: &[(Range, MetaData)],
     ignored: &mut Vec<Range>
-) -> Result<Vec<(Rc<String>, Rule)>, ()> {
+) -> Result<Syntax, ()> {
     fn read_string(mut data: &[(Range, MetaData)], mut offset: usize)
-    -> Result<(Range, (Rc<String>, Rc<String>)), ()> {
+    -> Result<(Range, (Arc<String>, Arc<String>)), ()> {
         let start_offset = offset;
         let range = try!(start_node("string", data, offset));
         update(range, &mut data, &mut offset);
@@ -147,7 +147,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -177,13 +177,13 @@ pub fn convert(
         })))
     }
 
-    fn find_string(val: &str, strings: &[(Rc<String>, Rc<String>)]) -> Option<Rc<String>> {
+    fn find_string(val: &str, strings: &[(Arc<String>, Arc<String>)]) -> Option<Arc<String>> {
         strings.iter().find(|&&(ref s, _)| &**s == val).map(|&(_, ref s)| s.clone())
     }
 
     fn read_set(property: &str, mut data: &[(Range, MetaData)], mut offset: usize,
-    strings: &[(Rc<String>, Rc<String>)])
-    -> Result<(Range, Rc<String>), ()> {
+    strings: &[(Arc<String>, Arc<String>)])
+    -> Result<(Range, Arc<String>), ()> {
         let start_offset = offset;
         let range = try!(start_node(property, data, offset));
         update(range, &mut data, &mut offset);
@@ -212,7 +212,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -261,7 +261,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -310,7 +310,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -386,7 +386,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -425,7 +425,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -465,7 +465,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -499,7 +499,7 @@ pub fn convert(
                     debug_id: *debug_id,
                     name: name,
                     property: property,
-                    index: Cell::new(None),
+                    index: None,
                 })))
             }
             None => Err(())
@@ -510,7 +510,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -545,7 +545,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -570,7 +570,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -629,7 +629,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -653,7 +653,7 @@ pub fn convert(
         debug_id: &mut usize,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -701,7 +701,7 @@ pub fn convert(
         property: &str,
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -788,9 +788,9 @@ pub fn convert(
     fn read_node(
         mut data: &[(Range, MetaData)],
         mut offset: usize,
-        strings: &[(Rc<String>, Rc<String>)],
+        strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
-    ) -> Result<(Range, (Rc<String>, Rule)), ()> {
+    ) -> Result<(Range, (Arc<String>, Rule)), ()> {
         let start_offset = offset;
         let node = "node";
         let range = try!(start_node(node, data, offset));
@@ -828,7 +828,7 @@ pub fn convert(
         }
     }
 
-    let mut strings: Vec<(Rc<String>, Rc<String>)> = vec![];
+    let mut strings: Vec<(Arc<String>, Arc<String>)> = vec![];
     let mut offset: usize = 0;
     loop {
         if let Ok((range, val)) = read_string(data, offset) {
@@ -838,17 +838,17 @@ pub fn convert(
             break;
         }
     }
-    let mut res = vec![];
+    let mut res = Syntax::new();
     loop {
         if let Ok((range, val)) = read_node(data, offset, &strings, ignored) {
             update(range, &mut data, &mut offset);
-            res.push(val);
+            res.push(val.0, val.1);
         } else if offset < data.len() {
             return Err(());
         } else {
             break;
         }
     }
-    update_refs(&res);
+    update_refs(&mut res);
     Ok(res)
 }

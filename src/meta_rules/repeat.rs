@@ -1,5 +1,4 @@
 use range::Range;
-use std::rc::Rc;
 
 use super::{
     ret_err,
@@ -33,7 +32,7 @@ impl Repeat {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Rc<String>, Rule)]
+        refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
         let mut state = state.clone();
@@ -65,7 +64,7 @@ mod tests {
     use all::*;
     use all::tokenizer::*;
     use meta_rules::{ Repeat, Token };
-    use std::rc::Rc;
+    use std::sync::Arc;
     use range::Range;
 
     #[test]
@@ -74,7 +73,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let token: Rc<String> = Rc::new("(a)".into());
+        let token: Arc<String> = Arc::new("(a)".into());
         let rule = Repeat {
             debug_id: 0,
             optional: false,
@@ -97,7 +96,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let token: Rc<String> = Rc::new("(a)".into());
+        let token: Arc<String> = Arc::new("(a)".into());
         let rule = Repeat {
             debug_id: 0,
             optional: false,

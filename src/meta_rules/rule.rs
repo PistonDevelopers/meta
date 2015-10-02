@@ -1,5 +1,5 @@
 use range::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::{
     Lines,
@@ -62,7 +62,7 @@ impl Rule {
         state: &TokenizerState,
         chars: &[char],
         offset: usize,
-        refs: &[(Rc<String>, Rule)]
+        refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         match self {
             &Rule::Whitespace(ref w) => {
@@ -111,16 +111,16 @@ impl Rule {
     ///
     /// The references contains the name,
     /// but this can not be borrowed as when the same reference is updated.
-    pub fn update_refs(&self, refs: &[(Rc<String>, Rule)]) {
+    pub fn update_refs(&mut self, names: &[Arc<String>]) {
         match self {
-            &Rule::Node(ref p) => {
-                match p.index.get() {
+            &mut Rule::Node(ref mut p) => {
+                match p.index {
                     None => {
                         // Look through references and update if correct name
                         // is found.
                         let mut found: Option<usize> = None;
-                        for (i, r) in refs.iter().enumerate() {
-                            if &**p.name == &*r.0 {
+                        for (i, r) in names.iter().enumerate() {
+                            if &**p.name == &**r {
                                 found = Some(i);
                                 break;
                             }
@@ -128,7 +128,7 @@ impl Rule {
                         match found {
                             None => { return; }
                             Some(i) => {
-                                p.index.set(Some(i));
+                                p.index = Some(i);
                                 return;
                             }
                         }
@@ -138,34 +138,34 @@ impl Rule {
                     }
                 };
             }
-            &Rule::Whitespace(_) => {}
-            &Rule::Token(_) => {}
-            &Rule::UntilAny(_) => {}
-            &Rule::UntilAnyOrWhitespace(_) => {}
-            &Rule::Text(_) => {}
-            &Rule::Number(_) => {}
-            &Rule::Select(ref s) => {
-                for sub_rule in &s.args {
-                    sub_rule.update_refs(refs);
+            &mut Rule::Whitespace(_) => {}
+            &mut Rule::Token(_) => {}
+            &mut Rule::UntilAny(_) => {}
+            &mut Rule::UntilAnyOrWhitespace(_) => {}
+            &mut Rule::Text(_) => {}
+            &mut Rule::Number(_) => {}
+            &mut Rule::Select(ref mut s) => {
+                for sub_rule in &mut s.args {
+                    sub_rule.update_refs(names);
                 }
             }
-            &Rule::Sequence(ref s) => {
-                for sub_rule in &s.args {
-                    sub_rule.update_refs(refs);
+            &mut Rule::Sequence(ref mut s) => {
+                for sub_rule in &mut s.args {
+                    sub_rule.update_refs(names);
                 }
             }
-            &Rule::SeparateBy(ref s) => {
-                s.rule.update_refs(refs);
-                s.by.update_refs(refs);
+            &mut Rule::SeparateBy(ref mut s) => {
+                s.rule.update_refs(names);
+                s.by.update_refs(names);
             }
-            &Rule::Repeat(ref r) => {
-                r.rule.update_refs(refs);
+            &mut Rule::Repeat(ref mut r) => {
+                r.rule.update_refs(names);
             }
-            &Rule::Lines(ref l) => {
-                l.rule.update_refs(refs);
+            &mut Rule::Lines(ref mut l) => {
+                l.rule.update_refs(names);
             }
-            &Rule::Optional(ref o) => {
-                o.rule.update_refs(refs);
+            &mut Rule::Optional(ref mut o) => {
+                o.rule.update_refs(names);
             }
         }
     }

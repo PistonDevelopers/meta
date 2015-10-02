@@ -15,11 +15,11 @@ pub use self::until_any::UntilAny;
 pub use self::until_any_or_whitespace::UntilAnyOrWhitespace;
 pub use self::whitespace::Whitespace;
 
-use std::rc::Rc;
 use range::Range;
 use {
     MetaData,
     ParseError,
+    Syntax,
 };
 use tokenizer::TokenizerState;
 
@@ -41,17 +41,17 @@ mod whitespace;
 
 /// Parses text with rules.
 pub fn parse(
-    rules: &[(Rc<String>, Rule)],
+    rules: &Syntax,
     text: &str
 ) -> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
     let chars: Vec<char> = text.chars().collect();
     let mut tokens = vec![];
     let s = TokenizerState::new();
-    let n = match rules.len() {
+    let n = match rules.rules.len() {
         0 => { return Err((Range::empty(0), ParseError::NoRules)); }
         x => x
     };
-    let res = rules[n - 1].1.parse(&mut tokens, &s, &chars, 0, rules);
+    let res = rules.rules[n - 1].parse(&mut tokens, &s, &chars, 0, &rules.rules);
     match res {
         Ok((range, s, opt_error)) => {
             // Report error if did not reach the end of text.
@@ -73,9 +73,9 @@ pub fn parse(
 }
 
 /// Updates the references such that they point to each other.
-pub fn update_refs(rules: &[(Rc<String>, Rule)]) {
+pub fn update_refs(&mut Syntax { ref mut rules, ref names }: &mut Syntax) {
     for r in rules {
-        r.1.update_refs(rules);
+        r.update_refs(names);
     }
 }
 
@@ -142,7 +142,7 @@ mod tests{
 
     #[test]
     fn no_rules() {
-        assert_eq!(parse(&[], ""),
+        assert_eq!(parse(&Syntax::new(), ""),
             Err((Range::empty(0), ParseError::NoRules)));
     }
 }

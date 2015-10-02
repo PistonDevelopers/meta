@@ -1,6 +1,6 @@
 use range::Range;
 use read_token;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::{
     ParseResult,
@@ -16,7 +16,7 @@ use tokenizer::{ read_data, TokenizerState };
 #[derive(Clone, Debug, PartialEq)]
 pub struct Number {
     /// The property to set.
-    pub property: Option<Rc<String>>,
+    pub property: Option<Arc<String>>,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
     /// Whether underscore is allowed as visible separator.
@@ -65,7 +65,7 @@ mod tests {
     use all::tokenizer::*;
     use meta_rules::{ Number };
     use range::Range;
-    use std::rc::Rc;
+    use std::sync::Arc;
 
     #[test]
     fn expected_number() {
@@ -102,7 +102,7 @@ mod tests {
         let res = number.parse(&mut tokens, &s, &chars[22..], 22);
         assert_eq!(res, Ok((Range::new(22, 6), s, None)));
 
-        let val: Rc<String> = Rc::new("val".into());
+        let val: Arc<String> = Arc::new("val".into());
         let number = Number {
             debug_id: 0,
             property: Some(val.clone()),

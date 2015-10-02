@@ -1,6 +1,6 @@
 use read_token;
 use range::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::{
     ParseResult,
@@ -18,7 +18,7 @@ pub struct Text {
     /// Whether to allow empty string.
     pub allow_empty: bool,
     /// Which property to set if text is read.
-    pub property: Option<Rc<String>>,
+    pub property: Option<Arc<String>>,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
 }
@@ -45,7 +45,7 @@ impl Text {
                         if let Some(ref property) = self.property {
                             Ok((range, read_data(
                                 tokens,
-                                MetaData::String(property.clone(), Rc::new(text)),
+                                MetaData::String(property.clone(), Arc::new(text)),
                                 state,
                                 range
                             ), None))
@@ -68,7 +68,7 @@ mod tests {
     use all::tokenizer::*;
     use meta_rules::Text;
     use range::Range;
-    use std::rc::Rc;
+    use std::sync::Arc;
 
     #[test]
     fn expected_text() {
@@ -107,7 +107,7 @@ mod tests {
         let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let foo: Rc<String> = Rc::new("foo".into());
+        let foo: Arc<String> = Arc::new("foo".into());
         let text = Text {
             debug_id: 0,
             allow_empty: true,
@@ -117,6 +117,6 @@ mod tests {
         assert_eq!(res, Ok((Range::new(4, 7), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].1,
-            &MetaData::String(foo.clone(), Rc::new("hello".into())));
+            &MetaData::String(foo.clone(), Arc::new("hello".into())));
     }
 }

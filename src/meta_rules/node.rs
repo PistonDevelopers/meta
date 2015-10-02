@@ -1,6 +1,5 @@
 use range::Range;
-use std::rc::Rc;
-use std::cell::Cell;
+use std::sync::Arc;
 
 use super::{
     ret_err,
@@ -19,13 +18,13 @@ use tokenizer::{ read_data, TokenizerState };
 #[derive(Clone, Debug, PartialEq)]
 pub struct Node {
     /// Name of rule.
-    pub name: Rc<String>,
+    pub name: Arc<String>,
     /// The property to set.
-    pub property: Option<Rc<String>>,
+    pub property: Option<Arc<String>>,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
     /// The index to the rule reference.
-    pub index: Cell<Option<usize>>,
+    pub index: Option<usize>,
 }
 
 impl Node {
@@ -36,10 +35,10 @@ impl Node {
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
-        refs: &[(Rc<String>, Rule)]
+        refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         let mut offset = start_offset;
-        let index = match self.index.get() {
+        let index = match self.index {
             None => {
                 return Err((
                     Range::empty(offset),
@@ -62,7 +61,7 @@ impl Node {
             state.clone()
         };
         let mut opt_error = None;
-        state = match refs[index].1.parse(
+        state = match refs[index].parse(
             tokens, &state, chars, offset, refs
         ) {
             Err(err) => { return Err(ret_err(err, opt_error)); }
@@ -94,14 +93,13 @@ mod tests {
     use all::*;
     use meta_rules::{ update_refs, Node, Number, Optional, Sequence,
         Whitespace };
-    use std::rc::Rc;
-    use std::cell::Cell;
+    use std::sync::Arc;
 
     #[test]
     fn node_ref() {
         // Create a node rule the refers to itself.
-        let foo: Rc<String> = Rc::new("foo".into());
-        let num: Rc<String> = Rc::new("num".into());
+        let foo: Arc<String> = Arc::new("foo".into());
+        let num: Arc<String> = Arc::new("num".into());
         let node = Rule::Sequence(Sequence {
             debug_id: 1,
             args: vec![
@@ -123,7 +121,7 @@ mod tests {
                                 name: foo.clone(),
                                 property: Some(foo.clone()),
                                 debug_id: 3,
-                                index: Cell::new(None),
+                                index: None,
                             }),
                         ]
                     }),
@@ -136,13 +134,12 @@ mod tests {
             name: foo.clone(),
             property: Some(foo.clone()),
             debug_id: 0,
-            index: Cell::new(None),
+            index: None,
         });
-        let rules = vec![
-            (foo.clone(), node),
-            (Rc::new("".into()), rule)
-        ];
-        update_refs(&rules);
+        let mut rules = Syntax::new();
+        rules.push(foo.clone(), node);
+        rules.push(Arc::new("".into()), rule);
+        update_refs(&mut rules);
 
         let text = "1 2 3";
         let data = parse(&rules, text).unwrap();
