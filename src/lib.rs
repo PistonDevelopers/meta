@@ -73,7 +73,7 @@ impl Syntax {
 }
 
 /// Reads syntax from text.
-pub fn syntax(rules: &str) -> Result<Syntax, (Range, ParseError)> {
+pub fn syntax2(rules: &str) -> Result<Syntax, (Range, ParseError)> {
     match bootstrap::convert(
         &try!(parse(&bootstrap::rules(), rules)),
         &mut vec![] // Ignored meta data
@@ -85,8 +85,8 @@ pub fn syntax(rules: &str) -> Result<Syntax, (Range, ParseError)> {
 }
 
 /// Reads syntax from text, using the new meta language.
-pub fn syntax2(rules: &str) -> Result<Syntax, (Range, ParseError)> {
-    let new_bootstrap_rules = try!(syntax(include_str!("../assets/better-syntax.txt")));
+pub fn syntax(rules: &str) -> Result<Syntax, (Range, ParseError)> {
+    let new_bootstrap_rules = try!(syntax2(include_str!("../assets/old-self-syntax.txt")));
     match bootstrap::convert(
         &try!(parse(&new_bootstrap_rules, rules)),
         &mut vec![] // Ignored meta data

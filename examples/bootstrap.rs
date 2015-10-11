@@ -1,6 +1,6 @@
 extern crate piston_meta;
 
-use piston_meta::{ bootstrap, parse, stderr_unwrap };
+use piston_meta::*;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
