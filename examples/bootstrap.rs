@@ -1,13 +1,13 @@
 extern crate piston_meta;
 
-use piston_meta::{ bootstrap, parse, stderr_unwrap };
+use piston_meta::*;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
 fn main() {
     let rules = bootstrap::rules();
-    let self_syntax: PathBuf = "assets/self-syntax.txt".into();
+    let self_syntax: PathBuf = "assets/better-self-syntax.txt".into();
     let mut file_h = File::open(self_syntax).unwrap();
     let mut source = String::new();
     file_h.read_to_string(&mut source).unwrap();
