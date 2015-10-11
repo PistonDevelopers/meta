@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 fn main() {
     let rules = bootstrap::rules();
-    let self_syntax: PathBuf = "assets/better-self-syntax.txt".into();
+    let self_syntax: PathBuf = "assets/self-syntax.txt".into();
     let mut file_h = File::open(self_syntax).unwrap();
     let mut source = String::new();
     file_h.read_to_string(&mut source).unwrap();

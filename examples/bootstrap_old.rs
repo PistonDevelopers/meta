@@ -14,10 +14,10 @@ fn load_file<P: AsRef<Path>>(path: P) -> String {
 
 fn main() {
     // Get the old syntax in the new syntax.
-    let old = load_file("assets/old-self-syntax.txt");
+    let old = load_file("assets/old-syntax.txt");
     let old_syntax = stderr_unwrap(&old, syntax2(&old));
 
-    let old_in_old = load_file("assets/self-syntax.txt");
+    let old_in_old = load_file("assets/old-self-syntax.txt");
     let old_in_old_syntax = stderr_unwrap(&old_in_old, syntax(&old_in_old));
 
     assert_eq!(old_syntax, old_in_old_syntax);

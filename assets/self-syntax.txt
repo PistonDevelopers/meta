@@ -1,40 +1,153 @@
-opt: "optional"
-inv: "inverted"
-prop: "property"
-any: "any_characters"
-seps: "[]{}():.!?\""
-1 "string" [w? ..seps!"name" ":" w? t?"text"]
-2 "node" [w? $"id" w! t!"name" w! @"rule""rule"]
-3 "set" {t!"value" ..seps!"ref"}
-4 "set_opt" {t?"value" ..seps!"ref"}
-5 "opt" {"?"opt "!"!opt}
-6 "number" ["$" ?"_""underscore" ?@"set"prop]
-7 "text" ["t" {"?""allow_empty" "!"!"allow_empty"} ?@"set"prop]
-8 "reference" ["@" t!"name" ?@"set"prop]
-9 "sequence" ["[" w? s!.(w!) {@"rule""rule"} "]"]
-10 "select" ["{" w? s!.(w!) {@"rule""rule"} "}"]
-11 "separated_by" ["s" @"opt" ?".""allow_trail"
-  "(" w? @"rule""by" w? ")" w? "{" w? @"rule""rule" w? "}"]
-12 "token" [?"!""not" @"set""text" ?[?"!"inv @"set"prop]]
-13 "optional" ["?" @"rule""rule"]
-14 "whitespace" ["w" @"opt"]
-15 "until_any_or_whitespace" [".." @"set_opt"any @"opt" ?@"set"prop]
-16 "until_any" ["..." @"set_opt"any @"opt" ?@"set"prop]
-17 "repeat" ["r" @"opt" "(" @"rule""rule" ")"]
-18 "lines" ["l(" w? @"rule""rule" w? ")"]
-19 "rule" {
-  @"whitespace""whitespace"
-  @"until_any_or_whitespace""until_any_or_whitespace"
-  @"until_any""until_any"
-  @"lines""lines"
-  @"repeat""repeat"
-  @"number""number"
-  @"text""text"
-  @"reference""reference"
-  @"sequence""sequence"
-  @"select""select"
-  @"separated_by""separated_by"
-  @"token""token"
-  @"optional""optional"
+/* PISTON-META syntax
+
+Piston-Meta is a high level meta language for transforming text into a tree.
+It is designed for rapid prototyping and infrastructure in game engines.
+Developed and maintained as part of the Piston project.
+
+Strings:
+
+    You can reuse strings through the rules.
+    All strings starts with `_`.
+
+Built-in rules:
+
+    All built-in rules start with `.`.
+
+    .w      Whitespace.
+            `.w?` is optional and `.w!` is required.
+
+    .t      Text string.
+            `.t?` allows empty string and `.t!` disallow empty string.
+            `.t?:"message"` generates a meta string with name "message".
+
+    .$      Floating number of double precision (64 bit).
+            `.$_` allows underscore `_` as visible seperator, eg. `1_000`
+            `.$:"message"` generates a meta number with name "message".
+
+    .._any   Reads until whitespace or any of the characters in the string.
+            `.._any?` allows empty
+
+    ..._any  Reads until any of the characters in the string.
+             `..._any?` allows empty and `..._any!` disallow empty.
+
+Tokens:
+
+    A token is a sequence of characters defined by a string.
+    Generates boolean values `true` or `false`.
+
+    "hello"     Expects "hello".
+                `"hello":"message"` generates `true` with name "message".
+                `"hello":!"message"` generates `false` with name "message".
+
+    !"hello"    Expects anything but "hello".
+                `!"hello":"message"` generates `true` with name "message".
+                `!"hello":!"message"` generates `false` with name "message".
+
+Composition rules:
+
+    [...]       Parses a sequence of rules, seperated by whitespace.
+
+    {...}       Tries the first rule, then the second if the first fails etc.
+
+    ?           Parses a rule optionally.
+                `?$:"value"` generates a number with name "value", if any.
+
+    .s          Separates a rule by another rule.
+                `.s?.("," $)`   Allows zero repetitions, allows trailing.
+                `.s?("," $)`    Allows zero repetitions, no trailing.
+                `.s!.("," $)`   At least one repetition, allows trailing.
+                `.s!("," $)`    At least one repetition, no trailing.
+
+    .r          Repeats a rule by another rule.
+                `.r?("ha")`     Allows zero repitions.
+                `.r!("ha")`     At least one repition.
+
+    .l          Separates a rule by one or more new lines.
+                Handles edge cases nicely for the intended use.
+                `.l($)`         List of numbers, one per line.
+
+Generating meta data:
+
+    The following parses the sentences "hi James!" and "hi Peter!".
+
+        1 say_hi = ["hi" .w! {"James" "Peter"} "!"]
+        2 document = say_hi
+
+    To generate data, we need to assign `say_hi` to a message.
+
+        1 say_hi = ["hi" .w! {"James":"james" "Peter":"peter"}]
+        2 document = say_hi:"say_hi"
+
+    The sentence "hi James!" then generates the equivalent JSON:
+
+        {
+            "say_hi": {
+                "james": true
+            }
+        }
+
+    By removing `:"say_hi"`, you can "lift" the sub data up one level:
+
+        {
+            "james":true
+        }
+
+    Numbers in front of the rules are used to improve error reporting.
+    For example, the following was reported by the 1st rule and 6th sub rule.
+
+        Error #1006, Expected: `!`
+        1,9: hi James
+        1,9:         ^
+
+    The last node is used to parse the entire document.
+
+Each sub rule in the node is assigned a debug id used in error reporting.
+The debug ids for a sub rule starts with `1000n` where `n` is the id.
+
+*/
+
+_opt: "optional"
+_inv: "inverted"
+_prop: "property"
+_any: "any_characters"
+_seps: "[]{}():.!?\""
+0 comment = {["/*" ..."*/"? "*/"] ["//" ..."\n"?]}
+1 string = ["_" .._seps!:"name" ":" .w? .t?:"text"]
+2 node = [.$:"id" .w! !"_" !"." .._seps!:"name" .w? "=" .w? rule:"rule"]
+3 set = {.t!:"value" ["_" .._seps!:"ref"]}
+4 set_opt = {.t?:"value" ["_" .._seps!:"ref"]}
+5 opt = {"?":_opt "!":!_opt}
+6 number = [".$" ?"_":"underscore" ?[":" set:_prop]]
+7 text = [".t" {"?":"allow_empty" "!":!"allow_empty"} ?[":" set:_prop]]
+8 reference = [!"_" !"." .._seps!:"name" ?[":" set:_prop]]
+9 sequence = ["[" .w? .s!.(.w! rule:"rule") "]"]
+10 select = ["{" .w? .s!.(.w! rule:"rule") "}"]
+11 separated_by = [".s" opt ?".":"allow_trail"
+  "(" .w? rule:"by" .w! rule:"rule" .w? ")"]
+12 token = [?"!":"not" set:"text" ?[":" ?"!":_inv set:_prop]]
+13 optional = ["?" rule:"rule"]
+14 whitespace = [".w" opt]
+15 until_any_or_whitespace = [".." set_opt:_any opt ?[":" set:_prop]]
+16 until_any = ["..." set_opt:_any opt ?[":" set:_prop]]
+17 repeat = [".r" opt "(" rule:"rule" ")"]
+18 lines = [".l(" .w? rule:"rule" .w? ")"]
+19 rule = {
+  whitespace:"whitespace"
+  until_any_or_whitespace:"until_any_or_whitespace"
+  until_any:"until_any"
+  lines:"lines"
+  repeat:"repeat"
+  number:"number"
+  text:"text"
+  reference:"reference"
+  sequence:"sequence"
+  select:"select"
+  separated_by:"separated_by"
+  token:"token"
+  optional:"optional"
 }
-20 "document" [l(@"string""string") l(@"node""node") w?]
+20 document = [
+    .l([.w? {string:"string" comment}])
+    .l([.w? {node:"node" comment}])
+    .w?
+]
