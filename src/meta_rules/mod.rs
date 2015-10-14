@@ -42,16 +42,16 @@ mod whitespace;
 /// Parses text with rules.
 pub fn parse(
     rules: &Syntax,
-    text: &str
-) -> Result<Vec<Range<MetaData>>, Range<ParseError>> {
+    text: &str,
+    tokens: &mut Vec<Range<MetaData>>
+) -> Result<(), Range<ParseError>> {
     let chars: Vec<char> = text.chars().collect();
-    let mut tokens = vec![];
-    let s = TokenizerState::new();
+    let s = TokenizerState(tokens.len());
     let n = match rules.rules.len() {
         0 => { return Err(Range::empty(0).wrap(ParseError::NoRules)); }
         x => x
     };
-    let res = rules.rules[n - 1].parse(&mut tokens, &s, &chars, 0, &rules.rules);
+    let res = rules.rules[n - 1].parse(tokens, &s, &chars, 0, &rules.rules);
     match res {
         Ok((range, s, opt_error)) => {
             // Report error if did not reach the end of text.
@@ -63,7 +63,7 @@ pub fn parse(
                 ))
             } else {
                 tokens.truncate(s.0);
-                Ok(tokens)
+                Ok(())
             }
         }
         Err(range_err) => Err(range_err)
@@ -140,7 +140,7 @@ mod tests{
 
     #[test]
     fn no_rules() {
-        assert_eq!(parse(&Syntax::new(), ""),
+        assert_eq!(parse(&Syntax::new(), "", &mut vec![]),
             Err(Range::empty(0).wrap(ParseError::NoRules)));
     }
 }

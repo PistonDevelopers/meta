@@ -10,6 +10,7 @@ fn main() {
     "#;
     // Parse rules with meta language and convert to rules for parsing text.
     let rules = stderr_unwrap(rules, syntax2(rules));
-    let data = stderr_unwrap(text, parse(&rules, text));
+    let mut data = vec![];
+    stderr_unwrap(text, parse(&rules, text, &mut data));
     json::print(&data);
 }
