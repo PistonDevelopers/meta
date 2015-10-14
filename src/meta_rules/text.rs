@@ -27,29 +27,29 @@ impl Text {
     /// Parses text.
     pub fn parse(
         &self,
-        tokens: &mut Vec<(Range, MetaData)>,
+        tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         chars: &[char],
         offset: usize
     ) -> ParseResult<TokenizerState> {
         if let Some(range) = read_token::string(chars, offset) {
             if !self.allow_empty && range.length == 2 {
-                Err((range, ParseError::EmptyTextNotAllowed(self.debug_id)))
+                Err(range.wrap(ParseError::EmptyTextNotAllowed(self.debug_id)))
             } else {
                 match read_token::parse_string(
                     chars, offset, range.next_offset()) {
                     // Focus range to invalid string format.
-                    Err(err) => {
-                        let (r, err) = err.decouple();
-                        Err((r, ParseError::ParseStringError(err, self.debug_id)))
+                    Err(range_err) => {
+                        Err(range_err.map(|err|
+                            ParseError::ParseStringError(err, self.debug_id)))
                     }
                     Ok(text) => {
                         if let Some(ref property) = self.property {
                             Ok((range, read_data(
                                 tokens,
-                                MetaData::String(property.clone(), Arc::new(text)),
-                                state,
-                                range
+                                range.wrap(MetaData::String(property.clone(),
+                                    Arc::new(text))),
+                                state
                             ), None))
                         } else {
                             Ok((range, state.clone(), None))
@@ -58,7 +58,7 @@ impl Text {
                 }
             }
         } else {
-            Err((Range::new(offset, 0),
+            Err(Range::new(offset, 0).wrap(
                 ParseError::ExpectedText(self.debug_id)))
         }
     }
@@ -84,7 +84,7 @@ mod tests {
             property: None
         };
         let res = text.parse(&mut tokens, &s, &chars, 0);
-        assert_eq!(res, Err((Range::new(0, 0), ParseError::ExpectedText(0))));
+        assert_eq!(res, Err(Range::new(0, 0).wrap(ParseError::ExpectedText(0))));
     }
 
     #[test]
@@ -99,7 +99,7 @@ mod tests {
             property: None
         };
         let res = text.parse(&mut tokens, &s, &chars, 0);
-        assert_eq!(res, Err((Range::new(0, 2),
+        assert_eq!(res, Err(Range::new(0, 2).wrap(
             ParseError::EmptyTextNotAllowed(0))));
     }
 
@@ -118,7 +118,7 @@ mod tests {
         let res = text.parse(&mut tokens, &s, &chars[4..], 4);
         assert_eq!(res, Ok((Range::new(4, 7), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
-        assert_eq!(&tokens[0].1,
+        assert_eq!(&tokens[0].data,
             &MetaData::String(foo.clone(), Arc::new("hello".into())));
     }
 }

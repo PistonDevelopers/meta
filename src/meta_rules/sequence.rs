@@ -26,7 +26,7 @@ impl Sequence {
     /// Fails if any sub rule fails.
     pub fn parse(
         &self,
-        tokens: &mut Vec<(Range, MetaData)>,
+        tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,

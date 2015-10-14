@@ -43,12 +43,12 @@ mod whitespace;
 pub fn parse(
     rules: &Syntax,
     text: &str
-) -> Result<Vec<(Range, MetaData)>, (Range, ParseError)> {
+) -> Result<Vec<Range<MetaData>>, Range<ParseError>> {
     let chars: Vec<char> = text.chars().collect();
     let mut tokens = vec![];
     let s = TokenizerState::new();
     let n = match rules.rules.len() {
-        0 => { return Err((Range::empty(0), ParseError::NoRules)); }
+        0 => { return Err(Range::empty(0).wrap(ParseError::NoRules)); }
         x => x
     };
     let res = rules.rules[n - 1].parse(&mut tokens, &s, &chars, 0, &rules.rules);
@@ -57,7 +57,7 @@ pub fn parse(
             // Report error if did not reach the end of text.
             if range.next_offset() < text.chars().count() {
                 Err(ret_err(
-                    (Range::empty(range.next_offset()),
+                    Range::empty(range.next_offset()).wrap(
                         ParseError::ExpectedEnd),
                     opt_error
                 ))
@@ -66,9 +66,7 @@ pub fn parse(
                 Ok(tokens)
             }
         }
-        Err((err_range, err)) => {
-            Err((err_range, err))
-        }
+        Err(range_err) => Err(range_err)
     }
 }
 
@@ -82,18 +80,18 @@ pub fn update_refs(&mut Syntax { ref mut rules, ref names }: &mut Syntax) {
 /// A parse result succeeds with a new state,
 /// plus an optional error to replace other errors if it is deeper.
 /// The deepest error is likely the most useful.
-pub type ParseResult<S> = Result<(Range, S, Option<(Range, ParseError)>),
-    (Range, ParseError)>;
+pub type ParseResult<S> = Result<(Range, S, Option<Range<ParseError>>),
+    Range<ParseError>>;
 
 /// Updates the parser state.
 /// Used by rules that have multiple sub rules.
 #[inline(always)]
 fn update<'a>(
     range: Range,
-    err: Option<(Range, ParseError)>,
+    err: Option<Range<ParseError>>,
     chars: &mut &'a [char],
     offset: &mut usize,
-    opt_error: &mut Option<(Range, ParseError)>
+    opt_error: &mut Option<Range<ParseError>>
 ) {
     let next_offset = range.next_offset();
     *chars = &chars[next_offset - *offset..];
@@ -105,12 +103,12 @@ fn update<'a>(
 /// equally deep.
 #[inline(always)]
 fn err_update(
-    err: Option<(Range, ParseError)>,
-    opt_error: &mut Option<(Range, ParseError)>
+    err: Option<Range<ParseError>>,
+    opt_error: &mut Option<Range<ParseError>>
 ) {
     if let &mut Some(ref mut opt_error) = opt_error {
         if let Some(err) = err {
-            if opt_error.0.next_offset() <= err.0.next_offset() {
+            if opt_error.next_offset() <= err.next_offset() {
                 *opt_error = err;
             }
         }
@@ -122,10 +120,10 @@ fn err_update(
 /// This is used to pick the deepest error or two alternatives,
 /// one from a rule that fails certainly and another that could be optional.
 #[inline(always)]
-fn ret_err(a: (Range, ParseError), b: Option<(Range, ParseError)>) ->
-    (Range, ParseError) {
+fn ret_err(a: Range<ParseError>, b: Option<Range<ParseError>>)
+-> Range<ParseError> {
     if let Some(b) = b {
-        if b.0.next_offset() > a.0.next_offset() {
+        if b.next_offset() > a.next_offset() {
             b
         } else {
             a
@@ -143,6 +141,6 @@ mod tests{
     #[test]
     fn no_rules() {
         assert_eq!(parse(&Syntax::new(), ""),
-            Err((Range::empty(0), ParseError::NoRules)));
+            Err(Range::empty(0).wrap(ParseError::NoRules)));
     }
 }

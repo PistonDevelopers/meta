@@ -20,11 +20,11 @@ impl Whitespace {
     /// If whitespace is required and no whitespace is found,
     /// an error will be reported.
     pub fn parse(&self, chars: &[char], offset: usize) ->
-        Result<Range, (Range, ParseError)>
+        Result<Range, Range<ParseError>>
     {
         let range = read_token::whitespace(chars, offset);
         if range.length == 0 && !self.optional {
-            Err((range, ParseError::ExpectedWhitespace(self.debug_id)))
+            Err(range.wrap(ParseError::ExpectedWhitespace(self.debug_id)))
         } else {
             Ok(range)
         }
@@ -57,6 +57,6 @@ mod tests {
             Ok(Range::new(2, 3)));
         // Prints an error message to standard error output.
         assert_eq!(required_whitespace.parse(&chars[7..], 7),
-            Err((Range::new(7, 0), ParseError::ExpectedWhitespace(0))));
+            Err(Range::new(7, 0).wrap(ParseError::ExpectedWhitespace(0))));
     }
 }

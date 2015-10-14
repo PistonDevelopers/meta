@@ -26,12 +26,12 @@ impl Optional {
     /// Returns the old state if any sub rule fails.
     pub fn parse(
         &self,
-        tokens: &mut Vec<(Range, MetaData)>,
+        tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         mut chars: &[char],
         mut offset: usize,
         refs: &[Rule]
-    ) -> (Range, TokenizerState, Option<(Range, ParseError)>) {
+    ) -> (Range, TokenizerState, Option<Range<ParseError>>) {
         let start_offset = offset;
         let mut success_state = state.clone();
         let mut opt_error = None;
@@ -88,7 +88,7 @@ mod tests {
         };
         let res = optional.parse(&mut tokens, &s, &chars, 0, &[]);
         assert_eq!(res, (Range::new(0, 0), TokenizerState(0),
-            Some((Range::new(0, 0), ParseError::ExpectedText(2)))));
+            Some(Range::new(0, 0).wrap(ParseError::ExpectedText(2)))));
         assert_eq!(tokens.len(), 0);
     }
 }

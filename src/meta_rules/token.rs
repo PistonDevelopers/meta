@@ -36,14 +36,14 @@ impl Token {
     /// the same state will be returned.
     pub fn parse(
         &self,
-        tokens: &mut Vec<(Range, MetaData)>,
+        tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         chars: &[char],
         offset: usize
     ) -> ParseResult<TokenizerState> {
         if let Some(range) = read_token::token(&self.text, chars, offset) {
             if self.not {
-                Err((range,
+                Err(range.wrap(
                     ParseError::DidNotExpectToken(self.text.clone(),
                     self.debug_id)))
             } else {
@@ -51,9 +51,9 @@ impl Token {
                     &Some(ref name) => {
                         Ok((range, read_data(
                             tokens,
-                            MetaData::Bool(name.clone(), !self.inverted),
-                            &state,
-                            range
+                            range.wrap(
+                                MetaData::Bool(name.clone(), !self.inverted)),
+                            &state
                         ), None))
                     }
                     _ => {
@@ -68,9 +68,9 @@ impl Token {
                         let range = Range::new(offset, 0);
                         Ok((range, read_data(
                             tokens,
-                            MetaData::Bool(name.clone(), !self.inverted),
-                            &state,
-                            range
+                            range.wrap(
+                                MetaData::Bool(name.clone(), !self.inverted)),
+                            &state
                         ), None))
                     }
                     _ => {
@@ -78,7 +78,7 @@ impl Token {
                     }
                 }
             } else {
-                Err((Range::new(offset, 0),
+                Err(Range::new(offset, 0).wrap(
                     ParseError::ExpectedToken(self.text.clone(),
                     self.debug_id)))
             }
@@ -108,11 +108,8 @@ mod tests {
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let res = start_parenthesis.parse(&mut tokens, &s, &chars, 0);
-        assert_eq!(res, Err((
-            Range::new(0, 0),
-            ParseError::ExpectedToken(Arc::new("(".into()), 0)
-            ))
-        );
+        assert_eq!(res, Err(Range::new(0, 0).wrap(
+            ParseError::ExpectedToken(Arc::new("(".into()), 0))));
     }
 
     #[test]
@@ -129,11 +126,8 @@ mod tests {
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let res = start_parenthesis.parse(&mut tokens, &s, &chars, 0);
-        assert_eq!(res, Err((
-            Range::new(0, 1),
-            ParseError::DidNotExpectToken(Arc::new(")".into()), 0)
-            ))
-        );
+        assert_eq!(res, Err(Range::new(0, 1).wrap(
+            ParseError::DidNotExpectToken(Arc::new(")".into()), 0))));
     }
 
     #[test]
@@ -167,7 +161,7 @@ mod tests {
         let res = start_parenthesis.parse(&mut tokens, &s, &chars[6..], 6);
         assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
-        assert_eq!(&tokens[0].1, &MetaData::Bool(has_arguments.clone(), true));
+        assert_eq!(&tokens[0].data, &MetaData::Bool(has_arguments.clone(), true));
 
         // Set inverted bool property.
         let mut tokens = vec![];
@@ -183,6 +177,6 @@ mod tests {
         let res = start_parenthesis.parse(&mut tokens, &s, &chars[6..], 6);
         assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
-        assert_eq!(&tokens[0].1, &MetaData::Bool(has_arguments.clone(), false));
+        assert_eq!(&tokens[0].data, &MetaData::Bool(has_arguments.clone(), false));
     }
 }

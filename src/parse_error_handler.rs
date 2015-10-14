@@ -4,10 +4,10 @@ use std::io::{ self, stderr, Write };
 use ParseError;
 
 /// When an error happens, reports to standard error and then panics.
-pub fn stderr_unwrap<T>(source: &str, res: Result<T, (Range, ParseError)>) -> T {
+pub fn stderr_unwrap<T>(source: &str, res: Result<T, Range<ParseError>>) -> T {
     match res {
-        Err((range, err)) => {
-            ParseErrorHandler::new(source).error(range, err);
+        Err(range_err) => {
+            ParseErrorHandler::new(source).error(range_err);
             panic!();
         }
         Ok(val) => val,
@@ -40,8 +40,7 @@ impl<'a> ParseErrorHandler<'a> {
     pub fn write<W: Write>(
         &mut self,
         w: &mut W,
-        range: Range,
-        error: ParseError
+        range_err: Range<ParseError>
     ) -> Result<(), io::Error> {
         // Gets the first line of error message.
         fn first_line(
@@ -57,6 +56,8 @@ impl<'a> ParseErrorHandler<'a> {
             }
             first_line
         }
+
+        let (range, error) = range_err.decouple();
 
         try!(writeln!(w, "Error {}", error));
         if let &ParseError::ExpectedToken(_, _) = &error {
@@ -107,7 +108,7 @@ impl<'a> ParseErrorHandler<'a> {
     }
 
     /// Prints error message.
-    pub fn error(&mut self, range: Range, error: ParseError) {
-        self.write(&mut stderr(), range, error).unwrap()
+    pub fn error(&mut self, range_err: Range<ParseError>) {
+        self.write(&mut stderr(), range_err).unwrap()
     }
 }
