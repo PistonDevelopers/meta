@@ -68,7 +68,8 @@ mod tests {
         });
         let mut syntax = Syntax::new();
         syntax.push(Arc::new("".into()), select);
-        let res = parse(&syntax, &text);
+        let mut tokens = vec![];
+        let res = parse(&syntax, &text, &mut tokens);
         let invalid_rule = match &res {
             &Err(ref range_err) => {
                 match range_err.data {
@@ -102,9 +103,11 @@ mod tests {
         });
         let mut syntax = Syntax::new();
         syntax.push(Arc::new("".into()), select);
-        let res = parse(&syntax, &text);
-        assert_eq!(res, Ok(vec![
+        let mut tokens = vec![];
+        let res = parse(&syntax, &text, &mut tokens);
+        assert_eq!(res, Ok(()));
+        assert_eq!(tokens, vec![
             Range::new(0, 1).wrap(MetaData::F64(num.clone(), 2.0))
-        ]));
+        ]);
     }
 }

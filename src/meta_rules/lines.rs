@@ -221,8 +221,9 @@ mod tests {
 
         let mut syntax = Syntax::new();
         syntax.push(Arc::new("".into()), rule);
-        let res = parse(&syntax, text);
-        assert_eq!(res, Ok(vec![
+        let mut res = vec![];
+        assert_eq!(parse(&syntax, text, &mut res), Ok(()));
+        assert_eq!(res, vec![
             Range::new(1, 1).wrap(MetaData::F64(num.clone(), 1.0)),
             Range::new(3, 1).wrap(MetaData::F64(num.clone(), 2.0)),
             Range::new(5, 1).wrap(MetaData::F64(num.clone(), 3.0)),
@@ -232,6 +233,6 @@ mod tests {
                 MetaData::String(tex.clone(), Arc::new("two".into()))),
             Range::new(19, 7).wrap(
                 MetaData::String(tex.clone(), Arc::new("three".into())))
-        ]));
+        ]);
     }
 }

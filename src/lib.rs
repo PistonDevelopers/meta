@@ -74,10 +74,10 @@ impl Syntax {
 
 /// Reads syntax from text.
 pub fn syntax2(rules: &str) -> Result<Syntax, Range<ParseError>> {
-    match bootstrap::convert(
-        &try!(parse(&bootstrap::rules(), rules)),
-        &mut vec![] // Ignored meta data
-    ) {
+    let mut tokens = vec![];
+    try!(parse(&bootstrap::rules(), rules, &mut tokens));
+    let mut ignored_meta_data = vec![];
+    match bootstrap::convert(&tokens, &mut ignored_meta_data) {
         Ok(res) => Ok(res),
         Err(()) => Err((Range::empty(0).wrap(ParseError::Conversion(
             format!("Bootstrapping rules are incorrect")))))
@@ -87,10 +87,10 @@ pub fn syntax2(rules: &str) -> Result<Syntax, Range<ParseError>> {
 /// Reads syntax from text, using the new meta language.
 pub fn syntax(rules: &str) -> Result<Syntax, Range<ParseError>> {
     let new_bootstrap_rules = try!(syntax2(include_str!("../assets/old-self-syntax.txt")));
-    match bootstrap::convert(
-        &try!(parse(&new_bootstrap_rules, rules)),
-        &mut vec![] // Ignored meta data
-    ) {
+    let mut tokens = vec![];
+    try!(parse(&new_bootstrap_rules, rules, &mut tokens));
+    let mut ignored_meta_data = vec![];
+    match bootstrap::convert(&tokens, &mut ignored_meta_data) {
         Ok(res) => Ok(res),
         Err(()) => Err(Range::empty(0).wrap(ParseError::Conversion(
             format!("Bootstrapping rules are incorrect"))))
@@ -116,7 +116,9 @@ pub fn load_syntax_data<A, B>(
     let mut data_file = File::open(data_path).unwrap();
     let mut d = String::new();
     data_file.read_to_string(&mut d).unwrap();
-    stderr_unwrap(&d, parse(&rules, &d))
+    let mut tokens = vec![];
+    stderr_unwrap(&d, parse(&rules, &d, &mut tokens));
+    tokens
 }
 
 /// Convenience method for loading data, using the new meta language.
@@ -138,7 +140,9 @@ pub fn load_syntax_data2<A, B>(
     let mut data_file = File::open(data_path).unwrap();
     let mut d = String::new();
     data_file.read_to_string(&mut d).unwrap();
-    stderr_unwrap(&d, parse(&rules, &d))
+    let mut tokens = vec![];
+    stderr_unwrap(&d, parse(&rules, &d, &mut tokens));
+    tokens
 }
 
 #[cfg(test)]

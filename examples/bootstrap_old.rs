@@ -18,8 +18,9 @@ fn main() {
     let old_syntax = stderr_unwrap(&old, syntax2(&old));
 
     let old_in_old = load_file("assets/old-self-syntax.txt");
-    let old_in_old_syntax = stderr_unwrap(&old_in_old,
-        parse(&old_syntax, &old_in_old));
+    let mut old_in_old_syntax = vec![];
+    stderr_unwrap(&old_in_old,
+        parse(&old_syntax, &old_in_old, &mut old_in_old_syntax));
     let old_in_old_syntax = bootstrap::convert(&old_in_old_syntax, &mut vec![])
         .unwrap();
 

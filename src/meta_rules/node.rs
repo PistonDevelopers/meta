@@ -140,7 +140,8 @@ mod tests {
         update_refs(&mut rules);
 
         let text = "1 2 3";
-        let data = parse(&rules, text).unwrap();
+        let mut data = vec![];
+        assert_eq!(parse(&rules, text, &mut data), Ok(()));
         assert_eq!(data.len(), 9);
         assert_eq!(&data[0].data, &MetaData::StartNode(foo.clone()));
         assert_eq!(&data[1].data, &MetaData::F64(num.clone(), 1.0));
