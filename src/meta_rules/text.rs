@@ -39,8 +39,10 @@ impl Text {
                 match read_token::parse_string(
                     chars, offset, range.next_offset()) {
                     // Focus range to invalid string format.
-                    Err(err) => Err((err.range(),
-                        ParseError::ParseStringError(err, self.debug_id))),
+                    Err(err) => {
+                        let (r, err) = err.decouple();
+                        Err((r, ParseError::ParseStringError(err, self.debug_id)))
+                    }
                     Ok(text) => {
                         if let Some(ref property) = self.property {
                             Ok((range, read_data(
