@@ -5,11 +5,11 @@ use piston_meta::*;
 fn main() {
     let text = r#"hi James!"#;
     let rules = r#"
-        1 "say_hi" ["hi" w? {"James""james" "Peter""peter"} "!"]
-        2 "document" @"say_hi"
+        1 say_hi = ["hi" .w? {"James":"james" "Peter":"peter"} "!"]
+        2 document = say_hi
     "#;
     // Parse rules with meta language and convert to rules for parsing text.
-    let rules = stderr_unwrap(rules, syntax(rules));
+    let rules = stderr_unwrap(rules, syntax2(rules));
     let data = stderr_unwrap(text, parse(&rules, text));
     json::print(&data);
 }
