@@ -73,26 +73,26 @@ impl Syntax {
 }
 
 /// Reads syntax from text.
-pub fn syntax2(rules: &str) -> Result<Syntax, (Range, ParseError)> {
+pub fn syntax2(rules: &str) -> Result<Syntax, Range<ParseError>> {
     match bootstrap::convert(
         &try!(parse(&bootstrap::rules(), rules)),
         &mut vec![] // Ignored meta data
     ) {
         Ok(res) => Ok(res),
-        Err(()) => Err((Range::empty(0), ParseError::Conversion(
-            format!("Bootstrapping rules are incorrect"))))
+        Err(()) => Err((Range::empty(0).wrap(ParseError::Conversion(
+            format!("Bootstrapping rules are incorrect")))))
     }
 }
 
 /// Reads syntax from text, using the new meta language.
-pub fn syntax(rules: &str) -> Result<Syntax, (Range, ParseError)> {
+pub fn syntax(rules: &str) -> Result<Syntax, Range<ParseError>> {
     let new_bootstrap_rules = try!(syntax2(include_str!("../assets/old-self-syntax.txt")));
     match bootstrap::convert(
         &try!(parse(&new_bootstrap_rules, rules)),
         &mut vec![] // Ignored meta data
     ) {
         Ok(res) => Ok(res),
-        Err(()) => Err((Range::empty(0), ParseError::Conversion(
+        Err(()) => Err(Range::empty(0).wrap(ParseError::Conversion(
             format!("Bootstrapping rules are incorrect"))))
     }
 }
@@ -103,7 +103,7 @@ pub fn syntax(rules: &str) -> Result<Syntax, (Range, ParseError)> {
 pub fn load_syntax_data<A, B>(
     syntax_path: A,
     data_path: B
-) -> Vec<(Range, MetaData)>
+) -> Vec<Range<MetaData>>
     where A: AsRef<Path>, B: AsRef<Path>
 {
     use std::io::Read;
@@ -125,7 +125,7 @@ pub fn load_syntax_data<A, B>(
 pub fn load_syntax_data2<A, B>(
     syntax_path: A,
     data_path: B
-) -> Vec<(Range, MetaData)>
+) -> Vec<Range<MetaData>>
     where A: AsRef<Path>, B: AsRef<Path>
 {
     use std::io::Read;

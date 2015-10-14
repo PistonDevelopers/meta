@@ -31,7 +31,7 @@ impl Node {
     /// Parses node.
     pub fn parse(
         &self,
-        tokens: &mut Vec<(Range, MetaData)>,
+        tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
@@ -40,22 +40,21 @@ impl Node {
         let mut offset = start_offset;
         let index = match self.index {
             None => {
-                return Err((
-                    Range::empty(offset),
-                    ParseError::InvalidRule(
-                        "Node rule is not updated to reference",
-                        self.debug_id
-                    )
-                ));
+                return Err(
+                    Range::empty(offset).wrap(
+                        ParseError::InvalidRule(
+                            "Node rule is not updated to reference",
+                            self.debug_id
+                        )
+                    ));
             }
             Some(i) => i
         };
         let mut state = if let Some(ref prop) = self.property {
             read_data(
                 tokens,
-                MetaData::StartNode(prop.clone()),
-                state,
-                Range::empty(offset)
+                Range::empty(offset).wrap(MetaData::StartNode(prop.clone())),
+                state
             )
         } else {
             state.clone()
@@ -76,9 +75,8 @@ impl Node {
             if let Some(ref prop) = self.property {
                 read_data(
                     tokens,
-                    MetaData::EndNode(prop.clone()),
-                    &state,
-                    range
+                    range.wrap(MetaData::EndNode(prop.clone())),
+                    &state
                 )
             } else {
                 state.clone()
@@ -144,14 +142,14 @@ mod tests {
         let text = "1 2 3";
         let data = parse(&rules, text).unwrap();
         assert_eq!(data.len(), 9);
-        assert_eq!(&data[0].1, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&data[1].1, &MetaData::F64(num.clone(), 1.0));
-        assert_eq!(&data[2].1, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&data[3].1, &MetaData::F64(num.clone(), 2.0));
-        assert_eq!(&data[4].1, &MetaData::StartNode(foo.clone()));
-        assert_eq!(&data[5].1, &MetaData::F64(num.clone(), 3.0));
-        assert_eq!(&data[6].1, &MetaData::EndNode(foo.clone()));
-        assert_eq!(&data[7].1, &MetaData::EndNode(foo.clone()));
-        assert_eq!(&data[8].1, &MetaData::EndNode(foo.clone()));
+        assert_eq!(&data[0].data, &MetaData::StartNode(foo.clone()));
+        assert_eq!(&data[1].data, &MetaData::F64(num.clone(), 1.0));
+        assert_eq!(&data[2].data, &MetaData::StartNode(foo.clone()));
+        assert_eq!(&data[3].data, &MetaData::F64(num.clone(), 2.0));
+        assert_eq!(&data[4].data, &MetaData::StartNode(foo.clone()));
+        assert_eq!(&data[5].data, &MetaData::F64(num.clone(), 3.0));
+        assert_eq!(&data[6].data, &MetaData::EndNode(foo.clone()));
+        assert_eq!(&data[7].data, &MetaData::EndNode(foo.clone()));
+        assert_eq!(&data[8].data, &MetaData::EndNode(foo.clone()));
     }
 }

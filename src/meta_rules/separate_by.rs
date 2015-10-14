@@ -32,7 +32,7 @@ impl SeparateBy {
     /// Parses rule repeatedly separated by another rule.
     pub fn parse(
         &self,
-        tokens: &mut Vec<(Range, MetaData)>,
+        tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
@@ -115,7 +115,7 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
-        assert_eq!(res, Err((Range::new(4, 0),
+        assert_eq!(res, Err(Range::new(4, 0).wrap(
             ParseError::ExpectedSomething(1))));
     }
 
@@ -145,7 +145,7 @@ mod tests {
         };
         let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
         assert_eq!(res, Ok((Range::new(4, 0), s,
-            Some((Range::new(4, 0), ParseError::ExpectedSomething(1))))));
+            Some(Range::new(4, 0).wrap(ParseError::ExpectedSomething(1))))));
     }
 
     #[test]
@@ -174,7 +174,7 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
-        assert_eq!(res, Err((Range::new(10, 0),
+        assert_eq!(res, Err(Range::new(10, 0).wrap(
             ParseError::ExpectedSomething(1))));
     }
 
@@ -205,11 +205,14 @@ mod tests {
         };
         let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
         assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3),
-            Some((Range::new(10, 0), ParseError::ExpectedSomething(1))))));
+            Some(Range::new(10, 0).wrap(ParseError::ExpectedSomething(1))))));
         assert_eq!(tokens.len(), 3);
-        assert_eq!(&tokens[0].1, &MetaData::String(arg.clone(), Arc::new("a".into())));
-        assert_eq!(&tokens[1].1, &MetaData::String(arg.clone(), Arc::new("b".into())));
-        assert_eq!(&tokens[2].1, &MetaData::String(arg.clone(), Arc::new("c".into())));
+        assert_eq!(&tokens[0].data,
+            &MetaData::String(arg.clone(), Arc::new("a".into())));
+        assert_eq!(&tokens[1].data,
+            &MetaData::String(arg.clone(), Arc::new("b".into())));
+        assert_eq!(&tokens[2].data,
+            &MetaData::String(arg.clone(), Arc::new("c".into())));
     }
 
     #[test]
@@ -239,12 +242,15 @@ mod tests {
         };
         let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
         assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3),
-            Some((Range::new(9, 0),
+            Some(Range::new(9, 0).wrap(
                 ParseError::ExpectedToken(Arc::new(",".into()), 2))))));
         assert_eq!(tokens.len(), 3);
-        assert_eq!(&tokens[0].1, &MetaData::String(arg.clone(), Arc::new("a".into())));
-        assert_eq!(&tokens[1].1, &MetaData::String(arg.clone(), Arc::new("b".into())));
-        assert_eq!(&tokens[2].1, &MetaData::String(arg.clone(), Arc::new("c".into())));
+        assert_eq!(&tokens[0].data,
+            &MetaData::String(arg.clone(), Arc::new("a".into())));
+        assert_eq!(&tokens[1].data,
+            &MetaData::String(arg.clone(), Arc::new("b".into())));
+        assert_eq!(&tokens[2].data,
+            &MetaData::String(arg.clone(), Arc::new("c".into())));
     }
 
     #[test]
@@ -286,12 +292,18 @@ mod tests {
         };
         let res = sep.parse(&mut tokens, &s, &chars, 0, &[]);
         assert_eq!(res, Ok((Range::new(0, 12), TokenizerState(6),
-            Some((Range::new(12, 0), ParseError::ExpectedSomething(2))))));
+            Some(Range::new(12, 0).wrap(
+                ParseError::ExpectedSomething(2))))));
         assert_eq!(tokens.len(), 6);
-        assert_eq!(&tokens[0].1, &MetaData::String(arg.clone(), Arc::new("a".into())));
-        assert_eq!(&tokens[1].1, &MetaData::String(arg.clone(), Arc::new("b".into())));
-        assert_eq!(&tokens[2].1, &MetaData::String(arg.clone(), Arc::new("c".into())));
-        assert_eq!(&tokens[3].1, &MetaData::String(arg.clone(), Arc::new("d".into())));
-        assert_eq!(&tokens[4].1, &MetaData::String(arg.clone(), Arc::new("e".into())));
+        assert_eq!(&tokens[0].data,
+            &MetaData::String(arg.clone(), Arc::new("a".into())));
+        assert_eq!(&tokens[1].data,
+            &MetaData::String(arg.clone(), Arc::new("b".into())));
+        assert_eq!(&tokens[2].data,
+            &MetaData::String(arg.clone(), Arc::new("c".into())));
+        assert_eq!(&tokens[3].data,
+            &MetaData::String(arg.clone(), Arc::new("d".into())));
+        assert_eq!(&tokens[4].data,
+            &MetaData::String(arg.clone(), Arc::new("e".into())));
     }
 }

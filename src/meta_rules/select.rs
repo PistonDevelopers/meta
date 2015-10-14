@@ -25,13 +25,13 @@ impl Select {
     /// Parses select.
     pub fn parse(
         &self,
-        tokens: &mut Vec<(Range, MetaData)>,
+        tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         chars: &[char],
         offset: usize,
         refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
-        let mut opt_error: Option<(Range, ParseError)> = None;
+        let mut opt_error: Option<Range<ParseError>> = None;
         for sub_rule in &self.args {
             match sub_rule.parse(tokens, state, chars, offset, refs) {
                 Ok((range, state, err)) => {
@@ -45,7 +45,7 @@ impl Select {
             }
         }
         match opt_error {
-            None => Err((Range::new(offset, 0), ParseError::InvalidRule(
+            None => Err(Range::new(offset, 0).wrap(ParseError::InvalidRule(
                 "`Select` requires at least one sub rule", self.debug_id))),
             Some(err) => Err(err),
         }
@@ -70,7 +70,12 @@ mod tests {
         syntax.push(Arc::new("".into()), select);
         let res = parse(&syntax, &text);
         let invalid_rule = match &res {
-            &Err((_, ParseError::InvalidRule(_, _))) => true,
+            &Err(ref range_err) => {
+                match range_err.data {
+                    ParseError::InvalidRule(_, _) => true,
+                    _ => false
+                }
+            }
             _ => false
         };
         assert!(invalid_rule);
@@ -99,7 +104,7 @@ mod tests {
         syntax.push(Arc::new("".into()), select);
         let res = parse(&syntax, &text);
         assert_eq!(res, Ok(vec![
-            (Range::new(0, 1), MetaData::F64(num.clone(), 2.0))
+            Range::new(0, 1).wrap(MetaData::F64(num.clone(), 2.0))
         ]));
     }
 }

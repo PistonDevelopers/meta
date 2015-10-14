@@ -58,7 +58,7 @@ impl Rule {
     /// Parses rule.
     pub fn parse(
         &self,
-        tokens: &mut Vec<(Range, MetaData)>,
+        tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         chars: &[char],
         offset: usize,

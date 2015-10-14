@@ -27,7 +27,7 @@ impl Number {
     /// Parses number.
     pub fn parse(
         &self,
-        tokens: &mut Vec<(Range, MetaData)>,
+        tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         chars: &[char],
         offset: usize
@@ -37,15 +37,14 @@ impl Number {
         };
         if let Some(range) = read_token::number(&settings, chars, offset) {
             match read_token::parse_number(&settings, &chars[..range.length]) {
-                Err(err) => Err((range,
+                Err(err) => Err(range.wrap(
                     ParseError::ParseNumberError(err, self.debug_id))),
                 Ok(val) => {
                     if let Some(ref property) = self.property {
                         Ok((range, read_data(
                             tokens,
-                            MetaData::F64(property.clone(), val),
-                            state,
-                            range
+                            range.wrap(MetaData::F64(property.clone(), val)),
+                            state
                         ), None))
                     } else {
                         Ok((range, state.clone(), None))
@@ -53,7 +52,7 @@ impl Number {
                 }
             }
         } else {
-            return Err((Range::new(offset, 0),
+            return Err(Range::new(offset, 0).wrap(
                 ParseError::ExpectedNumber(self.debug_id)))
         }
     }
@@ -79,7 +78,8 @@ mod tests {
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let res = number.parse(&mut tokenizer, &s, &chars, 0);
-        assert_eq!(res, Err((Range::new(0, 0), ParseError::ExpectedNumber(0))));
+        assert_eq!(res, Err(Range::new(0, 0).wrap(
+            ParseError::ExpectedNumber(0))));
     }
 
     #[test]
@@ -111,6 +111,6 @@ mod tests {
         let res = number.parse(&mut tokens, &s, &chars[15..], 15);
         assert_eq!(res, Ok((Range::new(15, 6), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
-        assert_eq!(&tokens[0].1, &MetaData::F64(val.clone(), 10.0e1));
+        assert_eq!(&tokens[0].data, &MetaData::F64(val.clone(), 10.0e1));
     }
 }

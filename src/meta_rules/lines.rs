@@ -29,7 +29,7 @@ impl Lines {
     /// Ignores lines that only contain whitespace characters.
     pub fn parse(
         &self,
-        tokenizer: &mut Vec<(Range, MetaData)>,
+        tokenizer: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         mut chars: &[char],
         start_offset: usize,
@@ -76,7 +76,7 @@ impl Lines {
                         }
                     };
                 } else {
-                    let err = (Range::new(offset, 0),
+                    let err = Range::new(offset, 0).wrap(
                         ParseError::ExpectedNewLine(self.debug_id));
                     return Err(ret_err(err, opt_error));
                 }
@@ -119,7 +119,7 @@ mod tests {
         };
         let res = lines.parse(&mut tokenizer, &s, &chars, 0, &[]);
         assert_eq!(res, Ok((Range::new(0, 10), s,
-            Some((Range::new(10, 0), ParseError::ExpectedNumber(1))))));
+            Some(Range::new(10, 0).wrap(ParseError::ExpectedNumber(1))))));
     }
 
     #[test]
@@ -154,7 +154,8 @@ mod tests {
             }),
         };
         let res = lines.parse(&mut tokenizer, &s, &chars, 0, &[]);
-        assert_eq!(res, Err((Range::new(8, 0), ParseError::ExpectedNewLine(0))));
+        assert_eq!(res, Err(Range::new(8, 0).wrap(
+            ParseError::ExpectedNewLine(0))));
     }
 
     #[test]
@@ -222,12 +223,15 @@ mod tests {
         syntax.push(Arc::new("".into()), rule);
         let res = parse(&syntax, text);
         assert_eq!(res, Ok(vec![
-            (Range::new(1, 1), MetaData::F64(num.clone(), 1.0)),
-            (Range::new(3, 1), MetaData::F64(num.clone(), 2.0)),
-            (Range::new(5, 1), MetaData::F64(num.clone(), 3.0)),
-            (Range::new(7, 5), MetaData::String(tex.clone(), Arc::new("one".into()))),
-            (Range::new(13, 5), MetaData::String(tex.clone(), Arc::new("two".into()))),
-            (Range::new(19, 7), MetaData::String(tex.clone(), Arc::new("three".into())))
+            Range::new(1, 1).wrap(MetaData::F64(num.clone(), 1.0)),
+            Range::new(3, 1).wrap(MetaData::F64(num.clone(), 2.0)),
+            Range::new(5, 1).wrap(MetaData::F64(num.clone(), 3.0)),
+            Range::new(7, 5).wrap(
+                MetaData::String(tex.clone(), Arc::new("one".into()))),
+            Range::new(13, 5).wrap(
+                MetaData::String(tex.clone(), Arc::new("two".into()))),
+            Range::new(19, 7).wrap(
+                MetaData::String(tex.clone(), Arc::new("three".into())))
         ]));
     }
 }

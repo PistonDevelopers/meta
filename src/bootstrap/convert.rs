@@ -22,17 +22,17 @@ use MetaData;
 use Syntax;
 
 /// Updates with parsed range.
-pub fn update(range: Range, data: &mut &[(Range, MetaData)], offset: &mut usize) {
+pub fn update(range: Range, data: &mut &[Range<MetaData>], offset: &mut usize) {
     let next_offset = range.next_offset();
     *data = &data[next_offset - *offset..];
     *offset = next_offset;
 }
 
 /// Reads start node.
-pub fn start_node(name: &str, data: &[(Range, MetaData)], offset: usize)
+pub fn start_node(name: &str, data: &[Range<MetaData>], offset: usize)
 -> Result<Range, ()> {
     if data.len() == 0 { return Err(()); }
-    match &data[0].1 {
+    match &data[0].data {
         &MetaData::StartNode(ref n) if &**n == name => {
             Ok(Range::new(offset, 1))
         }
@@ -41,10 +41,10 @@ pub fn start_node(name: &str, data: &[(Range, MetaData)], offset: usize)
 }
 
 /// Reads end node.
-pub fn end_node(name: &str, data: &[(Range, MetaData)], offset: usize)
+pub fn end_node(name: &str, data: &[Range<MetaData>], offset: usize)
 -> Result<Range, ()> {
     if data.len() == 0 { return Err(()); }
-    match &data[0].1 {
+    match &data[0].data {
         &MetaData::EndNode(ref n) if &**n == name => {
             Ok(Range::new(offset, 1))
         }
@@ -54,12 +54,12 @@ pub fn end_node(name: &str, data: &[(Range, MetaData)], offset: usize)
 
 /// Ignores next item.
 /// If this is the start of a node, it ignores all items to the end node.
-pub fn ignore(data: &[(Range, MetaData)], offset: usize)
+pub fn ignore(data: &[Range<MetaData>], offset: usize)
 -> Range {
     let mut acc: usize = 0;
     let mut len = 0;
     for item in data.iter() {
-        match &item.1 {
+        match &item.data {
             &MetaData::StartNode(_) => acc += 1,
             &MetaData::EndNode(_) => acc -= 1,
             _ => {}
@@ -71,10 +71,10 @@ pub fn ignore(data: &[(Range, MetaData)], offset: usize)
 }
 
 /// Reads string.
-pub fn meta_string(name: &str, data: &[(Range, MetaData)], offset: usize)
+pub fn meta_string(name: &str, data: &[Range<MetaData>], offset: usize)
 -> Result<(Range, Arc<String>), ()> {
     if data.len() == 0 { return Err(()); }
-    match &data[0].1 {
+    match &data[0].data {
         &MetaData::String(ref n, ref val) if &**n == name => {
             Ok((Range::new(offset, 1), val.clone()))
         }
@@ -83,10 +83,10 @@ pub fn meta_string(name: &str, data: &[(Range, MetaData)], offset: usize)
 }
 
 /// Reads f64.
-pub fn meta_f64(name: &str, data: &[(Range, MetaData)], offset: usize)
+pub fn meta_f64(name: &str, data: &[Range<MetaData>], offset: usize)
 -> Result<(Range, f64), ()> {
     if data.len() == 0 { return Err(()); }
-    match &data[0].1 {
+    match &data[0].data {
         &MetaData::F64(ref n, ref val) if &**n == name => {
             Ok((Range::new(offset, 1), *val))
         }
@@ -95,10 +95,10 @@ pub fn meta_f64(name: &str, data: &[(Range, MetaData)], offset: usize)
 }
 
 /// Reads bool.
-pub fn meta_bool(name: &str, data: &[(Range, MetaData)], offset: usize)
+pub fn meta_bool(name: &str, data: &[Range<MetaData>], offset: usize)
 -> Result<(Range, bool), ()> {
     if data.len() == 0 { return Err(()); }
-    match &data[0].1 {
+    match &data[0].data {
         &MetaData::Bool(ref n, ref val) if &**n == name => {
             Ok((Range::new(offset, 1), *val))
         }
@@ -108,10 +108,11 @@ pub fn meta_bool(name: &str, data: &[(Range, MetaData)], offset: usize)
 
 /// Converts meta data to rules.
 pub fn convert(
-    mut data: &[(Range, MetaData)],
+    mut data: &[Range<MetaData>],
     ignored: &mut Vec<Range>
 ) -> Result<Syntax, ()> {
-    fn read_string(mut data: &[(Range, MetaData)], mut offset: usize)
+
+    fn read_string(mut data: &[Range<MetaData>], mut offset: usize)
     -> Result<(Range, (Arc<String>, Arc<String>)), ()> {
         let start_offset = offset;
         let range = try!(start_node("string", data, offset));
@@ -145,7 +146,7 @@ pub fn convert(
 
     fn read_sequence(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -181,7 +182,7 @@ pub fn convert(
         strings.iter().find(|&&(ref s, _)| &**s == val).map(|&(_, ref s)| s.clone())
     }
 
-    fn read_set(property: &str, mut data: &[(Range, MetaData)], mut offset: usize,
+    fn read_set(property: &str, mut data: &[Range<MetaData>], mut offset: usize,
     strings: &[(Arc<String>, Arc<String>)])
     -> Result<(Range, Arc<String>), ()> {
         let start_offset = offset;
@@ -210,7 +211,7 @@ pub fn convert(
 
     fn read_until_any_or_whitespace(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -259,7 +260,7 @@ pub fn convert(
 
     fn read_until_any(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -308,7 +309,7 @@ pub fn convert(
 
     fn read_token(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -364,7 +365,7 @@ pub fn convert(
 
     fn read_whitespace(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
@@ -384,7 +385,7 @@ pub fn convert(
 
     fn read_text(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -423,7 +424,7 @@ pub fn convert(
 
     fn read_number(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -463,7 +464,7 @@ pub fn convert(
 
     fn read_reference(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -508,7 +509,7 @@ pub fn convert(
 
     fn read_select(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -543,7 +544,7 @@ pub fn convert(
 
     fn read_optional(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -568,7 +569,7 @@ pub fn convert(
 
     fn read_separated_by(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -627,7 +628,7 @@ pub fn convert(
 
     fn read_lines(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -651,7 +652,7 @@ pub fn convert(
 
     fn read_repeat(
         debug_id: &mut usize,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -699,7 +700,7 @@ pub fn convert(
     fn read_rule(
         debug_id: &mut usize,
         property: &str,
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
@@ -786,7 +787,7 @@ pub fn convert(
     }
 
     fn read_node(
-        mut data: &[(Range, MetaData)],
+        mut data: &[Range<MetaData>],
         mut offset: usize,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
