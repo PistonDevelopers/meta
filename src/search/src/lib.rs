@@ -15,12 +15,12 @@ pub struct Search<'a> {
     /// Used in errors if there is no meta data left.
     pub range: Option<Range>,
     /// The data to search.
-    pub data: &'a [(Range, MetaData)],
+    pub data: &'a [Range<MetaData>],
 }
 
 impl<'a> Search<'a> {
     /// Creates a new search.
-    pub fn new(data: &'a [(Range, MetaData)]) -> Search<'a> {
+    pub fn new(data: &'a [Range<MetaData>]) -> Search<'a> {
         Search {
             data: data,
             range: None
@@ -34,24 +34,23 @@ impl<'a> Search<'a> {
         name: &str,
         val: &str,
         f: F
-    ) -> Result<T, (Range, ParseError)>
-        where F: FnOnce(Search<'a>) -> Result<T, (Range, ParseError)>
+    ) -> Result<T, Range<ParseError>>
+        where F: FnOnce(Search<'a>) -> Result<T, Range<ParseError>>
     {
         if self.data.len() == 0 {
-            return Err((
-                self.range.unwrap_or(Range::empty(0)),
+            return Err(self.range.unwrap_or(Range::empty(0)).wrap(
                 ParseError::Conversion(format!("Could not find string `{}`:`{}`",
                     name, val))
             ));
         }
 
         for (i, d) in self.data.iter().enumerate() {
-            match d {
-                &(range, MetaData::String(ref n, ref v)) => {
+            match &d.data {
+                &MetaData::String(ref n, ref v) => {
                     if &**n == name && &**v == val {
                         return f(Search {
                             data: &self.data[i + 1..],
-                            range: Some(range)
+                            range: Some(d.range())
                         })
                     }
                 }
@@ -59,8 +58,7 @@ impl<'a> Search<'a> {
             }
         }
 
-        Err((
-            self.range.unwrap_or(Range::empty(0)),
+        Err(self.range.unwrap_or(Range::empty(0)).wrap(
             ParseError::Conversion(format!("Could not find string `{}`:`{}`",
                 name, val))
         ))
@@ -73,24 +71,23 @@ impl<'a> Search<'a> {
         name: &str,
         val: f64,
         f: F
-    ) -> Result<T, (Range, ParseError)>
-        where F: FnOnce(Search<'a>) -> Result<T, (Range, ParseError)>
+    ) -> Result<T, Range<ParseError>>
+        where F: FnOnce(Search<'a>) -> Result<T, Range<ParseError>>
     {
         if self.data.len() == 0 {
-            return Err((
-                self.range.unwrap_or(Range::empty(0)),
+            return Err(self.range.unwrap_or(Range::empty(0)).wrap(
                 ParseError::Conversion(format!("Could not find f64 `{}`:`{}`",
                     name, val))
             ));
         }
 
         for (i, d) in self.data.iter().enumerate() {
-            match d {
-                &(range, MetaData::F64(ref n, v)) => {
+            match &d.data {
+                &MetaData::F64(ref n, v) => {
                     if &**n == name && v == val {
                         return f(Search {
                             data: &self.data[i + 1..],
-                            range: Some(range)
+                            range: Some(d.range())
                         })
                     }
                 }
@@ -98,8 +95,7 @@ impl<'a> Search<'a> {
             }
         }
 
-        Err((
-            self.range.unwrap_or(Range::empty(0)),
+        Err(self.range.unwrap_or(Range::empty(0)).wrap(
             ParseError::Conversion(format!("Could not find f64 `{}`:`{}`",
                 name, val))
         ))
@@ -112,24 +108,23 @@ impl<'a> Search<'a> {
         name: &str,
         val: bool,
         f: F
-    ) -> Result<T, (Range, ParseError)>
-        where F: FnOnce(Search<'a>) -> Result<T, (Range, ParseError)>
+    ) -> Result<T, Range<ParseError>>
+        where F: FnOnce(Search<'a>) -> Result<T, Range<ParseError>>
     {
         if self.data.len() == 0 {
-            return Err((
-                self.range.unwrap_or(Range::empty(0)),
+            return Err(self.range.unwrap_or(Range::empty(0)).wrap(
                 ParseError::Conversion(format!("Could not find bool `{}`:`{}`",
                     name, val))
             ));
         }
 
         for (i, d) in self.data.iter().enumerate() {
-            match d {
-                &(range, MetaData::Bool(ref n, v)) => {
+            match &d.data {
+                &MetaData::Bool(ref n, v) => {
                     if &**n == name && v == val {
                         return f(Search {
                             data: &self.data[i + 1..],
-                            range: Some(range)
+                            range: Some(d.range())
                         })
                     }
                 }
@@ -137,8 +132,7 @@ impl<'a> Search<'a> {
             }
         }
 
-        Err((
-            self.range.unwrap_or(Range::empty(0)),
+        Err(self.range.unwrap_or(Range::empty(0)).wrap(
             ParseError::Conversion(format!("Could not find bool `{}`:`{}`",
                 name, val))
         ))
@@ -150,23 +144,22 @@ impl<'a> Search<'a> {
         &'a self,
         name: &str,
         f: F
-    ) -> Result<T, (Range, ParseError)>
-        where F: FnOnce(Search<'a>) -> Result<T, (Range, ParseError)>
+    ) -> Result<T, Range<ParseError>>
+        where F: FnOnce(Search<'a>) -> Result<T, Range<ParseError>>
     {
         if self.data.len() == 0 {
-            return Err((
-                self.range.unwrap_or(Range::empty(0)),
+            return Err(self.range.unwrap_or(Range::empty(0)).wrap(
                 ParseError::Conversion(format!("Could not find node `{}`", name))
             ));
         }
 
         for (i, d) in self.data.iter().enumerate() {
-            match d {
-                &(range, MetaData::StartNode(ref n)) => {
+            match &d.data {
+                &MetaData::StartNode(ref n) => {
                     if &**n == name {
                         return f(Search {
                             data: &self.data[i + 1..],
-                            range: Some(range)
+                            range: Some(d.range())
                         })
                     }
                 }
@@ -174,8 +167,7 @@ impl<'a> Search<'a> {
             }
         }
 
-        Err((
-            self.range.unwrap_or(Range::empty(0)),
+        Err(self.range.unwrap_or(Range::empty(0)).wrap(
             ParseError::Conversion(format!("Could not find node `{}`", name))
         ))
     }
@@ -186,23 +178,22 @@ impl<'a> Search<'a> {
         &'a self,
         name: &str,
         f: F
-    ) -> Result<T, (Range, ParseError)>
-        where F: FnOnce(Search<'a>) -> Result<T, (Range, ParseError)>
+    ) -> Result<T, Range<ParseError>>
+        where F: FnOnce(Search<'a>) -> Result<T, Range<ParseError>>
     {
         if self.data.len() == 0 {
-            return Err((
-                self.range.unwrap_or(Range::empty(0)),
+            return Err(self.range.unwrap_or(Range::empty(0)).wrap(
                 ParseError::Conversion(format!("Could not find end node `{}`", name))
             ));
         }
 
         for (i, d) in self.data.iter().enumerate() {
-            match d {
-                &(range, MetaData::EndNode(ref n)) => {
+            match &d.data {
+                &MetaData::EndNode(ref n) => {
                     if &**n == name {
                         return f(Search {
                             data: &self.data[i + 1..],
-                            range: Some(range)
+                            range: Some(d.range())
                         })
                     }
                 }
@@ -210,62 +201,58 @@ impl<'a> Search<'a> {
             }
         }
 
-        Err((
-            self.range.unwrap_or(Range::empty(0)),
+        Err(self.range.unwrap_or(Range::empty(0)).wrap(
             ParseError::Conversion(format!("Could not find end node `{}`", name))
         ))
     }
 
     /// Reads next as bool value.
-    pub fn bool(&mut self, name: &str) -> Result<bool, (Range, ParseError)> {
+    pub fn bool(&mut self, name: &str) -> Result<bool, Range<ParseError>> {
         if self.data.len() == 0 {
-            return Err((
-                self.range.unwrap_or(Range::empty(0)),
+            return Err(self.range.unwrap_or(Range::empty(0)).wrap(
                 ParseError::Conversion(format!("Expected bool `{}`", name))
             ));
         }
-        match &self.data[0] {
-            &(range, MetaData::Bool(ref n, v)) => {
+        let range = self.data[0].range();
+        match &self.data[0].data {
+            &MetaData::Bool(ref n, v) => {
                 if &**n == name {
                     self.data = &self.data[1..];
                     self.range = Some(range);
                     Ok(v)
                 } else {
-                    Err((
-                        range,
-                        ParseError::Conversion(
-                            format!("Expected name `{}` found `{}`", name, n))
-                    ))
+                    Err(range.wrap(ParseError::Conversion(
+                        format!("Expected name `{}` found `{}`", name, n))))
                 }
             }
-            &(range, ref val) => {
-                Err((range, ParseError::Conversion(
+            val => {
+                Err(range.wrap(ParseError::Conversion(
                     format!("Expected bool `{}`, found `{:?}`", name, val))))
             }
         }
     }
 
     /// Reads next as f64 value.
-    pub fn f64(&mut self, name: &str) -> Result<f64, (Range, ParseError)> {
+    pub fn f64(&mut self, name: &str) -> Result<f64, Range<ParseError>> {
         if self.data.len() == 0 {
-            return Err((
-                self.range.unwrap_or(Range::empty(0)),
+            return Err(self.range.unwrap_or(Range::empty(0)).wrap(
                 ParseError::Conversion(format!("Expected f64 `{}`", name))
             ));
         }
-        match &self.data[0] {
-            &(range, MetaData::F64(ref n, v)) => {
+        let range = self.data[0].range();
+        match &self.data[0].data {
+            &MetaData::F64(ref n, v) => {
                 if &**n == name {
                     self.data = &self.data[1..];
                     self.range = Some(range);
                     Ok(v)
                 } else {
-                    Err((range, ParseError::Conversion(
+                    Err(range.wrap(ParseError::Conversion(
                         format!("Expected name `{}`, found `{}`", name, n))))
                 }
             }
-            &(range, ref val) => {
-                Err((range, ParseError::Conversion(
+            val => {
+                Err(range.wrap(ParseError::Conversion(
                     format!("Expected f64 `{}`, found `{:?}`", name, val))))
             }
         }
@@ -275,78 +262,78 @@ impl<'a> Search<'a> {
     pub fn string(
         &mut self,
         name: &str
-    ) -> Result<Arc<String>, (Range, ParseError)> {
+    ) -> Result<Arc<String>, Range<ParseError>> {
         if self.data.len() == 0 {
-            return Err((
-                self.range.unwrap_or(Range::empty(0)),
+            return Err(self.range.unwrap_or(Range::empty(0)).wrap(
                 ParseError::Conversion(format!("Expected string `{}`", name))
             ));
         }
-        match &self.data[0] {
-            &(range, MetaData::String(ref n, ref v)) => {
+        let range = self.data[0].range();
+        match &self.data[0].data {
+            &MetaData::String(ref n, ref v) => {
                 if &**n == name {
                     self.data = &self.data[1..];
                     self.range = Some(range);
                     Ok(v.clone())
                 } else {
-                    Err((range, ParseError::Conversion(
+                    Err(range.wrap(ParseError::Conversion(
                         format!("Expected name `{}`, found `{}`", name, n))))
                 }
             }
-            &(range, ref val) => {
-                Err((range, ParseError::Conversion(
+            val => {
+                Err(range.wrap(ParseError::Conversion(
                     format!("Expected string `{}`, found `{:?}`", name, val))))
             }
         }
     }
 
     /// Reads next as node.
-    pub fn node(&mut self, name: &str) -> Result<(), (Range, ParseError)> {
+    pub fn node(&mut self, name: &str) -> Result<(), Range<ParseError>> {
         if self.data.len() == 0 {
-            return Err((
-                self.range.unwrap_or(Range::empty(0)),
+            return Err(self.range.unwrap_or(Range::empty(0)).wrap(
                 ParseError::Conversion(format!("Expected node `{}`", name))
             ));
         }
-        match &self.data[0] {
-            &(range, MetaData::StartNode(ref n)) => {
+        let range = self.data[0].range();
+        match &self.data[0].data {
+            &MetaData::StartNode(ref n) => {
                 if &**n == name {
                     self.data = &self.data[1..];
                     self.range = Some(range);
                     Ok(())
                 } else {
-                    Err((range, ParseError::Conversion(
+                    Err(range.wrap(ParseError::Conversion(
                         format!("Expected name `{}`, found `{}`", name, n))))
                 }
             }
-            &(range, ref val) => {
-                Err((range, ParseError::Conversion(
+            val => {
+                Err(range.wrap(ParseError::Conversion(
                     format!("Expected node `{}`, found `{:?}`", name, val))))
             }
         }
     }
 
     /// Reads next as end node.
-    pub fn end_node(&mut self, name: &str) -> Result<(), (Range, ParseError)> {
+    pub fn end_node(&mut self, name: &str) -> Result<(), Range<ParseError>> {
         if self.data.len() == 0 {
-            return Err((
-                self.range.unwrap_or(Range::empty(0)),
+            return Err(self.range.unwrap_or(Range::empty(0)).wrap(
                 ParseError::Conversion(format!("Expected end node `{}`", name))
             ));
         }
-        match &self.data[0] {
-            &(range, MetaData::EndNode(ref n)) => {
+        let range = self.data[0].range();
+        match &self.data[0].data {
+            &MetaData::EndNode(ref n) => {
                 if &**n == name {
                     self.data = &self.data[1..];
                     self.range = Some(range);
                     Ok(())
                 } else {
-                    Err((range, ParseError::Conversion(
+                    Err(range.wrap(ParseError::Conversion(
                         format!("Expected name `{}`, found `{}`", name, n))))
                 }
             }
-            &(range, ref val) => {
-                Err((range, ParseError::Conversion(
+            val => {
+                Err(range.wrap(ParseError::Conversion(
                     format!("Expected end node `{}`, found `{:?}`", name, val))))
             }
         }
@@ -355,16 +342,18 @@ impl<'a> Search<'a> {
 
 #[cfg(test)]
 mod tests {
-    use all::*;
+    use super::*;
+    use piston_meta::*;
 
     #[test]
     fn search_for_string() {
         let text = "a 1 b 2";
         let rules = r#"
-            0 "document" r?([..""!"name" w? $"val" w?])
+            0 document = .r?([..""!:"name" .w? .$:"val" .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax(rules));
-        let data = stderr_unwrap(text, parse(&rules, text));
+        let rules = stderr_unwrap(rules, syntax2(rules));
+        let mut data = vec![];
+        stderr_unwrap(text, parse(&rules, text, &mut data));
         let s = Search::new(&data);
         let a = stderr_unwrap(text, s.for_string("name", "a", |mut s| s.f64("val")));
         assert_eq!(a, 1.0);
@@ -378,10 +367,11 @@ mod tests {
     fn search_for_f64() {
         let text = "a 1 b 2";
         let rules = r#"
-            0 "document" r?([..""!"name" w? $"val" w?])
+            0 document = .r?([..""!:"name" .w? .$:"val" .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax(rules));
-        let data = stderr_unwrap(text, parse(&rules, text));
+        let rules = stderr_unwrap(rules, syntax2(rules));
+        let mut data = vec![];
+        stderr_unwrap(text, parse(&rules, text, &mut data));
         let s = Search::new(&data);
         let a = stderr_unwrap(text, s.for_f64("val", 1.0, |mut s| s.string("name")));
         assert_eq!(&**a, "b");
@@ -391,10 +381,11 @@ mod tests {
     fn search_for_bool() {
         let text = "a true b false";
         let rules = r#"
-            0 "document" r?([..""!"name" w? {"true""val" "false"!"val"} w?])
+            0 document = .r?([..""!:"name" .w? {"true":"val" "false":!"val"} .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax(rules));
-        let data = stderr_unwrap(text, parse(&rules, text));
+        let rules = stderr_unwrap(rules, syntax2(rules));
+        let mut data = vec![];
+        stderr_unwrap(text, parse(&rules, text, &mut data));
         let s = Search::new(&data);
         let a = stderr_unwrap(text, s.for_bool("val", true, |mut s| s.string("name")));
         assert_eq!(&**a, "b");
@@ -404,11 +395,12 @@ mod tests {
     fn search_for_end_node() {
         let text = "true false";
         let rules = r#"
-            0 "proposition" {"true""val" "false"!"val"}
-            0 "document" r?([@"proposition""proposition" w?])
+            0 proposition = {"true":"val" "false":!"val"}
+            0 document = .r?([proposition:"proposition" .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax(rules));
-        let data = stderr_unwrap(text, parse(&rules, text));
+        let rules = stderr_unwrap(rules, syntax2(rules));
+        let mut data = vec![];
+        stderr_unwrap(text, parse(&rules, text, &mut data));
         let mut s = Search::new(&data);
         stderr_unwrap(text, s.node("proposition"));
         assert!(s.for_end_node("proposition", |mut s| {
@@ -423,10 +415,11 @@ mod tests {
     fn f64() {
         let text = "1 2";
         let rules = r#"
-            0 "document" r?([$"val" w?])
+            0 document = .r?([.$:"val" .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax(rules));
-        let data = stderr_unwrap(text, parse(&rules, text));
+        let rules = stderr_unwrap(rules, syntax2(rules));
+        let mut data = vec![];
+        stderr_unwrap(text, parse(&rules, text, &mut data));
         let mut s = Search::new(&data);
         let res = (s.f64("val").unwrap(), s.f64("val").unwrap());
         assert_eq!(res, (1.0, 2.0));
@@ -436,10 +429,11 @@ mod tests {
     fn bool() {
         let text = "true false";
         let rules = r#"
-            0 "document" r?([{"true""val" "false"!"val"} w?])
+            0 document = .r?([{"true":"val" "false":!"val"} .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax(rules));
-        let data = stderr_unwrap(text, parse(&rules, text));
+        let rules = stderr_unwrap(rules, syntax2(rules));
+        let mut data = vec![];
+        stderr_unwrap(text, parse(&rules, text, &mut data));
         let mut s = Search::new(&data);
         let res = (s.bool("val").unwrap(), s.bool("val").unwrap());
         assert_eq!(res, (true, false));
@@ -449,11 +443,12 @@ mod tests {
     fn node() {
         let text = "true false";
         let rules = r#"
-            0 "proposition" {"true""val" "false"!"val"}
-            0 "document" r?([@"proposition""proposition" w?])
+            0 proposition = {"true":"val" "false":!"val"}
+            0 document = .r?([proposition:"proposition" .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax(rules));
-        let data = stderr_unwrap(text, parse(&rules, text));
+        let rules = stderr_unwrap(rules, syntax2(rules));
+        let mut data = vec![];
+        stderr_unwrap(text, parse(&rules, text, &mut data));
         let mut s = Search::new(&data);
         stderr_unwrap(text, s.node("proposition"));
         assert_eq!(s.bool("val"), Ok(true));
