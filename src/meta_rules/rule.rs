@@ -13,7 +13,7 @@ use super::{
     SeparateBy,
     Sequence,
     Text,
-    Token,
+    Tag,
     UntilAny,
     UntilAnyOrWhitespace,
     Whitespace,
@@ -26,8 +26,8 @@ use tokenizer::TokenizerState;
 pub enum Rule {
     /// Read whitespace.
     Whitespace(Whitespace),
-    /// Match against a token.
-    Token(Token),
+    /// Match against a tag.
+    Tag(Tag),
     /// Reads until any character.
     UntilAny(UntilAny),
     /// Read until any character or whitespace.
@@ -68,7 +68,7 @@ impl Rule {
             &Rule::Whitespace(ref w) => {
                 w.parse(read_token).map(|r| (r, state.clone(), None))
             }
-            &Rule::Token(ref t) => {
+            &Rule::Tag(ref t) => {
                 t.parse(tokens, state, read_token)
             }
             &Rule::UntilAny(ref u) => {
@@ -139,7 +139,7 @@ impl Rule {
                 };
             }
             &mut Rule::Whitespace(_) => {}
-            &mut Rule::Token(_) => {}
+            &mut Rule::Tag(_) => {}
             &mut Rule::UntilAny(_) => {}
             &mut Rule::UntilAnyOrWhitespace(_) => {}
             &mut Rule::Text(_) => {}

@@ -11,7 +11,7 @@ use meta_rules::{
     SeparateBy,
     Sequence,
     Text,
-    Token,
+    Tag,
     UntilAny,
     UntilAnyOrWhitespace,
     Whitespace,
@@ -33,7 +33,7 @@ pub fn rules() -> Syntax {
             Rule::Sequence(Sequence {
                 debug_id: 2,
                 args: vec![
-                    Rule::Token(Token {
+                    Rule::Tag(Tag {
                         debug_id: 3,
                         text: Arc::new("/*".into()),
                         not: false,
@@ -46,7 +46,7 @@ pub fn rules() -> Syntax {
                         optional: true,
                         property: None,
                     }),
-                    Rule::Token(Token {
+                    Rule::Tag(Tag {
                         debug_id: 5,
                         text: Arc::new("*/".into()),
                         not: false,
@@ -58,7 +58,7 @@ pub fn rules() -> Syntax {
             Rule::Sequence(Sequence {
                 debug_id: 6,
                 args: vec![
-                    Rule::Token(Token {
+                    Rule::Tag(Tag {
                         debug_id: 7,
                         text: Arc::new("//".into()),
                         not: false,
@@ -80,7 +80,7 @@ pub fn rules() -> Syntax {
     let string_rule = Rule::Sequence(Sequence {
         debug_id: 1001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 1002,
                 text: Arc::new("_".into()),
                 not: false,
@@ -93,7 +93,7 @@ pub fn rules() -> Syntax {
                 optional: false,
                 property: Some(Arc::new("name".into())),
             }),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 1004,
                 text: Arc::new(":".into()),
                 not: false,
@@ -125,14 +125,14 @@ pub fn rules() -> Syntax {
                 debug_id: 2003,
                 optional: false,
             }),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 2004,
                 not: true,
                 inverted: false,
                 text: Arc::new("_".into()),
                 property: None,
             }),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 2005,
                 not: true,
                 inverted: false,
@@ -149,7 +149,7 @@ pub fn rules() -> Syntax {
                 debug_id: 2007,
                 optional: true,
             }),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 2008,
                 not: false,
                 inverted: false,
@@ -181,7 +181,7 @@ pub fn rules() -> Syntax {
             Rule::Sequence(Sequence {
                 debug_id: 3003,
                 args: vec![
-                    Rule::Token(Token {
+                    Rule::Tag(Tag {
                         debug_id: 3004,
                         text: Arc::new("_".into()),
                         not: false,
@@ -211,7 +211,7 @@ pub fn rules() -> Syntax {
             Rule::Sequence(Sequence {
                 debug_id: 4003,
                 args: vec![
-                    Rule::Token(Token {
+                    Rule::Tag(Tag {
                         debug_id: 4004,
                         text: Arc::new("_".into()),
                         not: false,
@@ -233,14 +233,14 @@ pub fn rules() -> Syntax {
     let opt_rule = Rule::Select(Select {
         debug_id: 5001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 5002,
                 text: Arc::new("?".into()),
                 not: false,
                 inverted: false,
                 property: Some(opt.clone()),
             }),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 5003,
                 text: Arc::new("!".into()),
                 not: false,
@@ -254,7 +254,7 @@ pub fn rules() -> Syntax {
     let number_rule = Rule::Sequence(Sequence {
         debug_id: 6001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 6002,
                 text: Arc::new(".$".into()),
                 not: false,
@@ -263,7 +263,7 @@ pub fn rules() -> Syntax {
             }),
             Rule::Optional(Box::new(Optional {
                 debug_id: 6003,
-                rule: Rule::Token(Token {
+                rule: Rule::Tag(Tag {
                     debug_id: 6004,
                     text: Arc::new("_".into()),
                     not: false,
@@ -276,7 +276,7 @@ pub fn rules() -> Syntax {
                 rule: Rule::Sequence(Sequence {
                     debug_id: 6005,
                     args: vec![
-                        Rule::Token(Token {
+                        Rule::Tag(Tag {
                             debug_id: 6006,
                             text: Arc::new(":".into()),
                             not: false,
@@ -299,7 +299,7 @@ pub fn rules() -> Syntax {
     let text_rule = Rule::Sequence(Sequence {
         debug_id: 7001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 7002,
                 text: Arc::new(".t".into()),
                 not: false,
@@ -309,14 +309,14 @@ pub fn rules() -> Syntax {
             Rule::Select(Select {
                 debug_id: 7003,
                 args: vec![
-                    Rule::Token(Token {
+                    Rule::Tag(Tag {
                         debug_id: 7004,
                         text: Arc::new("?".into()),
                         not: false,
                         inverted: false,
                         property: Some(Arc::new("allow_empty".into())),
                     }),
-                    Rule::Token(Token {
+                    Rule::Tag(Tag {
                         debug_id: 7005,
                         text: Arc::new("!".into()),
                         not: false,
@@ -330,7 +330,7 @@ pub fn rules() -> Syntax {
                 rule: Rule::Sequence(Sequence {
                     debug_id: 7007,
                     args: vec![
-                        Rule::Token(Token {
+                        Rule::Tag(Tag {
                             debug_id: 7008,
                             text: Arc::new(":".into()),
                             not: false,
@@ -353,14 +353,14 @@ pub fn rules() -> Syntax {
     let reference_rule = Rule::Sequence(Sequence {
         debug_id: 8001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 8002,
                 text: Arc::new("_".into()),
                 not: true,
                 inverted: false,
                 property: None,
             }),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 8003,
                 text: Arc::new(".".into()),
                 not: true,
@@ -378,7 +378,7 @@ pub fn rules() -> Syntax {
                 rule: Rule::Sequence(Sequence {
                     debug_id: 8006,
                     args: vec![
-                        Rule::Token(Token {
+                        Rule::Tag(Tag {
                             debug_id: 8007,
                             text: Arc::new(":".into()),
                             not: false,
@@ -401,7 +401,7 @@ pub fn rules() -> Syntax {
     let sequence_rule = Rule::Sequence(Sequence {
         debug_id: 9001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 9002,
                 text: Arc::new("[".into()),
                 not: false,
@@ -427,7 +427,7 @@ pub fn rules() -> Syntax {
                     property: Some(Arc::new("rule".into())),
                 })
             })),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 9007,
                 text: Arc::new("]".into()),
                 not: false,
@@ -441,7 +441,7 @@ pub fn rules() -> Syntax {
     let select_rule = Rule::Sequence(Sequence {
         debug_id: 10001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 10002,
                 text: Arc::new("{".into()),
                 not: false,
@@ -467,7 +467,7 @@ pub fn rules() -> Syntax {
                     property: Some(Arc::new("rule".into())),
                 })
             })),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 10007,
                 text: Arc::new("}".into()),
                 not: false,
@@ -482,7 +482,7 @@ pub fn rules() -> Syntax {
     let separated_by_rule = Rule::Sequence(Sequence {
         debug_id: 11001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 11002,
                 text: Arc::new(".s".into()),
                 not: false,
@@ -497,7 +497,7 @@ pub fn rules() -> Syntax {
             }),
             Rule::Optional(Box::new(Optional {
                 debug_id: 11004,
-                rule: Rule::Token(Token {
+                rule: Rule::Tag(Tag {
                     debug_id: 11005,
                     text: Arc::new(".".into()),
                     not: false,
@@ -505,7 +505,7 @@ pub fn rules() -> Syntax {
                     property: Some(Arc::new("allow_trail".into())),
                 })
             })),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 11006,
                 text: Arc::new("(".into()),
                 not: false,
@@ -536,7 +536,7 @@ pub fn rules() -> Syntax {
                 debug_id: 11011,
                 optional: true,
             }),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 11012,
                 text: Arc::new(")".into()),
                 not: false,
@@ -546,13 +546,13 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 12 token = [?"!":"not" set:"text" ?[":" ?"!":_inv set:_prop]]
-    let token_rule = Rule::Sequence(Sequence {
+    // 12 tag = [?"!":"not" set:"text" ?[":" ?"!":_inv set:_prop]]
+    let tag_rule = Rule::Sequence(Sequence {
         debug_id: 12001,
         args: vec![
             Rule::Optional(Box::new(Optional {
                 debug_id: 12002,
-                rule: Rule::Token(Token {
+                rule: Rule::Tag(Tag {
                     debug_id: 12003,
                     text: Arc::new("!".into()),
                     not: false,
@@ -571,7 +571,7 @@ pub fn rules() -> Syntax {
                 rule: Rule::Sequence(Sequence {
                     debug_id: 12006,
                     args: vec![
-                        Rule::Token(Token {
+                        Rule::Tag(Tag {
                             debug_id: 12007,
                             text: Arc::new(":".into()),
                             not: false,
@@ -580,7 +580,7 @@ pub fn rules() -> Syntax {
                         }),
                         Rule::Optional(Box::new(Optional {
                             debug_id: 12008,
-                            rule: Rule::Token(Token {
+                            rule: Rule::Tag(Tag {
                                 debug_id: 12009,
                                 text: Arc::new("!".into()),
                                 not: false,
@@ -604,7 +604,7 @@ pub fn rules() -> Syntax {
     let optional_rule = Rule::Sequence(Sequence {
         debug_id: 13001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 13002,
                 text: Arc::new("?".into()),
                 not: false,
@@ -624,7 +624,7 @@ pub fn rules() -> Syntax {
     let whitespace_rule = Rule::Sequence(Sequence {
         debug_id: 14002,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 14003,
                 text: Arc::new(".w".into()),
                 not: false,
@@ -644,7 +644,7 @@ pub fn rules() -> Syntax {
     let until_any_or_whitespace_rule = Rule::Sequence(Sequence {
         debug_id: 15001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 15002,
                 text: Arc::new("..".into()),
                 not: false,
@@ -668,7 +668,7 @@ pub fn rules() -> Syntax {
                 rule: Rule::Sequence(Sequence {
                     debug_id: 15006,
                     args: vec![
-                        Rule::Token(Token {
+                        Rule::Tag(Tag {
                             debug_id: 15007,
                             text: Arc::new(":".into()),
                             not: false,
@@ -691,7 +691,7 @@ pub fn rules() -> Syntax {
     let until_any_rule = Rule::Sequence(Sequence {
         debug_id: 16001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 16002,
                 text: Arc::new("...".into()),
                 not: false,
@@ -715,7 +715,7 @@ pub fn rules() -> Syntax {
                 rule: Rule::Sequence(Sequence {
                     debug_id: 16006,
                     args: vec![
-                        Rule::Token(Token {
+                        Rule::Tag(Tag {
                             debug_id: 16007,
                             text: Arc::new(":".into()),
                             not: false,
@@ -738,7 +738,7 @@ pub fn rules() -> Syntax {
     let repeat_rule = Rule::Sequence(Sequence {
         debug_id: 17001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 17002,
                 text: Arc::new(".r".into()),
                 not: false,
@@ -751,7 +751,7 @@ pub fn rules() -> Syntax {
                 index: None,
                 property: None,
             }),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 17004,
                 text: Arc::new("(".into()),
                 not: false,
@@ -764,7 +764,7 @@ pub fn rules() -> Syntax {
                 index: None,
                 property: Some(Arc::new("rule".into())),
             }),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 17006,
                 text: Arc::new(")".into()),
                 not: false,
@@ -778,7 +778,7 @@ pub fn rules() -> Syntax {
     let lines_rule = Rule::Sequence(Sequence {
         debug_id: 18001,
         args: vec![
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 18002,
                 text: Arc::new(".l(".into()),
                 not: false,
@@ -799,7 +799,7 @@ pub fn rules() -> Syntax {
                 debug_id: 18005,
                 optional: true,
             }),
-            Rule::Token(Token {
+            Rule::Tag(Tag {
                 debug_id: 18006,
                 text: Arc::new(")".into()),
                 not: false,
@@ -822,7 +822,7 @@ pub fn rules() -> Syntax {
       sequence:"sequence"
       select:"select"
       separated_by:"separated_by"
-      token:"token"
+      tag:"tag"
       optional:"optional"
     }
     */
@@ -897,9 +897,9 @@ pub fn rules() -> Syntax {
             }),
             Rule::Node(Node {
                 debug_id: 19013,
-                name: Arc::new("token".into()),
+                name: Arc::new("tag".into()),
                 index: None,
-                property: Some(Arc::new("token".into())),
+                property: Some(Arc::new("tag".into())),
             }),
             Rule::Node(Node {
                 debug_id: 19013,
@@ -1001,7 +1001,7 @@ pub fn rules() -> Syntax {
     syntax.push(Arc::new("sequence".into()), sequence_rule);
     syntax.push(Arc::new("select".into()), select_rule);
     syntax.push(Arc::new("separated_by".into()), separated_by_rule);
-    syntax.push(Arc::new("token".into()), token_rule);
+    syntax.push(Arc::new("tag".into()), tag_rule);
     syntax.push(Arc::new("optional".into()), optional_rule);
     syntax.push(Arc::new("whitespace".into()), whitespace_rule);
     syntax.push(Arc::new("until_any_or_whitespace".into()), until_any_or_whitespace_rule);

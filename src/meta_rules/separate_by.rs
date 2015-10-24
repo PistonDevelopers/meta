@@ -85,7 +85,7 @@ impl SeparateBy {
 mod tests {
     use all::*;
     use all::tokenizer::*;
-    use meta_rules::{ SeparateBy, Token, UntilAnyOrWhitespace };
+    use meta_rules::{ SeparateBy, Tag, UntilAnyOrWhitespace };
     use std::sync::Arc;
     use range::Range;
     use read_token::ReadToken;
@@ -104,7 +104,7 @@ mod tests {
                 optional: false,
                 property: None,
             }),
-            by: Rule::Token(Token {
+            by: Rule::Tag(Tag {
                 debug_id: 2,
                 text: Arc::new(",".into()),
                 not: false,
@@ -134,7 +134,7 @@ mod tests {
                 optional: false,
                 property: None,
             }),
-            by: Rule::Token(Token {
+            by: Rule::Tag(Tag {
                 debug_id: 2,
                 text: Arc::new(",".into()),
                 not: false,
@@ -165,7 +165,7 @@ mod tests {
                 optional: false,
                 property: Some(arg.clone()),
             }),
-            by: Rule::Token(Token {
+            by: Rule::Tag(Tag {
                 debug_id: 2,
                 text: Arc::new(",".into()),
                 not: false,
@@ -196,7 +196,7 @@ mod tests {
                 optional: false,
                 property: Some(arg.clone()),
             }),
-            by: Rule::Token(Token {
+            by: Rule::Tag(Tag {
                 debug_id: 2,
                 text: Arc::new(",".into()),
                 not: false,
@@ -234,7 +234,7 @@ mod tests {
                 optional: false,
                 property: Some(arg.clone()),
             }),
-            by: Rule::Token(Token {
+            by: Rule::Tag(Tag {
                 debug_id: 2,
                 text: Arc::new(",".into()),
                 not: false,
@@ -248,7 +248,7 @@ mod tests {
             &ReadToken::new(&chars[4..], 4), &[]);
         assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3),
             Some(Range::new(9, 0).wrap(
-                ParseError::ExpectedToken(Arc::new(",".into()), 2))))));
+                ParseError::ExpectedTag(Arc::new(",".into()), 2))))));
         assert_eq!(tokens.len(), 3);
         assert_eq!(&tokens[0].data,
             &MetaData::String(arg.clone(), Arc::new("a".into())));
@@ -275,7 +275,7 @@ mod tests {
                     optional: false,
                     property: Some(arg.clone()),
                 }),
-                by: Rule::Token(Token {
+                by: Rule::Tag(Tag {
                     debug_id: 3,
                     text: Arc::new(",".into()),
                     not: false,
@@ -285,7 +285,7 @@ mod tests {
                 optional: false,
                 allow_trail: true,
             })),
-            by: Rule::Token(Token {
+            by: Rule::Tag(Tag {
                 debug_id: 4,
                 text: Arc::new(";".into()),
                 not: false,

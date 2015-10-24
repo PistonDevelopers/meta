@@ -64,7 +64,7 @@ impl Repeat {
 mod tests {
     use all::*;
     use all::tokenizer::*;
-    use meta_rules::{ Repeat, Token };
+    use meta_rules::{ Repeat, Tag };
     use std::sync::Arc;
     use range::Range;
     use read_token::ReadToken;
@@ -79,7 +79,7 @@ mod tests {
         let rule = Repeat {
             debug_id: 0,
             optional: false,
-            rule: Rule::Token(Token {
+            rule: Rule::Tag(Tag {
                 debug_id: 1,
                 text: token.clone(),
                 not: false,
@@ -90,7 +90,7 @@ mod tests {
         let res = rule.parse(&mut tokens, &s,
             &ReadToken::new(&chars, 0), &[]);
         assert_eq!(res, Err(Range::new(0, 0).wrap(
-            ParseError::ExpectedToken(token.clone(), 1))))
+            ParseError::ExpectedTag(token.clone(), 1))))
     }
 
     #[test]
@@ -103,7 +103,7 @@ mod tests {
         let rule = Repeat {
             debug_id: 0,
             optional: false,
-            rule: Rule::Token(Token {
+            rule: Rule::Tag(Tag {
                 debug_id: 1,
                 text: token.clone(),
                 not: false,
@@ -114,6 +114,7 @@ mod tests {
         let res = rule.parse(&mut tokens, &s,
             &ReadToken::new(&chars, 0), &[]);
         assert_eq!(res, Ok((Range::new(0, 9), TokenizerState(0),
-            Some(Range::new(9, 0).wrap(ParseError::ExpectedToken(token.clone(), 1))))))
+            Some(Range::new(9, 0).wrap(
+                ParseError::ExpectedTag(token.clone(), 1))))))
     }
 }

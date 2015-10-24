@@ -12,24 +12,24 @@ use {
 };
 use tokenizer::{ read_data, TokenizerState };
 
-/// Stores information about token.
+/// Stores information about tag.
 #[derive(Clone, Debug, PartialEq)]
-pub struct Token {
+pub struct Tag {
     /// The text to match against.
     pub text: Arc<String>,
     /// Whether to fail when matching against text.
     pub not: bool,
     /// Whether to set property to true or false (inverted).
     pub inverted: bool,
-    /// Which property to set if token matches.
+    /// Which property to set if tag matches.
     pub property: Option<Arc<String>>,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
 }
 
-impl Token {
-    /// Parses token.
-    /// If the token is linked to a property,
+impl Tag {
+    /// Parses tag.
+    /// If the tag is linked to a property,
     /// the property will be set.
     /// If the meta reader fails setting the property the error is handled.
     /// If the token is not linked to any property,
@@ -43,7 +43,7 @@ impl Token {
         if let Some(range) = read_token.tag(&self.text) {
             if self.not {
                 Err(range.wrap(
-                    ParseError::DidNotExpectToken(self.text.clone(),
+                    ParseError::DidNotExpectTag(self.text.clone(),
                     self.debug_id)))
             } else {
                 match &self.property {
@@ -78,7 +78,7 @@ impl Token {
                 }
             } else {
                 Err(read_token.start().wrap(
-                    ParseError::ExpectedToken(self.text.clone(),
+                    ParseError::ExpectedTag(self.text.clone(),
                     self.debug_id)))
             }
         }
@@ -89,7 +89,7 @@ impl Token {
 mod tests {
     use all::*;
     use all::tokenizer::*;
-    use meta_rules::Token;
+    use meta_rules::Tag;
     use std::sync::Arc;
     use range::Range;
     use read_token::ReadToken;
@@ -98,7 +98,7 @@ mod tests {
     fn expected_token() {
         let text = ")";
         let chars: Vec<char> = text.chars().collect();
-        let start_parenthesis = Token {
+        let start_parenthesis = Tag {
             debug_id: 0,
             text: Arc::new("(".into()),
             not: false,
@@ -110,14 +110,14 @@ mod tests {
         let res = start_parenthesis.parse(&mut tokens, &s,
             &ReadToken::new(&chars, 0));
         assert_eq!(res, Err(Range::new(0, 0).wrap(
-            ParseError::ExpectedToken(Arc::new("(".into()), 0))));
+            ParseError::ExpectedTag(Arc::new("(".into()), 0))));
     }
 
     #[test]
     fn did_not_expect_token() {
         let text = ")";
         let chars: Vec<char> = text.chars().collect();
-        let start_parenthesis = Token {
+        let start_parenthesis = Tag {
             debug_id: 0,
             text: Arc::new(")".into()),
             not: true,
@@ -129,14 +129,14 @@ mod tests {
         let res = start_parenthesis.parse(&mut tokens, &s,
             &ReadToken::new(&chars, 0));
         assert_eq!(res, Err(Range::new(0, 1).wrap(
-            ParseError::DidNotExpectToken(Arc::new(")".into()), 0))));
+            ParseError::DidNotExpectTag(Arc::new(")".into()), 0))));
     }
 
     #[test]
     fn successful() {
         let text = "fn foo()";
         let chars: Vec<char> = text.chars().collect();
-        let fn_ = Token {
+        let fn_ = Tag {
             debug_id: 0,
             text: Arc::new("fn ".into()),
             not: false,
@@ -152,7 +152,7 @@ mod tests {
         // Set bool property.
         let mut tokens = vec![];
         let has_arguments: Arc<String> = Arc::new("has_arguments".into());
-        let start_parenthesis = Token {
+        let start_parenthesis = Tag {
             debug_id: 0,
             text: Arc::new("(".into()),
             not: false,
@@ -169,7 +169,7 @@ mod tests {
         // Set inverted bool property.
         let mut tokens = vec![];
         let has_arguments: Arc<String> = Arc::new("has_no_arguments".into());
-        let start_parenthesis = Token {
+        let start_parenthesis = Tag {
             debug_id: 0,
             text: Arc::new("(".into()),
             not: false,
