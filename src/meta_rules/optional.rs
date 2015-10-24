@@ -1,4 +1,5 @@
 use range::Range;
+use read_token::ReadToken;
 
 use super::{
     ret_err,
@@ -28,27 +29,26 @@ impl Optional {
         &self,
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        mut chars: &[char],
-        mut offset: usize,
+        read_token: &ReadToken,
         refs: &[Rule]
     ) -> (Range, TokenizerState, Option<Range<ParseError>>) {
-        let start_offset = offset;
+        let start = read_token;
+        let mut read_token = *start;
         let mut success_state = state.clone();
         let mut opt_error = None;
         success_state = match self.rule.parse(
-            tokens, &success_state, chars, offset, refs
+            tokens, &success_state, &read_token, refs
         ) {
             Ok((range, state, err)) => {
-                update(range, err, &mut chars, &mut offset, &mut opt_error);
+                update(range, err, &mut read_token, &mut opt_error);
                 state
             }
             Err(err) => {
-                return (Range::new(start_offset, 0), state.clone(),
+                return (start.start(), state.clone(),
                     Some(ret_err(err, opt_error)))
             }
         };
-        (Range::new(start_offset, offset - start_offset), success_state,
-            opt_error)
+        (read_token.subtract(start), success_state, opt_error)
     }
 }
 
@@ -58,6 +58,7 @@ mod tests {
     use all::tokenizer::*;
     use meta_rules::{ Number, Optional, Sequence, Text };
     use range::Range;
+    use read_token::ReadToken;
     use std::sync::Arc;
 
     #[test]
@@ -86,7 +87,8 @@ mod tests {
                 ]
             }),
         };
-        let res = optional.parse(&mut tokens, &s, &chars, 0, &[]);
+        let res = optional.parse(&mut tokens, &s,
+            &ReadToken::new(&chars, 0), &[]);
         assert_eq!(res, (Range::new(0, 0), TokenizerState(0),
             Some(Range::new(0, 0).wrap(ParseError::ExpectedText(2)))));
         assert_eq!(tokens.len(), 0);

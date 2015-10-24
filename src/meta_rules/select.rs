@@ -1,4 +1,5 @@
 use range::Range;
+use read_token::ReadToken;
 
 use super::{
     err_update,
@@ -27,16 +28,15 @@ impl Select {
         &self,
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        chars: &[char],
-        offset: usize,
+        read_token: &ReadToken,
         refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         let mut opt_error: Option<Range<ParseError>> = None;
         for sub_rule in &self.args {
-            match sub_rule.parse(tokens, state, chars, offset, refs) {
+            match sub_rule.parse(tokens, state, read_token, refs) {
                 Ok((range, state, err)) => {
                     err_update(err, &mut opt_error);
-                    return Ok((Range::new(offset, range.next_offset() - offset),
+                    return Ok((read_token.peek(range.length),
                         state, opt_error));
                 }
                 Err(err) => {
@@ -45,7 +45,8 @@ impl Select {
             }
         }
         match opt_error {
-            None => Err(Range::new(offset, 0).wrap(ParseError::InvalidRule(
+            None => Err(read_token.start().wrap(
+                ParseError::InvalidRule(
                 "`Select` requires at least one sub rule", self.debug_id))),
             Some(err) => Err(err),
         }

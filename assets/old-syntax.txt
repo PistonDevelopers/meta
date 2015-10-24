@@ -34,7 +34,7 @@ _seps: "[]{}():.!?\""
   sequence:"sequence"
   select:"select"
   separated_by:"separated_by"
-  token:"token"
+  token:"tag"
   optional:"optional"
 }
 20 document = [.l(string:"string") .l(node:"node") .w?]

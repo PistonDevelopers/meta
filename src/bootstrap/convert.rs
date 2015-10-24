@@ -13,7 +13,7 @@ use meta_rules::{
     Select,
     SeparateBy,
     Text,
-    Token,
+    Tag,
     UntilAny,
     UntilAnyOrWhitespace,
     Whitespace,
@@ -307,7 +307,7 @@ pub fn convert(
         }
     }
 
-    fn read_token(
+    fn read_tag(
         debug_id: &mut usize,
         mut data: &[Range<MetaData>],
         mut offset: usize,
@@ -315,7 +315,7 @@ pub fn convert(
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start_offset = offset;
-        let node = "token";
+        let node = "tag";
         let range = try!(start_node(node, data, offset));
         update(range, &mut data, &mut offset);
 
@@ -351,7 +351,7 @@ pub fn convert(
             Some(text) => {
                 *debug_id += 1;
                 Ok((Range::new(start_offset, offset - start_offset),
-                Rule::Token(Token {
+                Rule::Tag(Tag {
                     debug_id: *debug_id,
                     text: text,
                     not: not,
@@ -725,7 +725,7 @@ pub fn convert(
         ) {
             update(range, &mut data, &mut offset);
             rule = Some(val);
-        } else if let Ok((range, val)) = read_token(
+        } else if let Ok((range, val)) = read_tag(
             debug_id, data, offset, strings, ignored
         ) {
             update(range, &mut data, &mut offset);

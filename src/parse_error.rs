@@ -25,9 +25,9 @@ pub enum ParseError {
     /// Invalid string format.
     ParseStringError(ParseStringError, DebugId),
     /// Expected token.
-    ExpectedToken(Arc<String>, DebugId),
+    ExpectedTag(Arc<String>, DebugId),
     /// Did not expected token.
-    DidNotExpectToken(Arc<String>, DebugId),
+    DidNotExpectTag(Arc<String>, DebugId),
     /// An invalid rule.
     InvalidRule(&'static str, DebugId),
     /// No rules are specified.
@@ -55,9 +55,9 @@ impl Display for ParseError {
             &ParseError::ParseNumberError(ref err, debug_id) =>
                 try!(write!(fmt, "#{}, Invalid number format: {}",
                     debug_id, err)),
-            &ParseError::ExpectedToken(ref token, debug_id) =>
+            &ParseError::ExpectedTag(ref token, debug_id) =>
                 try!(write!(fmt, "#{}, Expected: `{}`", debug_id, token)),
-            &ParseError::DidNotExpectToken(ref token, debug_id) =>
+            &ParseError::DidNotExpectTag(ref token, debug_id) =>
                 try!(write!(fmt, "#{}, Did not expect: `{}`", debug_id, token)),
             &ParseError::ExpectedText(debug_id) =>
                 try!(write!(fmt, "#{}, Expected text", debug_id)),

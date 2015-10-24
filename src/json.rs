@@ -41,7 +41,7 @@ pub fn write<W>(w: &mut W, data: &[Range<MetaData>]) -> Result<(), io::Error>
             try!(writeln!(w, ""));
         }
         first = false;
-        for _ in (0 .. indent_offset + indent) {
+        for _ in 0 .. indent_offset + indent {
             try!(write!(w, " "));
         }
         match *d {

@@ -10,12 +10,13 @@ pub use self::select::Select;
 pub use self::separate_by::SeparateBy;
 pub use self::sequence::Sequence;
 pub use self::text::Text;
-pub use self::token::Token;
+pub use self::tag::Tag;
 pub use self::until_any::UntilAny;
 pub use self::until_any_or_whitespace::UntilAnyOrWhitespace;
 pub use self::whitespace::Whitespace;
 
 use range::Range;
+use read_token::ReadToken;
 use {
     MetaData,
     ParseError,
@@ -33,7 +34,7 @@ mod select;
 mod separate_by;
 mod sequence;
 mod text;
-mod token;
+mod tag;
 mod until_any;
 mod until_any_or_whitespace;
 mod whitespace;
@@ -51,7 +52,8 @@ pub fn parse(
         0 => { return Err(Range::empty(0).wrap(ParseError::NoRules)); }
         x => x
     };
-    let res = rules.rules[n - 1].parse(tokens, &s, &chars, 0, &rules.rules);
+    let read_token = ReadToken::new(&chars, 0);
+    let res = rules.rules[n - 1].parse(tokens, &s, &read_token, &rules.rules);
     match res {
         Ok((range, s, opt_error)) => {
             // Report error if did not reach the end of text.
@@ -89,13 +91,10 @@ pub type ParseResult<S> = Result<(Range, S, Option<Range<ParseError>>),
 fn update<'a>(
     range: Range,
     err: Option<Range<ParseError>>,
-    chars: &mut &'a [char],
-    offset: &mut usize,
+    read_token: &mut ReadToken<'a>,
     opt_error: &mut Option<Range<ParseError>>
 ) {
-    let next_offset = range.next_offset();
-    *chars = &chars[next_offset - *offset..];
-    *offset = next_offset;
+    *read_token = read_token.consume(range.length);
     err_update(err, opt_error);
 }
 

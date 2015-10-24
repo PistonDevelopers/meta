@@ -60,7 +60,7 @@ impl<'a> ParseErrorHandler<'a> {
         let (range, error) = range_err.decouple();
 
         try!(writeln!(w, "Error {}", error));
-        if let &ParseError::ExpectedToken(_, _) = &error {
+        if let &ParseError::ExpectedTag(_, _) = &error {
             // Improves the error report when forgetting a token at end of
             // a line, for example `;` after an expression.
             if let Some(first_line) = first_line(self, range) {

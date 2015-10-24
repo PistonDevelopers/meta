@@ -1,4 +1,5 @@
 use range::Range;
+use read_token::ReadToken;
 use std::sync::Arc;
 
 use super::{
@@ -33,15 +34,15 @@ impl Node {
         &self,
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        mut chars: &[char],
-        start_offset: usize,
+        read_token: &ReadToken,
         refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
-        let mut offset = start_offset;
+        let start = read_token;
+        let mut read_token = *start;
         let index = match self.index {
             None => {
                 return Err(
-                    Range::empty(offset).wrap(
+                    read_token.start().wrap(
                         ParseError::InvalidRule(
                             "Node rule is not updated to reference",
                             self.debug_id
@@ -53,7 +54,7 @@ impl Node {
         let mut state = if let Some(ref prop) = self.property {
             read_data(
                 tokens,
-                Range::empty(offset).wrap(MetaData::StartNode(prop.clone())),
+                read_token.start().wrap(MetaData::StartNode(prop.clone())),
                 state
             )
         } else {
@@ -61,15 +62,15 @@ impl Node {
         };
         let mut opt_error = None;
         state = match refs[index].parse(
-            tokens, &state, chars, offset, refs
+            tokens, &state, &read_token, refs
         ) {
             Err(err) => { return Err(ret_err(err, opt_error)); }
             Ok((range, state, err)) => {
-                update(range, err, &mut chars, &mut offset, &mut opt_error);
+                update(range, err, &mut read_token, &mut opt_error);
                 state
             }
         };
-        let range = Range::new(start_offset, offset - start_offset);
+        let range = read_token.subtract(start);
         Ok((
             range,
             if let Some(ref prop) = self.property {

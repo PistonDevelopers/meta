@@ -1,9 +1,9 @@
 use range::Range;
+use read_token::ReadToken;
 
 use super::{
     ret_err,
     err_update,
-    update,
     ParseResult,
 };
 use {
@@ -31,58 +31,33 @@ impl Lines {
         &self,
         tokenizer: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        mut chars: &[char],
-        start_offset: usize,
+        read_token: &ReadToken,
         refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
-        let mut offset = start_offset;
         let mut state = state.clone();
         let mut opt_error = None;
-        let mut new_lines = true;
-        loop {
-            let len = chars.iter()
-                .take_while(|&c| *c != '\n' && c.is_whitespace())
-                .count();
-            if len == chars.len() {
-                offset += len;
-                break;
-            } else if chars[len] == '\n' {
-                chars = &chars[len + 1..];
-                offset += len + 1;
-                new_lines |= true;
-            } else {
-                if new_lines {
-                    state = match self.rule.parse(
-                        tokenizer, &state, chars, offset, refs) {
-                        Err(err) => {
-                            err_update(Some(err), &mut opt_error);
-                            break;
-                        }
-                        Ok((range, state, err)) => {
-                            // Find whether a new line occured at the end.
-                            // If it did, we do not require a new line before
-                            // reading the rule again.
-                            let end = range.next_offset() - offset;
-                            let last_new_line = chars[..end].iter()
-                                .rev()
-                                .take_while(|&c| *c != '\n' && c.is_whitespace())
-                                .count();
-                            new_lines =
-                                if end < last_new_line + 1
-                                || chars[end - last_new_line - 1] != '\n' { false }
-                                else { true };
-                            update(range, err, &mut chars, &mut offset, &mut opt_error);
-                            state
-                        }
-                    };
-                } else {
-                    let err = Range::new(offset, 0).wrap(
-                        ParseError::ExpectedNewLine(self.debug_id));
-                    return Err(ret_err(err, opt_error));
+        match read_token.lines(|read_token| {
+            match self.rule.parse(tokenizer, &state, read_token, refs) {
+                Err(err) => {
+                    err_update(Some(err), &mut opt_error);
+                    None
+                }
+                Ok((range, new_state, err)) => {
+                    err_update(err, &mut opt_error);
+                    state = new_state;
+                    Some(range)
                 }
             }
+        }) {
+            Err(range) => {
+                let err = range.wrap(
+                    ParseError::ExpectedNewLine(self.debug_id));
+                Err(ret_err(err, opt_error))
+            }
+            Ok(range) => {
+                Ok((range, state, opt_error))
+            }
         }
-        Ok((Range::new(start_offset, offset - start_offset), state, opt_error))
     }
 }
 
@@ -92,6 +67,7 @@ mod tests {
     use all::tokenizer::*;
     use meta_rules::{ Lines, Number, Sequence, Text, Whitespace };
     use range::Range;
+    use read_token::ReadToken;
     use std::sync::Arc;
 
     #[test]
@@ -117,7 +93,8 @@ mod tests {
                 allow_underscore: false,
             }),
         };
-        let res = lines.parse(&mut tokenizer, &s, &chars, 0, &[]);
+        let res = lines.parse(&mut tokenizer, &s,
+            &ReadToken::new(&chars, 0), &[]);
         assert_eq!(res, Ok((Range::new(0, 10), s,
             Some(Range::new(10, 0).wrap(ParseError::ExpectedNumber(1))))));
     }
@@ -153,7 +130,8 @@ mod tests {
                 ]
             }),
         };
-        let res = lines.parse(&mut tokenizer, &s, &chars, 0, &[]);
+        let res = lines.parse(&mut tokenizer, &s,
+            &ReadToken::new(&chars, 0), &[]);
         assert_eq!(res, Err(Range::new(8, 0).wrap(
             ParseError::ExpectedNewLine(0))));
     }
@@ -181,7 +159,8 @@ mod tests {
                 allow_underscore: false,
             }),
         };
-        let res = lines.parse(&mut tokenizer, &s, &chars, 0, &[]);
+        let res = lines.parse(&mut tokenizer, &s,
+            &ReadToken::new(&chars, 0), &[]);
         assert_eq!(res, Ok((Range::new(0, 13), TokenizerState(4), None)));
     }
 
