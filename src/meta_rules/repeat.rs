@@ -1,4 +1,5 @@
 use range::Range;
+use read_token::ReadToken;
 
 use super::{
     ret_err,
@@ -30,16 +31,16 @@ impl Repeat {
         &self,
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        mut chars: &[char],
-        start_offset: usize,
+        read_token: &ReadToken,
         refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
-        let mut offset = start_offset;
+        let start = read_token;
+        let mut read_token = *start;
         let mut state = state.clone();
         let mut opt_error = None;
         let mut first = true;
         loop {
-            state = match self.rule.parse(tokens, &state, chars, offset, refs) {
+            state = match self.rule.parse(tokens, &state, &read_token, refs) {
                 Err(err) => {
                     if first && !self.optional {
                         return Err(ret_err(err, opt_error));
@@ -49,13 +50,13 @@ impl Repeat {
                     }
                 }
                 Ok((range, state, err)) => {
-                    update(range, err, &mut chars, &mut offset, &mut opt_error);
+                    update(range, err, &mut read_token, &mut opt_error);
                     state
                 }
             };
             first = false;
         }
-        Ok((Range::new(start_offset, offset - start_offset), state, opt_error))
+        Ok((read_token.subtract(start), state, opt_error))
     }
 }
 
@@ -66,6 +67,7 @@ mod tests {
     use meta_rules::{ Repeat, Token };
     use std::sync::Arc;
     use range::Range;
+    use read_token::ReadToken;
 
     #[test]
     fn fail() {
@@ -85,7 +87,8 @@ mod tests {
                 property: None,
             })
         };
-        let res = rule.parse(&mut tokens, &s, &chars, 0, &[]);
+        let res = rule.parse(&mut tokens, &s,
+            &ReadToken::new(&chars, 0), &[]);
         assert_eq!(res, Err(Range::new(0, 0).wrap(
             ParseError::ExpectedToken(token.clone(), 1))))
     }
@@ -108,7 +111,8 @@ mod tests {
                 property: None,
             })
         };
-        let res = rule.parse(&mut tokens, &s, &chars, 0, &[]);
+        let res = rule.parse(&mut tokens, &s,
+            &ReadToken::new(&chars, 0), &[]);
         assert_eq!(res, Ok((Range::new(0, 9), TokenizerState(0),
             Some(Range::new(9, 0).wrap(ParseError::ExpectedToken(token.clone(), 1))))))
     }

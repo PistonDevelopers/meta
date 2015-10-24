@@ -1,4 +1,4 @@
-use read_token;
+use read_token::ReadToken;
 use range::Range;
 use std::sync::Arc;
 
@@ -31,19 +31,14 @@ impl UntilAny {
         &self,
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        chars: &[char],
-        offset: usize
+        read_token: &ReadToken
     ) -> ParseResult<TokenizerState> {
-        let (range, _) = read_token::until_any(
-            &self.any_characters, chars, offset);
+        let (range, _) = read_token.until_any(&self.any_characters);
         if range.length == 0 && !self.optional {
             Err(range.wrap(ParseError::ExpectedSomething(self.debug_id)))
         } else {
             if let Some(ref property) = self.property {
-                let mut text = String::with_capacity(range.length);
-                for c in chars.iter().take(range.length) {
-                    text.push(*c);
-                }
+                let text = read_token.raw_string(range.length);
                 Ok((range, read_data(
                     tokens,
                     range.wrap(
@@ -63,6 +58,7 @@ mod tests {
     use all::tokenizer::*;
     use meta_rules::UntilAny;
     use range::Range;
+    use read_token::ReadToken;
     use std::sync::Arc;
 
     #[test]
@@ -77,7 +73,7 @@ mod tests {
             optional: false,
             property: None
         };
-        let res = name.parse(&mut tokens, &s, &chars[3..], 3);
+        let res = name.parse(&mut tokens, &s, &ReadToken::new(&chars[3..], 3));
         assert_eq!(res, Err(Range::new(3, 0).wrap(
             ParseError::ExpectedSomething(0))));
     }
@@ -95,7 +91,7 @@ mod tests {
             optional: false,
             property: Some(function_name.clone())
         };
-        let res = name.parse(&mut tokens, &s, &chars[3..], 3);
+        let res = name.parse(&mut tokens, &s, &ReadToken::new(&chars[3..], 3));
         assert_eq!(res, Ok((Range::new(3, 3), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].data,

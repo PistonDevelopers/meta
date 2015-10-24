@@ -1,5 +1,5 @@
 use range::Range;
-use read_token;
+use read_token::ReadToken;
 use std::sync::Arc;
 
 use super::{
@@ -38,10 +38,9 @@ impl Token {
         &self,
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        chars: &[char],
-        offset: usize
+        read_token: &ReadToken
     ) -> ParseResult<TokenizerState> {
-        if let Some(range) = read_token::token(&self.text, chars, offset) {
+        if let Some(range) = read_token.tag(&self.text) {
             if self.not {
                 Err(range.wrap(
                     ParseError::DidNotExpectToken(self.text.clone(),
@@ -65,7 +64,7 @@ impl Token {
             if self.not {
                 match &self.property {
                     &Some(ref name) => {
-                        let range = Range::new(offset, 0);
+                        let range = read_token.start();
                         Ok((range, read_data(
                             tokens,
                             range.wrap(
@@ -74,11 +73,11 @@ impl Token {
                         ), None))
                     }
                     _ => {
-                        Ok((Range::new(offset, 0), state.clone(), None))
+                        Ok((read_token.start(), state.clone(), None))
                     }
                 }
             } else {
-                Err(Range::new(offset, 0).wrap(
+                Err(read_token.start().wrap(
                     ParseError::ExpectedToken(self.text.clone(),
                     self.debug_id)))
             }
@@ -93,6 +92,7 @@ mod tests {
     use meta_rules::Token;
     use std::sync::Arc;
     use range::Range;
+    use read_token::ReadToken;
 
     #[test]
     fn expected_token() {
@@ -107,7 +107,8 @@ mod tests {
         };
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let res = start_parenthesis.parse(&mut tokens, &s, &chars, 0);
+        let res = start_parenthesis.parse(&mut tokens, &s,
+            &ReadToken::new(&chars, 0));
         assert_eq!(res, Err(Range::new(0, 0).wrap(
             ParseError::ExpectedToken(Arc::new("(".into()), 0))));
     }
@@ -125,7 +126,8 @@ mod tests {
         };
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let res = start_parenthesis.parse(&mut tokens, &s, &chars, 0);
+        let res = start_parenthesis.parse(&mut tokens, &s,
+            &ReadToken::new(&chars, 0));
         assert_eq!(res, Err(Range::new(0, 1).wrap(
             ParseError::DidNotExpectToken(Arc::new(")".into()), 0))));
     }
@@ -143,7 +145,7 @@ mod tests {
         };
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let res = fn_.parse(&mut tokens, &s, &chars, 0);
+        let res = fn_.parse(&mut tokens, &s, &ReadToken::new(&chars, 0));
         assert_eq!(res, Ok((Range::new(0, 3), s, None)));
         assert_eq!(tokens.len(), 0);
 
@@ -158,7 +160,8 @@ mod tests {
             property: Some(has_arguments.clone())
         };
         let s = TokenizerState::new();
-        let res = start_parenthesis.parse(&mut tokens, &s, &chars[6..], 6);
+        let res = start_parenthesis.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[6..], 6));
         assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].data, &MetaData::Bool(has_arguments.clone(), true));
@@ -174,7 +177,8 @@ mod tests {
             property: Some(has_arguments.clone())
         };
         let s = TokenizerState::new();
-        let res = start_parenthesis.parse(&mut tokens, &s, &chars[6..], 6);
+        let res = start_parenthesis.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[6..], 6));
         assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].data, &MetaData::Bool(has_arguments.clone(), false));

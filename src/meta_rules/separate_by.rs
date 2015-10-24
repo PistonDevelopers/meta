@@ -1,4 +1,5 @@
 use range::Range;
+use read_token::ReadToken;
 
 use super::{
     ret_err,
@@ -34,18 +35,16 @@ impl SeparateBy {
         &self,
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        mut chars: &[char],
-        start_offset: usize,
+        read_token: &ReadToken,
         refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
-        let mut offset = start_offset;
+        let start = read_token;
+        let mut read_token = *start;
         let mut state = state.clone();
         let mut first = true;
         let mut opt_error = None;
         loop {
-            state = match self.rule.parse(
-                tokens, &state, chars, offset, refs
-            ) {
+            state = match self.rule.parse(tokens, &state, &read_token, refs) {
                 Err(err) => {
                     match (first, self.optional, self.allow_trail) {
                           (true, false, _)
@@ -60,25 +59,25 @@ impl SeparateBy {
                     }
                 }
                 Ok((range, state, err)) => {
-                    update(range, err, &mut chars, &mut offset, &mut opt_error);
+                    update(range, err, &mut read_token, &mut opt_error);
                     state
                 }
             };
             state = match self.by.parse(
-                tokens, &state, chars, offset, refs
+                tokens, &state, &read_token, refs
             ) {
                 Err(err) => {
                     err_update(Some(err), &mut opt_error);
                     break;
                 }
                 Ok((range, state, err)) => {
-                    update(range, err, &mut chars, &mut offset, &mut opt_error);
+                    update(range, err, &mut read_token, &mut opt_error);
                     state
                 }
             };
             first = false;
         }
-        Ok((Range::new(start_offset, offset - start_offset), state, opt_error))
+        Ok((read_token.subtract(start), state, opt_error))
     }
 }
 
@@ -89,6 +88,7 @@ mod tests {
     use meta_rules::{ SeparateBy, Token, UntilAnyOrWhitespace };
     use std::sync::Arc;
     use range::Range;
+    use read_token::ReadToken;
 
     #[test]
     fn required() {
@@ -114,7 +114,8 @@ mod tests {
             optional: false,
             allow_trail: false,
         };
-        let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
+        let res = sep.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[4..], 4), &[]);
         assert_eq!(res, Err(Range::new(4, 0).wrap(
             ParseError::ExpectedSomething(1))));
     }
@@ -143,7 +144,8 @@ mod tests {
             optional: true,
             allow_trail: false,
         };
-        let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
+        let res = sep.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[4..], 4), &[]);
         assert_eq!(res, Ok((Range::new(4, 0), s,
             Some(Range::new(4, 0).wrap(ParseError::ExpectedSomething(1))))));
     }
@@ -173,7 +175,8 @@ mod tests {
             optional: true,
             allow_trail: false,
         };
-        let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
+        let res = sep.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[4..], 4), &[]);
         assert_eq!(res, Err(Range::new(10, 0).wrap(
             ParseError::ExpectedSomething(1))));
     }
@@ -203,7 +206,8 @@ mod tests {
             optional: true,
             allow_trail: true,
         };
-        let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
+        let res = sep.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[4..], 4), &[]);
         assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3),
             Some(Range::new(10, 0).wrap(ParseError::ExpectedSomething(1))))));
         assert_eq!(tokens.len(), 3);
@@ -240,7 +244,8 @@ mod tests {
             optional: true,
             allow_trail: false,
         };
-        let res = sep.parse(&mut tokens, &s, &chars[4..], 4, &[]);
+        let res = sep.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[4..], 4), &[]);
         assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3),
             Some(Range::new(9, 0).wrap(
                 ParseError::ExpectedToken(Arc::new(",".into()), 2))))));
@@ -290,7 +295,8 @@ mod tests {
             optional: false,
             allow_trail: true,
         };
-        let res = sep.parse(&mut tokens, &s, &chars, 0, &[]);
+        let res = sep.parse(&mut tokens, &s,
+            &ReadToken::new(&chars, 0), &[]);
         assert_eq!(res, Ok((Range::new(0, 12), TokenizerState(6),
             Some(Range::new(12, 0).wrap(
                 ParseError::ExpectedSomething(2))))));

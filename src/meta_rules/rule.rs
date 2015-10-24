@@ -1,5 +1,6 @@
 use range::Range;
 use std::sync::Arc;
+use read_token::ReadToken;
 
 use super::{
     Lines,
@@ -60,49 +61,48 @@ impl Rule {
         &self,
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        chars: &[char],
-        offset: usize,
+        read_token: &ReadToken,
         refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
         match self {
             &Rule::Whitespace(ref w) => {
-                w.parse(chars, offset).map(|r| (r, state.clone(), None))
+                w.parse(read_token).map(|r| (r, state.clone(), None))
             }
             &Rule::Token(ref t) => {
-                t.parse(tokens, state, chars, offset)
+                t.parse(tokens, state, read_token)
             }
             &Rule::UntilAny(ref u) => {
-                u.parse(tokens, state, chars, offset)
+                u.parse(tokens, state, read_token)
             }
             &Rule::UntilAnyOrWhitespace(ref u) => {
-                u.parse(tokens, state, chars, offset)
+                u.parse(tokens, state, read_token)
             }
             &Rule::Text(ref t) => {
-                t.parse(tokens, state, chars, offset)
+                t.parse(tokens, state, read_token)
             }
             &Rule::Number(ref n) => {
-                n.parse(tokens, state, chars, offset)
+                n.parse(tokens, state, read_token)
             }
             &Rule::Select(ref s) => {
-                s.parse(tokens, state, chars, offset, refs)
+                s.parse(tokens, state, read_token, refs)
             }
             &Rule::Sequence(ref s) => {
-                s.parse(tokens, state, chars, offset, refs)
+                s.parse(tokens, state, read_token, refs)
             }
             &Rule::SeparateBy(ref s) => {
-                s.parse(tokens, state, chars, offset, refs)
+                s.parse(tokens, state, read_token, refs)
             }
             &Rule::Repeat(ref r) => {
-                r.parse(tokens, state, chars, offset, refs)
+                r.parse(tokens, state, read_token, refs)
             }
             &Rule::Lines(ref l) => {
-                l.parse(tokens, state, chars, offset, refs)
+                l.parse(tokens, state, read_token, refs)
             }
             &Rule::Node(ref p) => {
-                p.parse(tokens, state, chars, offset, refs)
+                p.parse(tokens, state, read_token, refs)
             }
             &Rule::Optional(ref o) => {
-                Ok(o.parse(tokens, state, chars, offset, refs))
+                Ok(o.parse(tokens, state, read_token, refs))
             }
         }
     }

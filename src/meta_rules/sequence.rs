@@ -1,4 +1,5 @@
 use range::Range;
+use read_token::ReadToken;
 
 use super::{
     ret_err,
@@ -28,17 +29,17 @@ impl Sequence {
         &self,
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        mut chars: &[char],
-        start_offset: usize,
+        read_token: &ReadToken,
         refs: &[Rule]
     ) -> ParseResult<TokenizerState> {
-        let mut offset = start_offset;
+        let start = read_token;
+        let mut read_token = *start;
         let mut state = state.clone();
         let mut opt_error = None;
         for sub_rule in &self.args {
-            state = match sub_rule.parse(tokens, &state, chars, offset, refs) {
+            state = match sub_rule.parse(tokens, &state, &read_token, refs) {
                 Ok((range, state, err)) => {
-                    update(range, err, &mut chars, &mut offset, &mut opt_error);
+                    update(range, err, &mut read_token, &mut opt_error);
                     state
                 }
                 Err(err) => {
@@ -46,6 +47,6 @@ impl Sequence {
                 }
             }
         }
-        Ok((Range::new(start_offset, offset - start_offset), state, opt_error))
+        Ok((read_token.subtract(start), state, opt_error))
     }
 }

@@ -1,5 +1,5 @@
 use range::Range;
-use read_token;
+use read_token::{ NumberSettings, ReadToken };
 use std::sync::Arc;
 
 use super::{
@@ -29,16 +29,17 @@ impl Number {
         &self,
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
-        chars: &[char],
-        offset: usize
+        read_token: &ReadToken
     ) -> ParseResult<TokenizerState> {
-        let settings = read_token::NumberSettings {
+        let settings = NumberSettings {
             allow_underscore: self.allow_underscore
         };
-        if let Some(range) = read_token::number(&settings, chars, offset) {
-            match read_token::parse_number(&settings, &chars[..range.length]) {
-                Err(err) => Err(range.wrap(
-                    ParseError::ParseNumberError(err, self.debug_id))),
+        if let Some(range) = read_token.number(&settings) {
+            match read_token.parse_number(&settings, range.length) {
+                Err(err) => {
+                    Err(range.wrap(
+                    ParseError::ParseNumberError(err, self.debug_id)))
+                }
                 Ok(val) => {
                     if let Some(ref property) = self.property {
                         Ok((range, read_data(
@@ -52,7 +53,7 @@ impl Number {
                 }
             }
         } else {
-            return Err(Range::new(offset, 0).wrap(
+            return Err(read_token.start().wrap(
                 ParseError::ExpectedNumber(self.debug_id)))
         }
     }
@@ -64,6 +65,7 @@ mod tests {
     use all::tokenizer::*;
     use meta_rules::{ Number };
     use range::Range;
+    use read_token::ReadToken;
     use std::sync::Arc;
 
     #[test]
@@ -77,7 +79,8 @@ mod tests {
         };
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
-        let res = number.parse(&mut tokenizer, &s, &chars, 0);
+        let res = number.parse(&mut tokenizer, &s,
+            &ReadToken::new(&chars, 0));
         assert_eq!(res, Err(Range::new(0, 0).wrap(
             ParseError::ExpectedNumber(0))));
     }
@@ -93,13 +96,17 @@ mod tests {
         };
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let res = number.parse(&mut tokens, &s, &chars[4..], 4);
+        let res = number.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[4..], 4));
         assert_eq!(res, Ok((Range::new(4, 1), s, None)));
-        let res = number.parse(&mut tokens, &s, &chars[6..], 6);
+        let res = number.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[6..], 6));
         assert_eq!(res, Ok((Range::new(6, 3), s, None)));
-        let res = number.parse(&mut tokens, &s, &chars[10..], 10);
+        let res = number.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[10..], 10));
         assert_eq!(res, Ok((Range::new(10, 4), s, None)));
-        let res = number.parse(&mut tokens, &s, &chars[22..], 22);
+        let res = number.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[22..], 22));
         assert_eq!(res, Ok((Range::new(22, 6), s, None)));
 
         let val: Arc<String> = Arc::new("val".into());
@@ -108,7 +115,8 @@ mod tests {
             property: Some(val.clone()),
             allow_underscore: false,
         };
-        let res = number.parse(&mut tokens, &s, &chars[15..], 15);
+        let res = number.parse(&mut tokens, &s,
+            &ReadToken::new(&chars[15..], 15));
         assert_eq!(res, Ok((Range::new(15, 6), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].data, &MetaData::F64(val.clone(), 10.0e1));
