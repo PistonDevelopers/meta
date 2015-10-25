@@ -46,13 +46,12 @@ pub fn parse(
     text: &str,
     tokens: &mut Vec<Range<MetaData>>
 ) -> Result<(), Range<ParseError>> {
-    let chars: Vec<char> = text.chars().collect();
     let s = TokenizerState(tokens.len());
     let n = match rules.rules.len() {
         0 => { return Err(Range::empty(0).wrap(ParseError::NoRules)); }
         x => x
     };
-    let read_token = ReadToken::new(&chars, 0);
+    let read_token = ReadToken::new(&text, 0);
     let res = rules.rules[n - 1].parse(tokens, &s, &read_token, &rules.rules);
     match res {
         Ok((range, s, opt_error)) => {

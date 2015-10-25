@@ -71,7 +71,6 @@ mod tests {
     #[test]
     fn expected_number() {
         let text = "foo";
-        let chars: Vec<char> = text.chars().collect();
         let number = Number {
             debug_id: 0,
             property: None,
@@ -79,8 +78,7 @@ mod tests {
         };
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
-        let res = number.parse(&mut tokenizer, &s,
-            &ReadToken::new(&chars, 0));
+        let res = number.parse(&mut tokenizer, &s, &ReadToken::new(&text, 0));
         assert_eq!(res, Err(Range::new(0, 0).wrap(
             ParseError::ExpectedNumber(0))));
     }
@@ -88,7 +86,6 @@ mod tests {
     #[test]
     fn successful() {
         let text = "foo 1 1.1 10e1 10.0E1 10_000";
-        let chars: Vec<char> = text.chars().collect();
         let number = Number {
             debug_id: 0,
             property: None,
@@ -97,16 +94,16 @@ mod tests {
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let res = number.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[4..], 4));
+            &ReadToken::new(&text[4..], 4));
         assert_eq!(res, Ok((Range::new(4, 1), s, None)));
         let res = number.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[6..], 6));
+            &ReadToken::new(&text[6..], 6));
         assert_eq!(res, Ok((Range::new(6, 3), s, None)));
         let res = number.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[10..], 10));
+            &ReadToken::new(&text[10..], 10));
         assert_eq!(res, Ok((Range::new(10, 4), s, None)));
         let res = number.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[22..], 22));
+            &ReadToken::new(&text[22..], 22));
         assert_eq!(res, Ok((Range::new(22, 6), s, None)));
 
         let val: Arc<String> = Arc::new("val".into());
@@ -116,7 +113,7 @@ mod tests {
             allow_underscore: false,
         };
         let res = number.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[15..], 15));
+            &ReadToken::new(&text[15..], 15));
         assert_eq!(res, Ok((Range::new(15, 6), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].data, &MetaData::F64(val.clone(), 10.0e1));

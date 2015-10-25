@@ -64,7 +64,6 @@ mod tests {
     #[test]
     fn fail_but_continue() {
         let text = "2";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let num: Arc<String> = Arc::new("num".into());
@@ -88,7 +87,7 @@ mod tests {
             }),
         };
         let res = optional.parse(&mut tokens, &s,
-            &ReadToken::new(&chars, 0), &[]);
+            &ReadToken::new(&text, 0), &[]);
         assert_eq!(res, (Range::new(0, 0), TokenizerState(0),
             Some(Range::new(0, 0).wrap(ParseError::ExpectedText(2)))));
         assert_eq!(tokens.len(), 0);

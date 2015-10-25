@@ -72,7 +72,6 @@ mod tests {
     #[test]
     fn fail() {
         let text = "[a][a][a]";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let token: Arc<String> = Arc::new("(a)".into());
@@ -87,8 +86,7 @@ mod tests {
                 property: None,
             })
         };
-        let res = rule.parse(&mut tokens, &s,
-            &ReadToken::new(&chars, 0), &[]);
+        let res = rule.parse(&mut tokens, &s, &ReadToken::new(&text, 0), &[]);
         assert_eq!(res, Err(Range::new(0, 0).wrap(
             ParseError::ExpectedTag(token.clone(), 1))))
     }
@@ -96,7 +94,6 @@ mod tests {
     #[test]
     fn success() {
         let text = "(a)(a)(a)";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let token: Arc<String> = Arc::new("(a)".into());
@@ -111,8 +108,7 @@ mod tests {
                 property: None,
             })
         };
-        let res = rule.parse(&mut tokens, &s,
-            &ReadToken::new(&chars, 0), &[]);
+        let res = rule.parse(&mut tokens, &s, &ReadToken::new(&text, 0), &[]);
         assert_eq!(res, Ok((Range::new(0, 9), TokenizerState(0),
             Some(Range::new(9, 0).wrap(
                 ParseError::ExpectedTag(token.clone(), 1))))))

@@ -93,7 +93,6 @@ mod tests {
     #[test]
     fn required() {
         let text = "foo()";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let sep = SeparateBy {
@@ -115,7 +114,7 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[4..], 4), &[]);
+            &ReadToken::new(&text[4..], 4), &[]);
         assert_eq!(res, Err(Range::new(4, 0).wrap(
             ParseError::ExpectedSomething(1))));
     }
@@ -123,7 +122,6 @@ mod tests {
     #[test]
     fn optional() {
         let text = "foo()";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let sep = SeparateBy {
@@ -145,7 +143,7 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[4..], 4), &[]);
+            &ReadToken::new(&text[4..], 4), &[]);
         assert_eq!(res, Ok((Range::new(4, 0), s,
             Some(Range::new(4, 0).wrap(ParseError::ExpectedSomething(1))))));
     }
@@ -153,7 +151,6 @@ mod tests {
     #[test]
     fn disallow_trail() {
         let text = "foo(a,b,c,)";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let arg: Arc<String> = Arc::new("arg".into());
@@ -176,7 +173,7 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[4..], 4), &[]);
+            &ReadToken::new(&text[4..], 4), &[]);
         assert_eq!(res, Err(Range::new(10, 0).wrap(
             ParseError::ExpectedSomething(1))));
     }
@@ -184,7 +181,6 @@ mod tests {
     #[test]
     fn allow_trail() {
         let text = "foo(a,b,c,)";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let arg: Arc<String> = Arc::new("arg".into());
@@ -207,7 +203,7 @@ mod tests {
             allow_trail: true,
         };
         let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[4..], 4), &[]);
+            &ReadToken::new(&text[4..], 4), &[]);
         assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3),
             Some(Range::new(10, 0).wrap(ParseError::ExpectedSomething(1))))));
         assert_eq!(tokens.len(), 3);
@@ -222,7 +218,6 @@ mod tests {
     #[test]
     fn successful() {
         let text = "foo(a,b,c)";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let arg: Arc<String> = Arc::new("arg".into());
@@ -245,7 +240,7 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[4..], 4), &[]);
+            &ReadToken::new(&text[4..], 4), &[]);
         assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3),
             Some(Range::new(9, 0).wrap(
                 ParseError::ExpectedTag(Arc::new(",".into()), 2))))));
@@ -261,7 +256,6 @@ mod tests {
     #[test]
     fn nested() {
         let text = "a,b,c;d,e,f;";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let arg: Arc<String> = Arc::new("arg".into());
@@ -295,8 +289,7 @@ mod tests {
             optional: false,
             allow_trail: true,
         };
-        let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&chars, 0), &[]);
+        let res = sep.parse(&mut tokens, &s, &ReadToken::new(&text, 0), &[]);
         assert_eq!(res, Ok((Range::new(0, 12), TokenizerState(6),
             Some(Range::new(12, 0).wrap(
                 ParseError::ExpectedSomething(2))))));

@@ -97,7 +97,6 @@ mod tests {
     #[test]
     fn expected_token() {
         let text = ")";
-        let chars: Vec<char> = text.chars().collect();
         let start_parenthesis = Tag {
             debug_id: 0,
             text: Arc::new("(".into()),
@@ -108,7 +107,7 @@ mod tests {
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let res = start_parenthesis.parse(&mut tokens, &s,
-            &ReadToken::new(&chars, 0));
+            &ReadToken::new(&text, 0));
         assert_eq!(res, Err(Range::new(0, 0).wrap(
             ParseError::ExpectedTag(Arc::new("(".into()), 0))));
     }
@@ -116,7 +115,6 @@ mod tests {
     #[test]
     fn did_not_expect_token() {
         let text = ")";
-        let chars: Vec<char> = text.chars().collect();
         let start_parenthesis = Tag {
             debug_id: 0,
             text: Arc::new(")".into()),
@@ -127,7 +125,7 @@ mod tests {
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let res = start_parenthesis.parse(&mut tokens, &s,
-            &ReadToken::new(&chars, 0));
+            &ReadToken::new(&text, 0));
         assert_eq!(res, Err(Range::new(0, 1).wrap(
             ParseError::DidNotExpectTag(Arc::new(")".into()), 0))));
     }
@@ -135,7 +133,6 @@ mod tests {
     #[test]
     fn successful() {
         let text = "fn foo()";
-        let chars: Vec<char> = text.chars().collect();
         let fn_ = Tag {
             debug_id: 0,
             text: Arc::new("fn ".into()),
@@ -145,7 +142,7 @@ mod tests {
         };
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let res = fn_.parse(&mut tokens, &s, &ReadToken::new(&chars, 0));
+        let res = fn_.parse(&mut tokens, &s, &ReadToken::new(&text, 0));
         assert_eq!(res, Ok((Range::new(0, 3), s, None)));
         assert_eq!(tokens.len(), 0);
 
@@ -161,7 +158,7 @@ mod tests {
         };
         let s = TokenizerState::new();
         let res = start_parenthesis.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[6..], 6));
+            &ReadToken::new(&text[6..], 6));
         assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].data, &MetaData::Bool(has_arguments.clone(), true));
@@ -178,7 +175,7 @@ mod tests {
         };
         let s = TokenizerState::new();
         let res = start_parenthesis.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[6..], 6));
+            &ReadToken::new(&text[6..], 6));
         assert_eq!(res, Ok((Range::new(6, 1), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].data, &MetaData::Bool(has_arguments.clone(), false));
