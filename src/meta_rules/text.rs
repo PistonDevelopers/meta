@@ -74,30 +74,28 @@ mod tests {
     #[test]
     fn expected_text() {
         let text = "23";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let text = Text {
+        let rule = Text {
             debug_id: 0,
             allow_empty: true,
             property: None
         };
-        let res = text.parse(&mut tokens, &s, &ReadToken::new(&chars, 0));
+        let res = rule.parse(&mut tokens, &s, &ReadToken::new(&text, 0));
         assert_eq!(res, Err(Range::new(0, 0).wrap(ParseError::ExpectedText(0))));
     }
 
     #[test]
     fn empty_string() {
         let text = "\"\"";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
-        let text = Text {
+        let rule = Text {
             debug_id: 0,
             allow_empty: false,
             property: None
         };
-        let res = text.parse(&mut tokens, &s, &ReadToken::new(&chars, 0));
+        let res = rule.parse(&mut tokens, &s, &ReadToken::new(&text, 0));
         assert_eq!(res, Err(Range::new(0, 2).wrap(
             ParseError::EmptyTextNotAllowed(0))));
     }
@@ -105,17 +103,15 @@ mod tests {
     #[test]
     fn successful() {
         let text = "foo \"hello\"";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let foo: Arc<String> = Arc::new("foo".into());
-        let text = Text {
+        let rule = Text {
             debug_id: 0,
             allow_empty: true,
             property: Some(foo.clone())
         };
-        let res = text.parse(&mut tokens, &s,
-            &ReadToken::new(&chars[4..], 4));
+        let res = rule.parse(&mut tokens, &s, &ReadToken::new(&text[4..], 4));
         assert_eq!(res, Ok((Range::new(4, 7), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].data,

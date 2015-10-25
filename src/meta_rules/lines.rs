@@ -82,7 +82,6 @@ mod tests {
 \"error\"
 4
         ";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let lines = Lines {
@@ -94,7 +93,7 @@ mod tests {
             }),
         };
         let res = lines.parse(&mut tokenizer, &s,
-            &ReadToken::new(&chars, 0), &[]);
+            &ReadToken::new(&text, 0), &[]);
         assert_eq!(res, Ok((Range::new(0, 10), s,
             Some(Range::new(10, 0).wrap(ParseError::ExpectedNumber(1))))));
     }
@@ -109,7 +108,6 @@ mod tests {
 
 5
  ";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let val: Arc<String> = Arc::new("val".into());
@@ -131,7 +129,7 @@ mod tests {
             }),
         };
         let res = lines.parse(&mut tokenizer, &s,
-            &ReadToken::new(&chars, 0), &[]);
+            &ReadToken::new(&text, 0), &[]);
         assert_eq!(res, Err(Range::new(8, 0).wrap(
             ParseError::ExpectedNewLine(0))));
     }
@@ -147,7 +145,6 @@ mod tests {
 
 4
  ";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let val: Arc<String> = Arc::new("val".into());
@@ -160,7 +157,7 @@ mod tests {
             }),
         };
         let res = lines.parse(&mut tokenizer, &s,
-            &ReadToken::new(&chars, 0), &[]);
+            &ReadToken::new(&text, 0), &[]);
         assert_eq!(res, Ok((Range::new(0, 13), TokenizerState(4), None)));
     }
 

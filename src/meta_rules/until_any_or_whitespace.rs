@@ -65,7 +65,6 @@ mod tests {
     #[test]
     fn required() {
         let text = "fn ()";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let name = UntilAnyOrWhitespace {
@@ -75,7 +74,7 @@ mod tests {
             property: None
         };
         let res = name.parse(&mut tokenizer, &s,
-            &ReadToken::new(&chars[3..], 3));
+            &ReadToken::new(&text[3..], 3));
         assert_eq!(res, Err(Range::new(3, 0).wrap(
             ParseError::ExpectedSomething(0))));
     }
@@ -83,7 +82,6 @@ mod tests {
     #[test]
     fn successful() {
         let text = "fn foo()";
-        let chars: Vec<char> = text.chars().collect();
         let mut tokens = vec![];
         let s = TokenizerState::new();
         let function_name: Arc<String> = Arc::new("function_name".into());
@@ -93,7 +91,7 @@ mod tests {
             optional: false,
             property: Some(function_name.clone())
         };
-        let res = name.parse(&mut tokens, &s, &ReadToken::new(&chars[3..], 3));
+        let res = name.parse(&mut tokens, &s, &ReadToken::new(&text[3..], 3));
         assert_eq!(res, Ok((Range::new(3, 3), TokenizerState(1), None)));
         assert_eq!(tokens.len(), 1);
         assert_eq!(&tokens[0].data,
