@@ -73,7 +73,7 @@ impl Syntax {
 }
 
 /// Reads syntax from text.
-pub fn syntax2(rules: &str) -> Result<Syntax, Range<ParseError>> {
+pub fn syntax(rules: &str) -> Result<Syntax, Range<ParseError>> {
     let mut tokens = vec![];
     try!(parse(&bootstrap::rules(), rules, &mut tokens));
     let mut ignored_meta_data = vec![];
@@ -84,20 +84,7 @@ pub fn syntax2(rules: &str) -> Result<Syntax, Range<ParseError>> {
     }
 }
 
-/// Reads syntax from text, using the new meta language.
-pub fn syntax(rules: &str) -> Result<Syntax, Range<ParseError>> {
-    let new_bootstrap_rules = try!(syntax2(include_str!("../assets/old-self-syntax.txt")));
-    let mut tokens = vec![];
-    try!(parse(&new_bootstrap_rules, rules, &mut tokens));
-    let mut ignored_meta_data = vec![];
-    match bootstrap::convert(&tokens, &mut ignored_meta_data) {
-        Ok(res) => Ok(res),
-        Err(()) => Err(Range::empty(0).wrap(ParseError::Conversion(
-            format!("Bootstrapping rules are incorrect"))))
-    }
-}
-
-/// Convenience method for loading data.
+/// Convenience method for loading data, using the meta language.
 /// Panics if there is an error, and writes error message to
 /// standard error output.
 pub fn load_syntax_data<A, B>(
@@ -112,30 +99,6 @@ pub fn load_syntax_data<A, B>(
     let mut s = String::new();
     syntax_file.read_to_string(&mut s).unwrap();
     let rules = stderr_unwrap(&s, syntax(&s));
-
-    let mut data_file = File::open(data_path).unwrap();
-    let mut d = String::new();
-    data_file.read_to_string(&mut d).unwrap();
-    let mut tokens = vec![];
-    stderr_unwrap(&d, parse(&rules, &d, &mut tokens));
-    tokens
-}
-
-/// Convenience method for loading data, using the new meta language.
-/// Panics if there is an error, and writes error message to
-/// standard error output.
-pub fn load_syntax_data2<A, B>(
-    syntax_path: A,
-    data_path: B
-) -> Vec<Range<MetaData>>
-    where A: AsRef<Path>, B: AsRef<Path>
-{
-    use std::io::Read;
-
-    let mut syntax_file = File::open(syntax_path).unwrap();
-    let mut s = String::new();
-    syntax_file.read_to_string(&mut s).unwrap();
-    let rules = stderr_unwrap(&s, syntax2(&s));
 
     let mut data_file = File::open(data_path).unwrap();
     let mut d = String::new();
