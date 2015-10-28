@@ -15,7 +15,7 @@ fn load_file<P: AsRef<Path>>(path: P) -> String {
 fn main() {
     // Get the old syntax in the new syntax.
     let old = load_file("assets/old-syntax.txt");
-    let old_syntax = stderr_unwrap(&old, syntax2(&old));
+    let old_syntax = stderr_unwrap(&old, syntax(&old));
 
     let old_in_old = load_file("assets/old-self-syntax.txt");
     let mut old_in_old_syntax = vec![];
