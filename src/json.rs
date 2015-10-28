@@ -28,13 +28,7 @@ pub fn write<W>(w: &mut W, data: &[Range<MetaData>]) -> Result<(), io::Error>
             indent -= 1;
             true
         } else { false };
-        let is_next_end = if i < data.len() - 1 {
-            match data[i + 1].data {
-                MetaData::EndNode(_) => false,
-                _ => true
-            }
-        } else { true };
-        let print_comma = !first && !is_end && is_next_end;
+        let print_comma = !first && !is_end;
         if print_comma {
             try!(writeln!(w, ","));
         } else if i != 0 {
@@ -96,4 +90,56 @@ pub fn print(data: &[Range<MetaData>]) {
     use std::io::stdout;
 
     write(&mut stdout(), data).unwrap();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use MetaData;
+    use range::Range;
+    use std::sync::Arc;
+
+    #[test]
+    fn numbers() {
+        let mut s: Vec<u8> = vec![];
+        let r = Range::empty(0);
+        write(&mut s, &[
+            r.wrap(MetaData::F64(Arc::new("x".into()), 1.0)),
+            r.wrap(MetaData::F64(Arc::new("y".into()), 2.0)),
+            r.wrap(MetaData::F64(Arc::new("z".into()), 3.0))
+        ]).unwrap();
+        assert_eq!(String::from_utf8(s).unwrap(),
+            "\"x\":1,\n\"y\":2,\n\"z\":3\n");
+    }
+
+    #[test]
+    fn node() {
+        let mut s: Vec<u8> = vec![];
+        let r = Range::empty(0);
+        write(&mut s, &[
+            r.wrap(MetaData::StartNode(Arc::new("pos".into()))),
+            r.wrap(MetaData::F64(Arc::new("x".into()), 1.0)),
+            r.wrap(MetaData::F64(Arc::new("y".into()), 2.0)),
+            r.wrap(MetaData::F64(Arc::new("z".into()), 3.0)),
+            r.wrap(MetaData::EndNode(Arc::new("pos".into())))
+        ]).unwrap();
+        assert_eq!(String::from_utf8(s).unwrap(),
+            "\"pos\":{\n \"x\":1,\n \"y\":2,\n \"z\":3\n}\n");
+    }
+
+    #[test]
+    fn node2() {
+        let mut s: Vec<u8> = vec![];
+        let r = Range::empty(0);
+        write(&mut s, &[
+            r.wrap(MetaData::StartNode(Arc::new("pos".into()))),
+            r.wrap(MetaData::F64(Arc::new("x".into()), 1.0)),
+            r.wrap(MetaData::EndNode(Arc::new("pos".into()))),
+            r.wrap(MetaData::StartNode(Arc::new("pos".into()))),
+            r.wrap(MetaData::F64(Arc::new("x".into()), 1.0)),
+            r.wrap(MetaData::EndNode(Arc::new("pos".into())))
+        ]).unwrap();
+        assert_eq!(String::from_utf8(s).unwrap(),
+            "\"pos\":{\n \"x\":1\n},\n\"pos\":{\n \"x\":1\n}\n");
+    }
 }
