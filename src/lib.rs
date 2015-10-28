@@ -84,7 +84,7 @@ pub fn syntax(rules: &str) -> Result<Syntax, Range<ParseError>> {
     }
 }
 
-/// Convenience method for loading data, using the new meta language.
+/// Convenience method for loading data, using the meta language.
 /// Panics if there is an error, and writes error message to
 /// standard error output.
 pub fn load_syntax_data<A, B>(
