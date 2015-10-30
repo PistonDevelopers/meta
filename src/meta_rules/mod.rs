@@ -39,7 +39,6 @@ mod until_any;
 mod until_any_or_whitespace;
 mod whitespace;
 
-
 /// Parses text with rules.
 pub fn parse(
     rules: &Syntax,
@@ -68,6 +67,24 @@ pub fn parse(
             }
         }
         Err(range_err) => Err(range_err)
+    }
+}
+
+/// Parses text with rules, formatting the error as a `String`.
+pub fn parse_errstr(
+    rules: &Syntax,
+    text: &str,
+    tokens: &mut Vec<Range<MetaData>>
+) -> Result<(), String> {
+    use ParseErrorHandler;
+
+    match parse(rules, text, tokens) {
+        Ok(()) => Ok(()),
+        Err(range_err) => {
+            let mut w: Vec<u8> = vec![];
+            ParseErrorHandler::new(&text).write(&mut w, range_err).unwrap();
+            Err(String::from_utf8(w).unwrap())
+        }
     }
 }
 
