@@ -10,7 +10,7 @@ pub use parse_error_handler::{
     ParseErrorHandler
 };
 pub use parse_error::ParseError;
-pub use meta_rules::{ parse, Rule };
+pub use meta_rules::{ parse, parse_errstr, Rule };
 
 /// The type of debug id used to track down errors in rules.
 pub type DebugId = usize;
@@ -81,6 +81,18 @@ pub fn syntax(rules: &str) -> Result<Syntax, Range<ParseError>> {
         Ok(res) => Ok(res),
         Err(()) => Err((Range::empty(0).wrap(ParseError::Conversion(
             format!("Bootstrapping rules are incorrect")))))
+    }
+}
+
+/// Reads syntax from text, formatting the error as `String`.
+pub fn syntax_errstr(rules: &str) -> Result<Syntax, String> {
+    match syntax(rules) {
+        Ok(syntax) => Ok(syntax),
+        Err(range_err) => {
+            let mut w: Vec<u8> = vec![];
+            ParseErrorHandler::new(&rules).write(&mut w, range_err).unwrap();
+            Err(String::from_utf8(w).unwrap())
+        }
     }
 }
 

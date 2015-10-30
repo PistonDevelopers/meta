@@ -70,12 +70,23 @@ fn main() {
         2 document = say_hi
     "#;
     // Parse rules with meta language and convert to rules for parsing text.
-    let rules = stderr_unwrap(rules, syntax(rules));
+    let rules = match syntax_errstr(rules) {
+        Err(err) => {
+            println!("{}", err);
+            return;
+        }
+        Ok(rules) => rules
+    };
     let mut data = vec![];
-    stderr_unwrap(text, parse(&rules, text, &mut data));
+    match parse_errstr(&rules, text, &mut data) {
+        Err(err) => {
+            println!("{}", err);
+            return;
+        }
+        Ok(()) => {}
+    };
     json::print(&data);
 }
-
 ```
 
 ### How does it work?
