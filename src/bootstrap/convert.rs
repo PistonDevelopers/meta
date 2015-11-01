@@ -21,113 +21,138 @@ use meta_rules::{
 use MetaData;
 use Syntax;
 
-/// Updates with parsed range.
-pub fn update(range: Range, data: &mut &[Range<MetaData>], offset: &mut usize) {
-    let next_offset = range.next_offset();
-    *data = &data[next_offset - *offset..];
-    *offset = next_offset;
+/// Stores state when converting from meta data.
+#[derive(Copy, Clone)]
+pub struct Convert<'a> {
+    data: &'a [Range<MetaData>],
+    offset: usize,
 }
 
-/// Reads start node.
-pub fn start_node(name: &str, data: &[Range<MetaData>], offset: usize)
--> Result<Range, ()> {
-    if data.len() == 0 { return Err(()); }
-    match &data[0].data {
-        &MetaData::StartNode(ref n) if &**n == name => {
-            Ok(Range::new(offset, 1))
+impl<'a> Convert<'a> {
+    /// Creates a new `Convert`.
+    pub fn new(data: &'a [Range<MetaData>]) -> Convert<'a> {
+        Convert {
+            data: data,
+            offset: 0,
         }
-        _ => Err(())
     }
-}
 
-/// Reads end node.
-pub fn end_node(name: &str, data: &[Range<MetaData>], offset: usize)
--> Result<Range, ()> {
-    if data.len() == 0 { return Err(()); }
-    match &data[0].data {
-        &MetaData::EndNode(ref n) if &**n == name => {
-            Ok(Range::new(offset, 1))
-        }
-        _ => Err(())
+    /// Returns the length of remaining data.
+    #[inline(always)]
+    pub fn remaining_data_len(&self) -> usize {
+        self.data.len()
     }
-}
 
-/// Ignores next item.
-/// If this is the start of a node, it ignores all items to the end node.
-pub fn ignore(data: &[Range<MetaData>], offset: usize)
--> Range {
-    let mut acc: usize = 0;
-    let mut len = 0;
-    for item in data.iter() {
-        match &item.data {
-            &MetaData::StartNode(_) => acc += 1,
-            &MetaData::EndNode(_) => acc -= 1,
-            _ => {}
-        }
-        len += 1;
-        if acc == 0 { break; }
+    /// Returns the difference in offset.
+    #[inline(always)]
+    pub fn subtract(self, rhs: Convert) -> Range {
+        Range::new(rhs.offset, self.offset - rhs.offset)
     }
-    Range::new(offset, len)
-}
 
-/// Reads string.
-pub fn meta_string(name: &str, data: &[Range<MetaData>], offset: usize)
--> Result<(Range, Arc<String>), ()> {
-    if data.len() == 0 { return Err(()); }
-    match &data[0].data {
-        &MetaData::String(ref n, ref val) if &**n == name => {
-            Ok((Range::new(offset, 1), val.clone()))
+    /// Updates with parsed range.
+    pub fn update(self, range: Range) -> Convert<'a> {
+        let next_offset = range.next_offset();
+        Convert {
+            data: &self.data[next_offset - self.offset..],
+            offset: next_offset,
         }
-        _ => Err(())
     }
-}
 
-/// Reads f64.
-pub fn meta_f64(name: &str, data: &[Range<MetaData>], offset: usize)
--> Result<(Range, f64), ()> {
-    if data.len() == 0 { return Err(()); }
-    match &data[0].data {
-        &MetaData::F64(ref n, ref val) if &**n == name => {
-            Ok((Range::new(offset, 1), *val))
+    /// Reads start node.
+    pub fn start_node(&self, name: &str) -> Result<Range, ()> {
+        if self.data.len() == 0 { return Err(()); }
+        match self.data[0].data {
+            MetaData::StartNode(ref n) if &**n == name => {
+                Ok(Range::new(self.offset, 1))
+            }
+            _ => Err(())
         }
-        _ => Err(())
     }
-}
 
-/// Reads bool.
-pub fn meta_bool(name: &str, data: &[Range<MetaData>], offset: usize)
--> Result<(Range, bool), ()> {
-    if data.len() == 0 { return Err(()); }
-    match &data[0].data {
-        &MetaData::Bool(ref n, ref val) if &**n == name => {
-            Ok((Range::new(offset, 1), *val))
+    /// Reads end node.
+    pub fn end_node(&self, name: &str) -> Result<Range, ()> {
+        if self.data.len() == 0 { return Err(()); }
+        match self.data[0].data {
+            MetaData::EndNode(ref n) if &**n == name => {
+                Ok(Range::new(self.offset, 1))
+            }
+            _ => Err(())
         }
-        _ => Err(())
+    }
+
+    /// Ignores next item.
+    /// If this is the start of a node, it ignores all items to the end node.
+    pub fn ignore(&self) -> Range {
+        let mut acc: usize = 0;
+        let mut len = 0;
+        for item in self.data.iter() {
+            match &item.data {
+                &MetaData::StartNode(_) => acc += 1,
+                &MetaData::EndNode(_) => acc -= 1,
+                _ => {}
+            }
+            len += 1;
+            if acc == 0 { break; }
+        }
+        Range::new(self.offset, len)
+    }
+
+    /// Reads string.
+    pub fn meta_string(&self, name: &str) -> Result<(Range, Arc<String>), ()> {
+        if self.data.len() == 0 { return Err(()); }
+        match self.data[0].data {
+            MetaData::String(ref n, ref val) if &**n == name => {
+                Ok((Range::new(self.offset, 1), val.clone()))
+            }
+            _ => Err(())
+        }
+    }
+
+    /// Reads f64.
+    pub fn meta_f64(&self, name: &str) -> Result<(Range, f64), ()> {
+        if self.data.len() == 0 { return Err(()); }
+        match self.data[0].data {
+            MetaData::F64(ref n, ref val) if &**n == name => {
+                Ok((Range::new(self.offset, 1), *val))
+            }
+            _ => Err(())
+        }
+    }
+
+    /// Reads bool.
+    pub fn meta_bool(&self, name: &str) -> Result<(Range, bool), ()> {
+        if self.data.len() == 0 { return Err(()); }
+        match self.data[0].data {
+            MetaData::Bool(ref n, ref val) if &**n == name => {
+                Ok((Range::new(self.offset, 1), *val))
+            }
+            _ => Err(())
+        }
     }
 }
 
 /// Converts meta data to rules.
 pub fn convert(
-    mut data: &[Range<MetaData>],
+    data: &[Range<MetaData>],
     ignored: &mut Vec<Range>
 ) -> Result<Syntax, ()> {
 
-    fn read_string(mut data: &[Range<MetaData>], mut offset: usize)
+    fn read_string(mut convert: Convert)
     -> Result<(Range, (Arc<String>, Arc<String>)), ()> {
-        let start_offset = offset;
-        let range = try!(start_node("string", data, offset));
-        update(range, &mut data, &mut offset);
+        let start = convert.clone();
+        let range = try!(convert.start_node("string"));
+        convert = convert.update(range);
         let mut name = None;
         let mut text = None;
         loop {
-            if let Ok((range, val)) = meta_string("name", data, offset) {
+            if let Ok((range, val)) = convert.meta_string("name") {
                 name = Some(val);
-                update(range, &mut data, &mut offset);
-            } else if let Ok((range, val)) = meta_string("text", data, offset) {
+                convert = convert.update(range);
+            } else if let Ok((range, val)) = convert.meta_string("text") {
                 text = Some(val);
-                update(range, &mut data, &mut offset);
-            } else if let Ok(range) = end_node("string", data, offset) {
-                update(range, &mut data, &mut offset);
+                convert = convert.update(range);
+            } else if let Ok(range) = convert.end_node("string") {
+                convert = convert.update(range);
                 break;
             } else {
                 return Err(())
@@ -141,38 +166,37 @@ pub fn convert(
             None => { return Err(()); }
             Some(x) => x
         };
-        Ok((Range::new(start_offset, offset - start_offset), (name, text)))
+        Ok((convert.subtract(start), (name, text)))
     }
 
     fn read_sequence(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "sequence";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
         let mut args: Vec<Rule> = vec![];
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
             } else if let Ok((range, val)) = read_rule(
-                debug_id, "rule", data, offset, strings, ignored
+                debug_id, "rule", convert, strings, ignored
             ) {
-                update(range, &mut data, &mut offset);
+                convert = convert.update(range);
                 args.push(val);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
         *debug_id += 1;
-        Ok((Range::new(start_offset, offset - start_offset), Rule::Sequence(Sequence {
+        Ok((convert.subtract(start), Rule::Sequence(Sequence {
             debug_id: *debug_id,
             args: args
         })))
@@ -182,22 +206,24 @@ pub fn convert(
         strings.iter().find(|&&(ref s, _)| &**s == val).map(|&(_, ref s)| s.clone())
     }
 
-    fn read_set(property: &str, mut data: &[Range<MetaData>], mut offset: usize,
-    strings: &[(Arc<String>, Arc<String>)])
-    -> Result<(Range, Arc<String>), ()> {
-        let start_offset = offset;
-        let range = try!(start_node(property, data, offset));
-        update(range, &mut data, &mut offset);
+    fn read_set(
+        property: &str,
+        mut convert: Convert,
+        strings: &[(Arc<String>, Arc<String>)]
+    ) -> Result<(Range, Arc<String>), ()> {
+        let start = convert.clone();
+        let range = try!(convert.start_node(property));
+        convert = convert.update(range);
         let mut text = None;
         loop {
-            if let Ok(range) = end_node(property, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(property) {
+                convert = convert.update(range);
                 break;
-            } else if let Ok((range, val)) = meta_string("ref", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_string("ref") {
+                convert = convert.update(range);
                 text = find_string(&val, strings);
-            } else if let Ok((range, val)) = meta_string("value", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_string("value") {
+                convert = convert.update(range);
                 text = Some(val);
             } else {
                 return Err(())
@@ -205,40 +231,39 @@ pub fn convert(
         }
         match text {
             None => Err(()),
-            Some(text) => Ok((Range::new(start_offset, offset - start_offset), text))
+            Some(text) => Ok((convert.subtract(start), text))
         }
     }
 
     fn read_until_any_or_whitespace(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "until_any_or_whitespace";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
         let mut any_characters = None;
         let mut optional = None;
         let mut property = None;
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
-            } else if let Ok((range, val)) = read_set("any_characters", data, offset, strings) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = read_set("any_characters", convert, strings) {
+                convert = convert.update(range);
                 any_characters = Some(val);
-            } else if let Ok((range, val)) = meta_bool("optional", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_bool("optional") {
+                convert = convert.update(range);
                 optional = Some(val);
-            } else if let Ok((range, val)) = read_set("property", data, offset, strings) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = read_set("property", convert, strings) {
+                convert = convert.update(range);
                 property = Some(val);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
@@ -246,7 +271,7 @@ pub fn convert(
         match any_characters {
             Some(any) => {
                 *debug_id += 1;
-                Ok((Range::new(start_offset, offset - start_offset),
+                Ok((convert.subtract(start),
                 Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
                     debug_id: *debug_id,
                     any_characters: any,
@@ -260,34 +285,33 @@ pub fn convert(
 
     fn read_until_any(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "until_any";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
         let mut any_characters = None;
         let mut optional = None;
         let mut property = None;
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
-            } else if let Ok((range, val)) = read_set("any_characters", data, offset, strings) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = read_set("any_characters", convert, strings) {
+                convert = convert.update(range);
                 any_characters = Some(val);
-            } else if let Ok((range, val)) = meta_bool("optional", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_bool("optional") {
+                convert = convert.update(range);
                 optional = Some(val);
-            } else if let Ok((range, val)) = read_set("property", data, offset, strings) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = read_set("property", convert, strings) {
+                convert = convert.update(range);
                 property = Some(val);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
@@ -295,7 +319,7 @@ pub fn convert(
         match any_characters {
             Some(any) => {
                 *debug_id += 1;
-                Ok((Range::new(start_offset, offset - start_offset),
+                Ok((convert.subtract(start),
                 Rule::UntilAny(UntilAny {
                     debug_id: *debug_id,
                     any_characters: any,
@@ -309,39 +333,38 @@ pub fn convert(
 
     fn read_tag(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "tag";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
 
         let mut text = None;
         let mut property = None;
         let mut not = None;
         let mut inverted = None;
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
-            } else if let Ok((range, val)) = read_set("text", data, offset, strings) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = read_set("text", convert, strings) {
+                convert = convert.update(range);
                 text = Some(val);
-            } else if let Ok((range, val)) = read_set("property", data, offset, strings) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = read_set("property", convert, strings) {
+                convert = convert.update(range);
                 property = Some(val);
-            } else if let Ok((range, val)) = meta_bool("not", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_bool("not") {
+                convert = convert.update(range);
                 not = Some(val);
-            } else if let Ok((range, val)) = meta_bool("inverted", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_bool("inverted") {
+                convert = convert.update(range);
                 inverted = Some(val);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
@@ -350,7 +373,7 @@ pub fn convert(
         match text {
             Some(text) => {
                 *debug_id += 1;
-                Ok((Range::new(start_offset, offset - start_offset),
+                Ok((convert.subtract(start),
                 Rule::Tag(Tag {
                     debug_id: *debug_id,
                     text: text,
@@ -363,20 +386,17 @@ pub fn convert(
         }
     }
 
-    fn read_whitespace(
-        debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize
-    ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
-        let range = try!(start_node("whitespace", data, offset));
-        update(range, &mut data, &mut offset);
-        let (range, optional) = try!(meta_bool("optional", data, offset));
-        update(range, &mut data, &mut offset);
-        let range = try!(end_node("whitespace", data, offset));
-        update(range, &mut data, &mut offset);
+    fn read_whitespace(debug_id: &mut usize, mut convert: Convert)
+    -> Result<(Range, Rule), ()> {
+        let start = convert.clone();
+        let range = try!(convert.start_node("whitespace"));
+        convert = convert.update(range);
+        let (range, optional) = try!(convert.meta_bool("optional"));
+        convert.update(range);
+        let range = try!(convert.end_node("whitespace"));
+        convert = convert.update(range);
         *debug_id += 1;
-        Ok((Range::new(start_offset, offset - start_offset),
+        Ok((convert.subtract(start),
         Rule::Whitespace(Whitespace {
             debug_id: *debug_id,
             optional: optional,
@@ -385,36 +405,35 @@ pub fn convert(
 
     fn read_text(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "text";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
         let mut allow_empty = None;
         let mut property = None;
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
-            } else if let Ok((range, val)) = meta_bool("allow_empty", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_bool("allow_empty") {
+                convert = convert.update(range);
                 allow_empty = Some(val);
-            } else if let Ok((range, val)) = read_set("property", data, offset, strings) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = read_set("property", convert, strings) {
+                convert = convert.update(range);
                 property = Some(val);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
         let allow_empty = allow_empty.unwrap_or(true);
         *debug_id += 1;
-        Ok((Range::new(start_offset, offset - start_offset),
+        Ok((convert.subtract(start),
         Rule::Text(Text {
             debug_id: *debug_id,
             allow_empty: allow_empty,
@@ -424,37 +443,36 @@ pub fn convert(
 
     fn read_number(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "number";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
 
         let mut property = None;
         let mut underscore = None;
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
-            } else if let Ok((range, val)) = read_set("property", data, offset, strings) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = read_set("property", convert, strings) {
+                convert.update(range);
                 property = Some(val);
-            } else if let Ok((range, val)) = meta_bool("underscore", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_bool("underscore") {
+                convert = convert.update(range);
                 underscore = Some(val);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
         let underscore = underscore.unwrap_or(false);
         *debug_id += 1;
-        Ok((Range::new(start_offset, offset - start_offset),
+        Ok((convert.subtract(start),
         Rule::Number(Number {
             debug_id: *debug_id,
             property: property,
@@ -464,38 +482,37 @@ pub fn convert(
 
     fn read_reference(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "reference";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
 
         let mut name = None;
         let mut property = None;
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
-            } else if let Ok((range, val)) = meta_string("name", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_string("name") {
+                convert = convert.update(range);
                 name = Some(val);
-            } else if let Ok((range, val)) = read_set("property", data, offset, strings) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = read_set("property", convert, strings) {
+                convert = convert.update(range);
                 property = Some(val);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
         match name {
             Some(name) => {
                 *debug_id += 1;
-                Ok((Range::new(start_offset, offset - start_offset),
+                Ok((convert.subtract(start),
                 Rule::Node(Node {
                     debug_id: *debug_id,
                     name: name,
@@ -509,33 +526,32 @@ pub fn convert(
 
     fn read_select(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "select";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
         let mut args: Vec<Rule> = vec![];
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
             } else if let Ok((range, val)) = read_rule(
-                debug_id, "rule", data, offset, strings, ignored
+                debug_id, "rule", convert, strings, ignored
             ) {
-                update(range, &mut data, &mut offset);
+                convert = convert.update(range);
                 args.push(val);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
         *debug_id += 1;
-        Ok((Range::new(start_offset, offset - start_offset),
+        Ok((convert.subtract(start),
         Rule::Select(Select {
             debug_id: *debug_id,
             args: args
@@ -544,23 +560,22 @@ pub fn convert(
 
     fn read_optional(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "optional";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
         let (range, rule) = try!(read_rule(
-            debug_id, "rule", data, offset, strings, ignored
+            debug_id, "rule", convert, strings, ignored
         ));
-        update(range, &mut data, &mut offset);
-        let range = try!(end_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        convert = convert.update(range);
+        let range = try!(convert.end_node(node));
+        convert = convert.update(range);
         *debug_id += 1;
-        Ok((Range::new(start_offset, offset - start_offset),
+        Ok((convert.subtract(start),
         Rule::Optional(Box::new(Optional {
             debug_id: *debug_id,
             rule: rule,
@@ -569,42 +584,41 @@ pub fn convert(
 
     fn read_separated_by(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "separated_by";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
         let mut optional = None;
         let mut allow_trail = None;
         let mut by = None;
         let mut rule = None;
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
-            } else if let Ok((range, val)) = meta_bool("optional", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_bool("optional") {
+                convert = convert.update(range);
                 optional = Some(val);
-            } else if let Ok((range, val)) = meta_bool("allow_trail", data, offset) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_bool("allow_trail") {
+                convert = convert.update(range);
                 allow_trail = Some(val);
             } else if let Ok((range, val)) = read_rule(
-                debug_id, "by", data, offset, strings, ignored
+                debug_id, "by", convert, strings, ignored
             ) {
-                update(range, &mut data, &mut offset);
+                convert = convert.update(range);
                 by = Some(val);
             } else if let Ok((range, val)) = read_rule(
-                debug_id, "rule", data, offset, strings, ignored
+                debug_id, "rule", convert, strings, ignored
             ) {
-                update(range, &mut data, &mut offset);
+                convert = convert.update(range);
                 rule = Some(val);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
@@ -613,7 +627,7 @@ pub fn convert(
         match (by, rule) {
             (Some(by), Some(rule)) => {
                 *debug_id += 1;
-                Ok((Range::new(start_offset, offset - start_offset),
+                Ok((convert.subtract(start),
                 Rule::SeparateBy(Box::new(SeparateBy {
                     debug_id: *debug_id,
                     optional: optional,
@@ -628,22 +642,21 @@ pub fn convert(
 
     fn read_lines(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
-        let range = try!(start_node("lines", data, offset));
-        update(range, &mut data, &mut offset);
+        let start = convert.clone();
+        let range = try!(convert.start_node("lines"));
+        convert = convert.update(range);
         let (range, rule) = try!(read_rule(
-            debug_id, "rule", data, offset, strings, ignored
+            debug_id, "rule", convert, strings, ignored
         ));
-        update(range, &mut data, &mut offset);
-        let range = try!(end_node("lines", data, offset));
-        update(range, &mut data, &mut offset);
+        convert = convert.update(range);
+        let range = try!(convert.end_node("lines"));
+        convert = convert.update(range);
         *debug_id += 1;
-        Ok((Range::new(start_offset, offset - start_offset),
+        Ok((convert.subtract(start),
         Rule::Lines(Box::new(Lines {
             debug_id: *debug_id,
             rule: rule,
@@ -652,41 +665,38 @@ pub fn convert(
 
     fn read_repeat(
         debug_id: &mut usize,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "repeat";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
         let mut rule = None;
         let mut optional = None;
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
             } else if let Ok((range, val)) = read_rule(
-                debug_id, "rule", data, offset, strings, ignored
+                debug_id, "rule", convert, strings, ignored
             ) {
-                update(range, &mut data, &mut offset);
+                convert = convert.update(range);
                 rule = Some(val);
-            } else if let Ok((range, val)) = meta_bool(
-                "optional", data, offset
-            ) {
-                update(range, &mut data, &mut offset);
+            } else if let Ok((range, val)) = convert.meta_bool("optional") {
+                convert = convert.update(range);
                 optional = Some(val);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
         match (rule, optional) {
             (Some(rule), Some(optional)) => {
                 *debug_id += 1;
-                Ok((Range::new(start_offset, offset - start_offset),
+                Ok((convert.subtract(start),
                 Rule::Repeat(Box::new(Repeat {
                     debug_id: *debug_id,
                     rule: rule,
@@ -700,151 +710,147 @@ pub fn convert(
     fn read_rule(
         debug_id: &mut usize,
         property: &str,
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
-        let start_offset = offset;
-        let range = try!(start_node(property, data, offset));
-        update(range, &mut data, &mut offset);
+        let start = convert.clone();
+        let range = try!(convert.start_node(property));
+        convert = convert.update(range);
 
         let mut rule = None;
         if let Ok((range, val)) = read_sequence(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_until_any_or_whitespace(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_until_any(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_tag(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
-        } else if let Ok((range, val)) = read_whitespace(
-            debug_id, data, offset
-        ) {
-            update(range, &mut data, &mut offset);
+        } else if let Ok((range, val)) = read_whitespace(debug_id, convert) {
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_text(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_number(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_reference(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_select(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_optional(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_separated_by(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_lines(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_repeat(
-            debug_id, data, offset, strings, ignored
+            debug_id, convert, strings, ignored
         ) {
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
             rule = Some(val);
         }
 
         if let Some(rule) = rule {
-            let range = try!(end_node(property, data, offset));
-            update(range, &mut data, &mut offset);
-            Ok((Range::new(start_offset, offset - start_offset), rule))
+            let range = try!(convert.end_node(property));
+            convert = convert.update(range);
+            Ok((convert.subtract(start), rule))
         } else {
             Err(())
         }
     }
 
     fn read_node(
-        mut data: &[Range<MetaData>],
-        mut offset: usize,
+        mut convert: Convert,
         strings: &[(Arc<String>, Arc<String>)],
         ignored: &mut Vec<Range>
     ) -> Result<(Range, (Arc<String>, Rule)), ()> {
-        let start_offset = offset;
+        let start = convert.clone();
         let node = "node";
-        let range = try!(start_node(node, data, offset));
-        update(range, &mut data, &mut offset);
+        let range = try!(convert.start_node(node));
+        convert = convert.update(range);
         let mut id = None;
         let mut name = None;
         let mut rule = None;
         loop {
-            if let Ok(range) = end_node(node, data, offset) {
-                update(range, &mut data, &mut offset);
+            if let Ok(range) = convert.end_node(node) {
+                convert = convert.update(range);
                 break;
-            } else if let Ok((range, val)) = meta_f64("id", data, offset) {
+            } else if let Ok((range, val)) = convert.meta_f64("id") {
                 id = Some(val as usize);
-                update(range, &mut data, &mut offset);
-            } else if let Ok((range, val)) = meta_string("name", data, offset) {
+                convert = convert.update(range);
+            } else if let Ok((range, val)) = convert.meta_string("name") {
                 name = Some(val);
-                update(range, &mut data, &mut offset);
+                convert = convert.update(range);
             } else if let Ok((range, val)) = read_rule(
                 &mut (id.unwrap_or(0) * 1000), "rule",
-                data, offset, strings, ignored
+                convert, strings, ignored
             ) {
                 rule = Some(val);
-                update(range, &mut data, &mut offset);
+                convert = convert.update(range);
             } else {
-                let range = ignore(data, offset);
-                update(range, &mut data, &mut offset);
+                let range = convert.ignore();
+                convert = convert.update(range);
                 ignored.push(range);
             }
         }
         match (name, rule) {
             (Some(name), Some(rule)) => {
-                Ok((Range::new(start_offset, offset - start_offset), (name, rule)))
+                Ok((convert.subtract(start), (name, rule)))
             }
             _ => Err(())
         }
     }
 
     let mut strings: Vec<(Arc<String>, Arc<String>)> = vec![];
-    let mut offset: usize = 0;
+    let mut convert = Convert::new(data);
     loop {
-        if let Ok((range, val)) = read_string(data, offset) {
+        if let Ok((range, val)) = read_string(convert) {
             strings.push(val);
-            update(range, &mut data, &mut offset);
+            convert = convert.update(range);
         } else {
             break;
         }
     }
     let mut res = Syntax::new();
     loop {
-        if let Ok((range, val)) = read_node(data, offset, &strings, ignored) {
-            update(range, &mut data, &mut offset);
+        if let Ok((range, val)) = read_node(convert, &strings, ignored) {
+            convert = convert.update(range);
             res.push(val.0, val.1);
-        } else if offset < data.len() {
+        } else if convert.remaining_data_len() > 0 {
             return Err(());
         } else {
             break;
