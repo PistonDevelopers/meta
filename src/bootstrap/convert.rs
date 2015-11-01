@@ -50,12 +50,10 @@ impl<'a> Convert<'a> {
     }
 
     /// Updates with parsed range.
-    pub fn update(self, range: Range) -> Convert<'a> {
+    pub fn update(&mut self, range: Range) {
         let next_offset = range.next_offset();
-        Convert {
-            data: &self.data[next_offset - self.offset..],
-            offset: next_offset,
-        }
+        self.data = &self.data[next_offset - self.offset..];
+        self.offset = next_offset;
     }
 
     /// Reads start node.
@@ -141,18 +139,18 @@ pub fn convert(
     -> Result<(Range, (Arc<String>, Arc<String>)), ()> {
         let start = convert.clone();
         let range = try!(convert.start_node("string"));
-        convert = convert.update(range);
+        convert.update(range);
         let mut name = None;
         let mut text = None;
         loop {
             if let Ok((range, val)) = convert.meta_string("name") {
                 name = Some(val);
-                convert = convert.update(range);
+                convert.update(range);
             } else if let Ok((range, val)) = convert.meta_string("text") {
                 text = Some(val);
-                convert = convert.update(range);
+                convert.update(range);
             } else if let Ok(range) = convert.end_node("string") {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else {
                 return Err(())
@@ -178,20 +176,20 @@ pub fn convert(
         let start = convert.clone();
         let node = "sequence";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
         let mut args: Vec<Rule> = vec![];
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = read_rule(
                 debug_id, "rule", convert, strings, ignored
             ) {
-                convert = convert.update(range);
+                convert.update(range);
                 args.push(val);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -213,17 +211,17 @@ pub fn convert(
     ) -> Result<(Range, Arc<String>), ()> {
         let start = convert.clone();
         let range = try!(convert.start_node(property));
-        convert = convert.update(range);
+        convert.update(range);
         let mut text = None;
         loop {
             if let Ok(range) = convert.end_node(property) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = convert.meta_string("ref") {
-                convert = convert.update(range);
+                convert.update(range);
                 text = find_string(&val, strings);
             } else if let Ok((range, val)) = convert.meta_string("value") {
-                convert = convert.update(range);
+                convert.update(range);
                 text = Some(val);
             } else {
                 return Err(())
@@ -244,26 +242,26 @@ pub fn convert(
         let start = convert.clone();
         let node = "until_any_or_whitespace";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
         let mut any_characters = None;
         let mut optional = None;
         let mut property = None;
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = read_set("any_characters", convert, strings) {
-                convert = convert.update(range);
+                convert.update(range);
                 any_characters = Some(val);
             } else if let Ok((range, val)) = convert.meta_bool("optional") {
-                convert = convert.update(range);
+                convert.update(range);
                 optional = Some(val);
             } else if let Ok((range, val)) = read_set("property", convert, strings) {
-                convert = convert.update(range);
+                convert.update(range);
                 property = Some(val);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -292,26 +290,26 @@ pub fn convert(
         let start = convert.clone();
         let node = "until_any";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
         let mut any_characters = None;
         let mut optional = None;
         let mut property = None;
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = read_set("any_characters", convert, strings) {
-                convert = convert.update(range);
+                convert.update(range);
                 any_characters = Some(val);
             } else if let Ok((range, val)) = convert.meta_bool("optional") {
-                convert = convert.update(range);
+                convert.update(range);
                 optional = Some(val);
             } else if let Ok((range, val)) = read_set("property", convert, strings) {
-                convert = convert.update(range);
+                convert.update(range);
                 property = Some(val);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -340,7 +338,7 @@ pub fn convert(
         let start = convert.clone();
         let node = "tag";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
 
         let mut text = None;
         let mut property = None;
@@ -348,23 +346,23 @@ pub fn convert(
         let mut inverted = None;
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = read_set("text", convert, strings) {
-                convert = convert.update(range);
+                convert.update(range);
                 text = Some(val);
             } else if let Ok((range, val)) = read_set("property", convert, strings) {
-                convert = convert.update(range);
+                convert.update(range);
                 property = Some(val);
             } else if let Ok((range, val)) = convert.meta_bool("not") {
-                convert = convert.update(range);
+                convert.update(range);
                 not = Some(val);
             } else if let Ok((range, val)) = convert.meta_bool("inverted") {
-                convert = convert.update(range);
+                convert.update(range);
                 inverted = Some(val);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -390,11 +388,11 @@ pub fn convert(
     -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let range = try!(convert.start_node("whitespace"));
-        convert = convert.update(range);
+        convert.update(range);
         let (range, optional) = try!(convert.meta_bool("optional"));
         convert.update(range);
         let range = try!(convert.end_node("whitespace"));
-        convert = convert.update(range);
+        convert.update(range);
         *debug_id += 1;
         Ok((convert.subtract(start),
         Rule::Whitespace(Whitespace {
@@ -412,22 +410,22 @@ pub fn convert(
         let start = convert.clone();
         let node = "text";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
         let mut allow_empty = None;
         let mut property = None;
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = convert.meta_bool("allow_empty") {
-                convert = convert.update(range);
+                convert.update(range);
                 allow_empty = Some(val);
             } else if let Ok((range, val)) = read_set("property", convert, strings) {
-                convert = convert.update(range);
+                convert.update(range);
                 property = Some(val);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -450,23 +448,23 @@ pub fn convert(
         let start = convert.clone();
         let node = "number";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
 
         let mut property = None;
         let mut underscore = None;
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = read_set("property", convert, strings) {
                 convert.update(range);
                 property = Some(val);
             } else if let Ok((range, val)) = convert.meta_bool("underscore") {
-                convert = convert.update(range);
+                convert.update(range);
                 underscore = Some(val);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -489,23 +487,23 @@ pub fn convert(
         let start = convert.clone();
         let node = "reference";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
 
         let mut name = None;
         let mut property = None;
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = convert.meta_string("name") {
-                convert = convert.update(range);
+                convert.update(range);
                 name = Some(val);
             } else if let Ok((range, val)) = read_set("property", convert, strings) {
-                convert = convert.update(range);
+                convert.update(range);
                 property = Some(val);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -533,20 +531,20 @@ pub fn convert(
         let start = convert.clone();
         let node = "select";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
         let mut args: Vec<Rule> = vec![];
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = read_rule(
                 debug_id, "rule", convert, strings, ignored
             ) {
-                convert = convert.update(range);
+                convert.update(range);
                 args.push(val);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -567,13 +565,13 @@ pub fn convert(
         let start = convert.clone();
         let node = "optional";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
         let (range, rule) = try!(read_rule(
             debug_id, "rule", convert, strings, ignored
         ));
-        convert = convert.update(range);
+        convert.update(range);
         let range = try!(convert.end_node(node));
-        convert = convert.update(range);
+        convert.update(range);
         *debug_id += 1;
         Ok((convert.subtract(start),
         Rule::Optional(Box::new(Optional {
@@ -591,34 +589,34 @@ pub fn convert(
         let start = convert.clone();
         let node = "separated_by";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
         let mut optional = None;
         let mut allow_trail = None;
         let mut by = None;
         let mut rule = None;
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = convert.meta_bool("optional") {
-                convert = convert.update(range);
+                convert.update(range);
                 optional = Some(val);
             } else if let Ok((range, val)) = convert.meta_bool("allow_trail") {
-                convert = convert.update(range);
+                convert.update(range);
                 allow_trail = Some(val);
             } else if let Ok((range, val)) = read_rule(
                 debug_id, "by", convert, strings, ignored
             ) {
-                convert = convert.update(range);
+                convert.update(range);
                 by = Some(val);
             } else if let Ok((range, val)) = read_rule(
                 debug_id, "rule", convert, strings, ignored
             ) {
-                convert = convert.update(range);
+                convert.update(range);
                 rule = Some(val);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -648,13 +646,13 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let range = try!(convert.start_node("lines"));
-        convert = convert.update(range);
+        convert.update(range);
         let (range, rule) = try!(read_rule(
             debug_id, "rule", convert, strings, ignored
         ));
-        convert = convert.update(range);
+        convert.update(range);
         let range = try!(convert.end_node("lines"));
-        convert = convert.update(range);
+        convert.update(range);
         *debug_id += 1;
         Ok((convert.subtract(start),
         Rule::Lines(Box::new(Lines {
@@ -672,24 +670,24 @@ pub fn convert(
         let start = convert.clone();
         let node = "repeat";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
         let mut rule = None;
         let mut optional = None;
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = read_rule(
                 debug_id, "rule", convert, strings, ignored
             ) {
-                convert = convert.update(range);
+                convert.update(range);
                 rule = Some(val);
             } else if let Ok((range, val)) = convert.meta_bool("optional") {
-                convert = convert.update(range);
+                convert.update(range);
                 optional = Some(val);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -716,77 +714,77 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let range = try!(convert.start_node(property));
-        convert = convert.update(range);
+        convert.update(range);
 
         let mut rule = None;
         if let Ok((range, val)) = read_sequence(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_until_any_or_whitespace(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_until_any(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_tag(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_whitespace(debug_id, convert) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_text(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_number(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_reference(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_select(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_optional(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_separated_by(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_lines(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_repeat(
             debug_id, convert, strings, ignored
         ) {
-            convert = convert.update(range);
+            convert.update(range);
             rule = Some(val);
         }
 
         if let Some(rule) = rule {
             let range = try!(convert.end_node(property));
-            convert = convert.update(range);
+            convert.update(range);
             Ok((convert.subtract(start), rule))
         } else {
             Err(())
@@ -801,29 +799,29 @@ pub fn convert(
         let start = convert.clone();
         let node = "node";
         let range = try!(convert.start_node(node));
-        convert = convert.update(range);
+        convert.update(range);
         let mut id = None;
         let mut name = None;
         let mut rule = None;
         loop {
             if let Ok(range) = convert.end_node(node) {
-                convert = convert.update(range);
+                convert.update(range);
                 break;
             } else if let Ok((range, val)) = convert.meta_f64("id") {
                 id = Some(val as usize);
-                convert = convert.update(range);
+                convert.update(range);
             } else if let Ok((range, val)) = convert.meta_string("name") {
                 name = Some(val);
-                convert = convert.update(range);
+                convert.update(range);
             } else if let Ok((range, val)) = read_rule(
                 &mut (id.unwrap_or(0) * 1000), "rule",
                 convert, strings, ignored
             ) {
                 rule = Some(val);
-                convert = convert.update(range);
+                convert.update(range);
             } else {
                 let range = convert.ignore();
-                convert = convert.update(range);
+                convert.update(range);
                 ignored.push(range);
             }
         }
@@ -840,7 +838,7 @@ pub fn convert(
     loop {
         if let Ok((range, val)) = read_string(convert) {
             strings.push(val);
-            convert = convert.update(range);
+            convert.update(range);
         } else {
             break;
         }
@@ -848,7 +846,7 @@ pub fn convert(
     let mut res = Syntax::new();
     loop {
         if let Ok((range, val)) = read_node(convert, &strings, ignored) {
-            convert = convert.update(range);
+            convert.update(range);
             res.push(val.0, val.1);
         } else if convert.remaining_data_len() > 0 {
             return Err(());

@@ -351,7 +351,7 @@ mod tests {
         let rules = r#"
             0 document = .r?([..""!:"name" .w? .$:"val" .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax2(rules));
+        let rules = stderr_unwrap(rules, syntax(rules));
         let mut data = vec![];
         stderr_unwrap(text, parse(&rules, text, &mut data));
         let s = Search::new(&data);
@@ -369,7 +369,7 @@ mod tests {
         let rules = r#"
             0 document = .r?([..""!:"name" .w? .$:"val" .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax2(rules));
+        let rules = stderr_unwrap(rules, syntax(rules));
         let mut data = vec![];
         stderr_unwrap(text, parse(&rules, text, &mut data));
         let s = Search::new(&data);
@@ -383,7 +383,7 @@ mod tests {
         let rules = r#"
             0 document = .r?([..""!:"name" .w? {"true":"val" "false":!"val"} .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax2(rules));
+        let rules = stderr_unwrap(rules, syntax(rules));
         let mut data = vec![];
         stderr_unwrap(text, parse(&rules, text, &mut data));
         let s = Search::new(&data);
@@ -398,7 +398,7 @@ mod tests {
             0 proposition = {"true":"val" "false":!"val"}
             0 document = .r?([proposition:"proposition" .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax2(rules));
+        let rules = stderr_unwrap(rules, syntax(rules));
         let mut data = vec![];
         stderr_unwrap(text, parse(&rules, text, &mut data));
         let mut s = Search::new(&data);
@@ -417,7 +417,7 @@ mod tests {
         let rules = r#"
             0 document = .r?([.$:"val" .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax2(rules));
+        let rules = stderr_unwrap(rules, syntax(rules));
         let mut data = vec![];
         stderr_unwrap(text, parse(&rules, text, &mut data));
         let mut s = Search::new(&data);
@@ -431,7 +431,7 @@ mod tests {
         let rules = r#"
             0 document = .r?([{"true":"val" "false":!"val"} .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax2(rules));
+        let rules = stderr_unwrap(rules, syntax(rules));
         let mut data = vec![];
         stderr_unwrap(text, parse(&rules, text, &mut data));
         let mut s = Search::new(&data);
@@ -446,7 +446,7 @@ mod tests {
             0 proposition = {"true":"val" "false":!"val"}
             0 document = .r?([proposition:"proposition" .w?])
         "#;
-        let rules = stderr_unwrap(rules, syntax2(rules));
+        let rules = stderr_unwrap(rules, syntax(rules));
         let mut data = vec![];
         stderr_unwrap(text, parse(&rules, text, &mut data));
         let mut s = Search::new(&data);
