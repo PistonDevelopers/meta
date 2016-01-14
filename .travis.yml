@@ -1,18 +1,10 @@
 language: rust
 rust:
-- nightly
-- beta
-- stable
-before_script:
-- pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
+ - nightly
+ - beta
+ - stable
 script:
-- |
-  travis-cargo build &&
-  travis-cargo test &&
-  travis-cargo bench &&
-  travis-cargo doc
+ - cargo test -v
+ - cargo doc -v
 after_success:
-- travis-cargo --only stable doc-upload
-env:
-  global:
-    secure: aXR1pPowTuMKmq/3xwxxQxTtddu2F0kYSo3J+foiFoR/Z58K+cclTVd/rgQp/9Pvgulgi3g2u51rENbUC31EMS4TMRHwsmKMKmBwfxjrLWidYiPjVTyYXZ5UbAoXk9/4aOfMqbXDYbmm/qJ4TML2C96dOhpugmm0Uy6W4Tw9ALk=
+ - curl http://docs.piston.rs/travis-doc-upload.sh | sh
