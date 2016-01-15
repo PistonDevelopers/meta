@@ -1,0 +1,54 @@
+/*
+Used for bootstrapping to test changes in meta language.
+*/
+
+_opt: "optional"
+_inv: "inverted"
+_prop: "property"
+_any: "any_characters"
+_seps: "[]{}():.!?\""
+0 multi_line_comment = ["/*" ..."*/"? .r?({
+    [!"*/" "*" ..."*/"?]
+    [multi_line_comment ..."*/"?]
+    ["/" ..."*/"?]
+}) "*/"]
+1 comment = {multi_line_comment ["//" ..."\n"?]}
+2 string = ["_" .._seps!:"name" ":" .w? .t?:"text"]
+3 node = [.$:"id" .w! !"_" !"." .._seps!:"name" .w? "=" .w? rule:"rule"]
+4 set = {.t!:"value" ["_" .._seps!:"ref"]}
+5 set_opt = {.t?:"value" ["_" .._seps!:"ref"]}
+6 opt = {"?":_opt "!":!_opt}
+7 number = [".$" ?"_":"underscore" ?[":" set:_prop]]
+8 text = [".t" {"?":"allow_empty" "!":!"allow_empty"} ?[":" set:_prop]]
+9 reference = [!"_" !"." .._seps!:"name" ?[":" set:_prop]]
+10 sequence = ["[" .w? .s!.(.w! rule:"rule") "]"]
+11 select = ["{" .w? .s!.(.w! rule:"rule") "}"]
+12 separated_by = [".s" opt ?".":"allow_trail"
+  "(" .w? rule:"by" .w! rule:"rule" .w? ")"]
+13 tag = [?"!":"not" set:"text" ?[":" ?"!":_inv set:_prop]]
+14 optional = ["?" rule:"rule"]
+15 whitespace = [".w" opt]
+16 until_any_or_whitespace = [".." set_opt:_any opt ?[":" set:_prop]]
+17 until_any = ["..." set_opt:_any opt ?[":" set:_prop]]
+18 repeat = [".r" opt "(" rule:"rule" ")"]
+19 lines = [".l(" .w? rule:"rule" .w? ")"]
+20 rule = {
+  whitespace:"whitespace"
+  until_any_or_whitespace:"until_any_or_whitespace"
+  until_any:"until_any"
+  lines:"lines"
+  repeat:"repeat"
+  number:"number"
+  text:"text"
+  reference:"reference"
+  sequence:"sequence"
+  select:"select"
+  separated_by:"separated_by"
+  tag:"tag"
+  optional:"optional"
+}
+21 document = [
+    .l([.w? {string:"string" comment}])
+    .l([.w? {node:"node" comment}])
+    .w?
+]

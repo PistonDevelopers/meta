@@ -6,6 +6,7 @@ use meta_rules::{
     Node,
     Number,
     Optional,
+    Repeat,
     Rule,
     Select,
     SeparateBy,
@@ -26,47 +27,128 @@ pub fn rules() -> Syntax {
     let any: Arc<String> = Arc::new("any_characters".into());
     let seps: Arc<String> = Arc::new("[]{}():.!?\"".into());
 
-    // 0 comment = {["/*" ..."*/"? "*/"] ["//" ..."\n"?]}
-    let comment_rule = Rule::Select(Select {
+    // 0 multi_line_comment = ["/*" ..."*/"? .r?({
+    //     [!"*/" "*" ..."*/"?]
+    //     [multi_line_comment ..."*/"?]
+    //     ["/" ..."*/"?]
+    // }) "*/"]
+    let multi_line_comment_rule = Rule::Sequence(Sequence {
         debug_id: 1,
         args: vec![
-            Rule::Sequence(Sequence {
+            Rule::Tag(Tag {
                 debug_id: 2,
-                args: vec![
-                    Rule::Tag(Tag {
-                        debug_id: 3,
-                        text: Arc::new("/*".into()),
-                        not: false,
-                        inverted: false,
-                        property: None,
-                    }),
-                    Rule::UntilAny(UntilAny {
-                        debug_id: 4,
-                        any_characters: Arc::new("*/".into()),
-                        optional: true,
-                        property: None,
-                    }),
-                    Rule::Tag(Tag {
-                        debug_id: 5,
-                        text: Arc::new("*/".into()),
-                        not: false,
-                        inverted: false,
-                        property: None,
-                    })
-                ]
+                text: Arc::new("/*".into()),
+                not: false,
+                inverted: false,
+                property: None
+            }),
+            Rule::UntilAny(UntilAny {
+                debug_id: 3,
+                any_characters: Arc::new("*/".into()),
+                optional: true,
+                property: None,
+            }),
+            Rule::Repeat(Box::new(Repeat {
+                debug_id: 4,
+                optional: true,
+                rule: Rule::Select(Select {
+                    debug_id: 5,
+                    args: vec![
+                        Rule::Sequence(Sequence {
+                            debug_id: 6,
+                            args: vec![
+                                Rule::Tag(Tag {
+                                    debug_id: 7,
+                                    text: Arc::new("*/".into()),
+                                    not: true,
+                                    inverted: false,
+                                    property: None,
+                                }),
+                                Rule::Tag(Tag {
+                                    debug_id: 8,
+                                    text: Arc::new("*".into()),
+                                    not: false,
+                                    inverted: false,
+                                    property: None,
+                                }),
+                                Rule::UntilAny(UntilAny {
+                                    debug_id: 9,
+                                    any_characters: Arc::new("*/".into()),
+                                    optional: true,
+                                    property: None,
+                                }),
+                            ]
+                        }),
+                        Rule::Sequence(Sequence {
+                            debug_id: 10,
+                            args: vec![
+                                Rule::Node(Node {
+                                    debug_id: 11,
+                                    name: Arc::new("multi_line_comment".into()),
+                                    index: None,
+                                    property: None,
+                                }),
+                                Rule::UntilAny(UntilAny {
+                                    debug_id: 12,
+                                    any_characters: Arc::new("*/".into()),
+                                    optional: true,
+                                    property: None,
+                                }),
+                            ]
+                        }),
+                        Rule::Sequence(Sequence {
+                            debug_id: 13,
+                            args: vec![
+                                Rule::Tag(Tag {
+                                    debug_id: 14,
+                                    text: Arc::new("/".into()),
+                                    not: false,
+                                    inverted: false,
+                                    property: None,
+                                }),
+                                Rule::UntilAny(UntilAny {
+                                    debug_id: 15,
+                                    any_characters: Arc::new("*/".into()),
+                                    optional: true,
+                                    property: None,
+                                }),
+                            ]
+                        })
+                    ]
+                })
+            })),
+            Rule::Tag(Tag {
+                debug_id: 16,
+                text: Arc::new("*/".into()),
+                not: false,
+                inverted: false,
+                property: None,
+            }),
+        ]
+    });
+
+    // 1 comment = {multi_line_comment ["//" ..."\n"?]}
+    let comment_rule = Rule::Select(Select {
+        debug_id: 1001,
+        args: vec![
+            Rule::Node(Node {
+                debug_id: 1002,
+                name: Arc::new("multi_line_comment".into()),
+                index: None,
+                property: None,
             }),
             Rule::Sequence(Sequence {
-                debug_id: 6,
+                debug_id: 1003,
                 args: vec![
                     Rule::Tag(Tag {
-                        debug_id: 7,
+                        debug_id: 1004,
                         text: Arc::new("//".into()),
                         not: false,
                         inverted: false,
                         property: None,
                     }),
                     Rule::UntilAny(UntilAny {
-                        debug_id: 8,
+                        debug_id: 1005,
                         any_characters: Arc::new("\n".into()),
                         optional: true,
                         property: None,
@@ -76,92 +158,92 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 1 string = ["_" .._seps!:"name" ":" .w? .t?:"text"]
+    // 2 string = ["_" .._seps!:"name" ":" .w? .t?:"text"]
     let string_rule = Rule::Sequence(Sequence {
-        debug_id: 1001,
+        debug_id: 2001,
         args: vec![
             Rule::Tag(Tag {
-                debug_id: 1002,
+                debug_id: 2002,
                 text: Arc::new("_".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
-                debug_id: 1003,
+                debug_id: 2003,
                 any_characters: seps.clone(),
                 optional: false,
                 property: Some(Arc::new("name".into())),
             }),
             Rule::Tag(Tag {
-                debug_id: 1004,
+                debug_id: 2004,
                 text: Arc::new(":".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 1005,
+                debug_id: 2005,
                 optional: true,
             }),
             Rule::Text(Text {
-                debug_id: 1006,
+                debug_id: 2006,
                 allow_empty: true,
                 property: Some(Arc::new("text".into()))
             })
         ]
     });
 
-    // 2 node = [.$:"id" .w! !"_" !"." .._seps!:"name" .w? "=" .w? rule:"rule"]
+    // 3 node = [.$:"id" .w! !"_" !"." .._seps!:"name" .w? "=" .w? rule:"rule"]
     let node_rule = Rule::Sequence(Sequence {
-        debug_id: 2001,
+        debug_id: 3001,
         args: vec![
             Rule::Number(Number {
-                debug_id: 2002,
+                debug_id: 3002,
                 allow_underscore: false,
                 property: Some(Arc::new("id".into()))
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 2003,
+                debug_id: 3003,
                 optional: false,
             }),
             Rule::Tag(Tag {
-                debug_id: 2004,
+                debug_id: 3004,
                 not: true,
                 inverted: false,
                 text: Arc::new("_".into()),
                 property: None,
             }),
             Rule::Tag(Tag {
-                debug_id: 2005,
+                debug_id: 3005,
                 not: true,
                 inverted: false,
                 text: Arc::new(".".into()),
                 property: None,
             }),
             Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
-                debug_id: 2006,
+                debug_id: 3006,
                 any_characters: seps.clone(),
                 optional: false,
                 property: Some(Arc::new("name".into())),
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 2007,
+                debug_id: 3007,
                 optional: true,
             }),
             Rule::Tag(Tag {
-                debug_id: 2008,
+                debug_id: 3008,
                 not: false,
                 inverted: false,
                 text: Arc::new("=".into()),
                 property: None,
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 2009,
+                debug_id: 3009,
                 optional: true,
             }),
             Rule::Node(Node {
-                debug_id: 2010,
+                debug_id: 3010,
                 name: Arc::new("rule".into()),
                 index: None,
                 property: Some(Arc::new("rule".into())),
@@ -169,43 +251,13 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 3 set = {.t!:"value" ["_" .._seps!:"ref"]}
+    // 4 set = {.t!:"value" ["_" .._seps!:"ref"]}
     let set_rule = Rule::Select(Select {
-        debug_id: 3001,
-        args: vec![
-            Rule::Text(Text {
-                debug_id: 3002,
-                allow_empty: false,
-                property: Some(Arc::new("value".into())),
-            }),
-            Rule::Sequence(Sequence {
-                debug_id: 3003,
-                args: vec![
-                    Rule::Tag(Tag {
-                        debug_id: 3004,
-                        text: Arc::new("_".into()),
-                        not: false,
-                        inverted: false,
-                        property: None,
-                    }),
-                    Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
-                        debug_id: 3005,
-                        any_characters: seps.clone(),
-                        optional: false,
-                        property: Some(Arc::new("ref".into())),
-                    })
-                ]
-            })
-        ]
-    });
-
-    // 4 set_opt = {.t?:"value" ["_" .._seps!:"ref"]}
-    let set_opt_rule = Rule::Select(Select {
         debug_id: 4001,
         args: vec![
             Rule::Text(Text {
                 debug_id: 4002,
-                allow_empty: true,
+                allow_empty: false,
                 property: Some(Arc::new("value".into())),
             }),
             Rule::Sequence(Sequence {
@@ -229,19 +281,49 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 5 opt = {"?":_opt "!":!_opt}
-    let opt_rule = Rule::Select(Select {
+    // 5 set_opt = {.t?:"value" ["_" .._seps!:"ref"]}
+    let set_opt_rule = Rule::Select(Select {
         debug_id: 5001,
         args: vec![
-            Rule::Tag(Tag {
+            Rule::Text(Text {
                 debug_id: 5002,
+                allow_empty: true,
+                property: Some(Arc::new("value".into())),
+            }),
+            Rule::Sequence(Sequence {
+                debug_id: 5003,
+                args: vec![
+                    Rule::Tag(Tag {
+                        debug_id: 5004,
+                        text: Arc::new("_".into()),
+                        not: false,
+                        inverted: false,
+                        property: None,
+                    }),
+                    Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
+                        debug_id: 5005,
+                        any_characters: seps.clone(),
+                        optional: false,
+                        property: Some(Arc::new("ref".into())),
+                    })
+                ]
+            })
+        ]
+    });
+
+    // 6 opt = {"?":_opt "!":!_opt}
+    let opt_rule = Rule::Select(Select {
+        debug_id: 6001,
+        args: vec![
+            Rule::Tag(Tag {
+                debug_id: 6002,
                 text: Arc::new("?".into()),
                 not: false,
                 inverted: false,
                 property: Some(opt.clone()),
             }),
             Rule::Tag(Tag {
-                debug_id: 5003,
+                debug_id: 6003,
                 text: Arc::new("!".into()),
                 not: false,
                 inverted: true,
@@ -250,21 +332,21 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 6 number = [".$" ?"_":"underscore" ?[":" set:_prop]]
+    // 7 number = [".$" ?"_":"underscore" ?[":" set:_prop]]
     let number_rule = Rule::Sequence(Sequence {
-        debug_id: 6001,
+        debug_id: 7001,
         args: vec![
             Rule::Tag(Tag {
-                debug_id: 6002,
+                debug_id: 7002,
                 text: Arc::new(".$".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Optional(Box::new(Optional {
-                debug_id: 6003,
+                debug_id: 7003,
                 rule: Rule::Tag(Tag {
-                    debug_id: 6004,
+                    debug_id: 7004,
                     text: Arc::new("_".into()),
                     not: false,
                     inverted: false,
@@ -272,19 +354,19 @@ pub fn rules() -> Syntax {
                 }),
             })),
             Rule::Optional(Box::new(Optional {
-                debug_id: 6004,
+                debug_id: 7004,
                 rule: Rule::Sequence(Sequence {
-                    debug_id: 6005,
+                    debug_id: 7005,
                     args: vec![
                         Rule::Tag(Tag {
-                            debug_id: 6006,
+                            debug_id: 7006,
                             text: Arc::new(":".into()),
                             not: false,
                             inverted: false,
                             property: None,
                         }),
                         Rule::Node(Node {
-                            debug_id: 6007,
+                            debug_id: 7007,
                             name: Arc::new("set".into()),
                             index: None,
                             property: Some(prop.clone()),
@@ -295,29 +377,29 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 7 text = [".t" {"?":"allow_empty" "!":!"allow_empty"} ?[":" set:_prop]]
+    // 8 text = [".t" {"?":"allow_empty" "!":!"allow_empty"} ?[":" set:_prop]]
     let text_rule = Rule::Sequence(Sequence {
-        debug_id: 7001,
+        debug_id: 8001,
         args: vec![
             Rule::Tag(Tag {
-                debug_id: 7002,
+                debug_id: 8002,
                 text: Arc::new(".t".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Select(Select {
-                debug_id: 7003,
+                debug_id: 8003,
                 args: vec![
                     Rule::Tag(Tag {
-                        debug_id: 7004,
+                        debug_id: 8004,
                         text: Arc::new("?".into()),
                         not: false,
                         inverted: false,
                         property: Some(Arc::new("allow_empty".into())),
                     }),
                     Rule::Tag(Tag {
-                        debug_id: 7005,
+                        debug_id: 8005,
                         text: Arc::new("!".into()),
                         not: false,
                         inverted: true,
@@ -326,19 +408,19 @@ pub fn rules() -> Syntax {
                 ]
             }),
             Rule::Optional(Box::new(Optional {
-                debug_id: 7006,
+                debug_id: 8006,
                 rule: Rule::Sequence(Sequence {
-                    debug_id: 7007,
+                    debug_id: 8007,
                     args: vec![
                         Rule::Tag(Tag {
-                            debug_id: 7008,
+                            debug_id: 8008,
                             text: Arc::new(":".into()),
                             not: false,
                             inverted: false,
                             property: None,
                         }),
                         Rule::Node(Node {
-                            debug_id: 7009,
+                            debug_id: 8009,
                             name: Arc::new("set".into()),
                             property: Some(prop.clone()),
                             index: None,
@@ -349,44 +431,44 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 8 reference = [!"_" !"." .._seps!:"name" ?[":" set:_prop]]
+    // 9 reference = [!"_" !"." .._seps!:"name" ?[":" set:_prop]]
     let reference_rule = Rule::Sequence(Sequence {
-        debug_id: 8001,
+        debug_id: 9001,
         args: vec![
             Rule::Tag(Tag {
-                debug_id: 8002,
+                debug_id: 9002,
                 text: Arc::new("_".into()),
                 not: true,
                 inverted: false,
                 property: None,
             }),
             Rule::Tag(Tag {
-                debug_id: 8003,
+                debug_id: 9003,
                 text: Arc::new(".".into()),
                 not: true,
                 inverted: false,
                 property: None,
             }),
             Rule::UntilAnyOrWhitespace(UntilAnyOrWhitespace {
-                debug_id: 8004,
+                debug_id: 9004,
                 any_characters: seps.clone(),
                 optional: false,
                 property: Some(Arc::new("name".into())),
             }),
             Rule::Optional(Box::new(Optional {
-                debug_id: 8005,
+                debug_id: 9005,
                 rule: Rule::Sequence(Sequence {
-                    debug_id: 8006,
+                    debug_id: 9006,
                     args: vec![
                         Rule::Tag(Tag {
-                            debug_id: 8007,
+                            debug_id: 9007,
                             text: Arc::new(":".into()),
                             not: false,
                             inverted: false,
                             property: None,
                         }),
                         Rule::Node(Node {
-                            debug_id: 8008,
+                            debug_id: 9008,
                             name: Arc::new("set".into()),
                             property: Some(prop.clone()),
                             index: None,
@@ -397,53 +479,13 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 9 sequence = ["[" .w? .s!.(.w! rule:"rule") "]"]
+    // 10 sequence = ["[" .w? .s!.(.w! rule:"rule") "]"]
     let sequence_rule = Rule::Sequence(Sequence {
-        debug_id: 9001,
-        args: vec![
-            Rule::Tag(Tag {
-                debug_id: 9002,
-                text: Arc::new("[".into()),
-                not: false,
-                inverted: false,
-                property: None,
-            }),
-            Rule::Whitespace(Whitespace {
-                debug_id: 9003,
-                optional: true,
-            }),
-            Rule::SeparateBy(Box::new(SeparateBy {
-                debug_id: 9004,
-                optional: false,
-                allow_trail: true,
-                by: Rule::Whitespace(Whitespace {
-                    debug_id: 9005,
-                    optional: false,
-                }),
-                rule: Rule::Node(Node {
-                    debug_id: 9006,
-                    name: Arc::new("rule".into()),
-                    index: None,
-                    property: Some(Arc::new("rule".into())),
-                })
-            })),
-            Rule::Tag(Tag {
-                debug_id: 9007,
-                text: Arc::new("]".into()),
-                not: false,
-                inverted: false,
-                property: None,
-            })
-        ]
-    });
-
-    // 10 select = ["{" .w? .s!.(.w! rule:"rule") "}"]
-    let select_rule = Rule::Sequence(Sequence {
         debug_id: 10001,
         args: vec![
             Rule::Tag(Tag {
                 debug_id: 10002,
-                text: Arc::new("{".into()),
+                text: Arc::new("[".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -469,6 +511,46 @@ pub fn rules() -> Syntax {
             })),
             Rule::Tag(Tag {
                 debug_id: 10007,
+                text: Arc::new("]".into()),
+                not: false,
+                inverted: false,
+                property: None,
+            })
+        ]
+    });
+
+    // 11 select = ["{" .w? .s!.(.w! rule:"rule") "}"]
+    let select_rule = Rule::Sequence(Sequence {
+        debug_id: 11001,
+        args: vec![
+            Rule::Tag(Tag {
+                debug_id: 11002,
+                text: Arc::new("{".into()),
+                not: false,
+                inverted: false,
+                property: None,
+            }),
+            Rule::Whitespace(Whitespace {
+                debug_id: 11003,
+                optional: true,
+            }),
+            Rule::SeparateBy(Box::new(SeparateBy {
+                debug_id: 11004,
+                optional: false,
+                allow_trail: true,
+                by: Rule::Whitespace(Whitespace {
+                    debug_id: 11005,
+                    optional: false,
+                }),
+                rule: Rule::Node(Node {
+                    debug_id: 11006,
+                    name: Arc::new("rule".into()),
+                    index: None,
+                    property: Some(Arc::new("rule".into())),
+                })
+            })),
+            Rule::Tag(Tag {
+                debug_id: 11007,
                 text: Arc::new("}".into()),
                 not: false,
                 inverted: false,
@@ -477,28 +559,28 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 11 separated_by = [".s" opt ?".":"allow_trail"
+    // 12 separated_by = [".s" opt ?".":"allow_trail"
     //  "(" .w? rule:"by" .w! rule:"rule" .w? ")"]
     let separated_by_rule = Rule::Sequence(Sequence {
-        debug_id: 11001,
+        debug_id: 12001,
         args: vec![
             Rule::Tag(Tag {
-                debug_id: 11002,
+                debug_id: 12002,
                 text: Arc::new(".s".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
-                debug_id: 11003,
+                debug_id: 12003,
                 name: Arc::new("opt".into()),
                 index: None,
                 property: None,
             }),
             Rule::Optional(Box::new(Optional {
-                debug_id: 11004,
+                debug_id: 12004,
                 rule: Rule::Tag(Tag {
-                    debug_id: 11005,
+                    debug_id: 12005,
                     text: Arc::new(".".into()),
                     not: false,
                     inverted: false,
@@ -506,38 +588,38 @@ pub fn rules() -> Syntax {
                 })
             })),
             Rule::Tag(Tag {
-                debug_id: 11006,
+                debug_id: 12006,
                 text: Arc::new("(".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 11007,
+                debug_id: 12007,
                 optional: true,
             }),
             Rule::Node(Node {
-                debug_id: 11008,
+                debug_id: 12008,
                 name: Arc::new("rule".into()),
                 index: None,
                 property: Some(Arc::new("by".into())),
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 11009,
+                debug_id: 12009,
                 optional: false,
             }),
             Rule::Node(Node {
-                debug_id: 11010,
+                debug_id: 12010,
                 name: Arc::new("rule".into()),
                 index: None,
                 property: Some(Arc::new("rule".into())),
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 11011,
+                debug_id: 12011,
                 optional: true,
             }),
             Rule::Tag(Tag {
-                debug_id: 11012,
+                debug_id: 12012,
                 text: Arc::new(")".into()),
                 not: false,
                 inverted: false,
@@ -546,14 +628,14 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 12 tag = [?"!":"not" set:"text" ?[":" ?"!":_inv set:_prop]]
+    // 13 tag = [?"!":"not" set:"text" ?[":" ?"!":_inv set:_prop]]
     let tag_rule = Rule::Sequence(Sequence {
-        debug_id: 12001,
+        debug_id: 13001,
         args: vec![
             Rule::Optional(Box::new(Optional {
-                debug_id: 12002,
+                debug_id: 13002,
                 rule: Rule::Tag(Tag {
-                    debug_id: 12003,
+                    debug_id: 13003,
                     text: Arc::new("!".into()),
                     not: false,
                     inverted: false,
@@ -561,27 +643,27 @@ pub fn rules() -> Syntax {
                 })
             })),
             Rule::Node(Node {
-                debug_id: 12004,
+                debug_id: 13004,
                 name: Arc::new("set".into()),
                 index: None,
                 property: Some(Arc::new("text".into())),
             }),
             Rule::Optional(Box::new(Optional {
-                debug_id: 12005,
+                debug_id: 13005,
                 rule: Rule::Sequence(Sequence {
-                    debug_id: 12006,
+                    debug_id: 13006,
                     args: vec![
                         Rule::Tag(Tag {
-                            debug_id: 12007,
+                            debug_id: 13007,
                             text: Arc::new(":".into()),
                             not: false,
                             inverted: false,
                             property: None,
                         }),
                         Rule::Optional(Box::new(Optional {
-                            debug_id: 12008,
+                            debug_id: 13008,
                             rule: Rule::Tag(Tag {
-                                debug_id: 12009,
+                                debug_id: 13009,
                                 text: Arc::new("!".into()),
                                 not: false,
                                 inverted: false,
@@ -589,7 +671,7 @@ pub fn rules() -> Syntax {
                             })
                         })),
                         Rule::Node(Node {
-                            debug_id: 12010,
+                            debug_id: 13010,
                             name: Arc::new("set".into()),
                             index: None,
                             property: Some(prop.clone()),
@@ -600,19 +682,19 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 13 optional = ["?" rule:"rule"]
+    // 14 optional = ["?" rule:"rule"]
     let optional_rule = Rule::Sequence(Sequence {
-        debug_id: 13001,
+        debug_id: 14001,
         args: vec![
             Rule::Tag(Tag {
-                debug_id: 13002,
+                debug_id: 14002,
                 text: Arc::new("?".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
-                debug_id: 13003,
+                debug_id: 14003,
                 name: Arc::new("rule".into()),
                 index: None,
                 property: Some(Arc::new("rule".into())),
@@ -620,19 +702,19 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 14 whitespace = [".w" opt]
+    // 15 whitespace = [".w" opt]
     let whitespace_rule = Rule::Sequence(Sequence {
-        debug_id: 14002,
+        debug_id: 15002,
         args: vec![
             Rule::Tag(Tag {
-                debug_id: 14003,
+                debug_id: 15003,
                 text: Arc::new(".w".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
-                debug_id: 14004,
+                debug_id: 15004,
                 name: Arc::new("opt".into()),
                 index: None,
                 property: None,
@@ -640,60 +722,13 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 15 until_any_or_whitespace = [".." set_opt:_any opt ?[":" set:_prop]]
+    // 16 until_any_or_whitespace = [".." set_opt:_any opt ?[":" set:_prop]]
     let until_any_or_whitespace_rule = Rule::Sequence(Sequence {
-        debug_id: 15001,
-        args: vec![
-            Rule::Tag(Tag {
-                debug_id: 15002,
-                text: Arc::new("..".into()),
-                not: false,
-                inverted: false,
-                property: None,
-            }),
-            Rule::Node(Node {
-                debug_id: 15003,
-                name: Arc::new("set_opt".into()),
-                index: None,
-                property: Some(any.clone()),
-            }),
-            Rule::Node(Node {
-                debug_id: 15004,
-                name: Arc::new("opt".into()),
-                index: None,
-                property: None,
-            }),
-            Rule::Optional(Box::new(Optional {
-                debug_id: 15005,
-                rule: Rule::Sequence(Sequence {
-                    debug_id: 15006,
-                    args: vec![
-                        Rule::Tag(Tag {
-                            debug_id: 15007,
-                            text: Arc::new(":".into()),
-                            not: false,
-                            inverted: false,
-                            property: None,
-                        }),
-                        Rule::Node(Node {
-                            debug_id: 15008,
-                            name: Arc::new("set".into()),
-                            index: None,
-                            property: Some(prop.clone()),
-                        })
-                    ]
-                })
-            }))
-        ]
-    });
-
-    // 16 until_any = ["..." set_opt:_any opt ?[":" set:_prop]]
-    let until_any_rule = Rule::Sequence(Sequence {
         debug_id: 16001,
         args: vec![
             Rule::Tag(Tag {
                 debug_id: 16002,
-                text: Arc::new("...".into()),
+                text: Arc::new("..".into()),
                 not: false,
                 inverted: false,
                 property: None,
@@ -734,70 +769,82 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 17 repeat = [".r" opt "(" rule:"rule" ")"]
-    let repeat_rule = Rule::Sequence(Sequence {
+    // 17 until_any = ["..." set_opt:_any opt ?[":" set:_prop]]
+    let until_any_rule = Rule::Sequence(Sequence {
         debug_id: 17001,
         args: vec![
             Rule::Tag(Tag {
                 debug_id: 17002,
-                text: Arc::new(".r".into()),
+                text: Arc::new("...".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
                 debug_id: 17003,
+                name: Arc::new("set_opt".into()),
+                index: None,
+                property: Some(any.clone()),
+            }),
+            Rule::Node(Node {
+                debug_id: 17004,
+                name: Arc::new("opt".into()),
+                index: None,
+                property: None,
+            }),
+            Rule::Optional(Box::new(Optional {
+                debug_id: 17005,
+                rule: Rule::Sequence(Sequence {
+                    debug_id: 17006,
+                    args: vec![
+                        Rule::Tag(Tag {
+                            debug_id: 17007,
+                            text: Arc::new(":".into()),
+                            not: false,
+                            inverted: false,
+                            property: None,
+                        }),
+                        Rule::Node(Node {
+                            debug_id: 17008,
+                            name: Arc::new("set".into()),
+                            index: None,
+                            property: Some(prop.clone()),
+                        })
+                    ]
+                })
+            }))
+        ]
+    });
+
+    // 18 repeat = [".r" opt "(" rule:"rule" ")"]
+    let repeat_rule = Rule::Sequence(Sequence {
+        debug_id: 18001,
+        args: vec![
+            Rule::Tag(Tag {
+                debug_id: 18002,
+                text: Arc::new(".r".into()),
+                not: false,
+                inverted: false,
+                property: None,
+            }),
+            Rule::Node(Node {
+                debug_id: 18003,
                 name: Arc::new("opt".into()),
                 index: None,
                 property: None,
             }),
             Rule::Tag(Tag {
-                debug_id: 17004,
+                debug_id: 18004,
                 text: Arc::new("(".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
             Rule::Node(Node {
-                debug_id: 17005,
-                name: Arc::new("rule".into()),
-                index: None,
-                property: Some(Arc::new("rule".into())),
-            }),
-            Rule::Tag(Tag {
-                debug_id: 17006,
-                text: Arc::new(")".into()),
-                not: false,
-                inverted: false,
-                property: None,
-            })
-        ]
-    });
-
-    // 18 lines = [".l(" .w? rule:"rule" .w? ")"]
-    let lines_rule = Rule::Sequence(Sequence {
-        debug_id: 18001,
-        args: vec![
-            Rule::Tag(Tag {
-                debug_id: 18002,
-                text: Arc::new(".l(".into()),
-                not: false,
-                inverted: false,
-                property: None,
-            }),
-            Rule::Whitespace(Whitespace {
-                debug_id: 18003,
-                optional: true,
-            }),
-            Rule::Node(Node {
-                debug_id: 18004,
-                name: Arc::new("rule".into()),
-                index: None,
-                property: Some(Arc::new("rule".into())),
-            }),
-            Rule::Whitespace(Whitespace {
                 debug_id: 18005,
-                optional: true,
+                name: Arc::new("rule".into()),
+                index: None,
+                property: Some(Arc::new("rule".into())),
             }),
             Rule::Tag(Tag {
                 debug_id: 18006,
@@ -809,8 +856,43 @@ pub fn rules() -> Syntax {
         ]
     });
 
+    // 19 lines = [".l(" .w? rule:"rule" .w? ")"]
+    let lines_rule = Rule::Sequence(Sequence {
+        debug_id: 19001,
+        args: vec![
+            Rule::Tag(Tag {
+                debug_id: 19002,
+                text: Arc::new(".l(".into()),
+                not: false,
+                inverted: false,
+                property: None,
+            }),
+            Rule::Whitespace(Whitespace {
+                debug_id: 19003,
+                optional: true,
+            }),
+            Rule::Node(Node {
+                debug_id: 19004,
+                name: Arc::new("rule".into()),
+                index: None,
+                property: Some(Arc::new("rule".into())),
+            }),
+            Rule::Whitespace(Whitespace {
+                debug_id: 19005,
+                optional: true,
+            }),
+            Rule::Tag(Tag {
+                debug_id: 19006,
+                text: Arc::new(")".into()),
+                not: false,
+                inverted: false,
+                property: None,
+            })
+        ]
+    });
+
     /*
-    19 rule = {
+    20 rule = {
       whitespace:"whitespace"
       until_any_or_whitespace:"until_any_or_whitespace"
       until_any:"until_any"
@@ -827,82 +909,82 @@ pub fn rules() -> Syntax {
     }
     */
     let rule_rule = Rule::Select(Select {
-        debug_id: 19001,
+        debug_id: 20001,
         args: vec![
             Rule::Node(Node {
-                debug_id: 19002,
+                debug_id: 20002,
                 name: Arc::new("whitespace".into()),
                 index: None,
                 property: Some(Arc::new("whitespace".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19003,
+                debug_id: 20003,
                 name: Arc::new("until_any_or_whitespace".into()),
                 index: None,
                 property: Some(Arc::new("until_any_or_whitespace".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19004,
+                debug_id: 20004,
                 name: Arc::new("until_any".into()),
                 index: None,
                 property: Some(Arc::new("until_any".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19005,
+                debug_id: 20005,
                 name: Arc::new("lines".into()),
                 index: None,
                 property: Some(Arc::new("lines".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19006,
+                debug_id: 20006,
                 name: Arc::new("repeat".into()),
                 index: None,
                 property: Some(Arc::new("repeat".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19007,
+                debug_id: 20007,
                 name: Arc::new("number".into()),
                 index: None,
                 property: Some(Arc::new("number".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19008,
+                debug_id: 20008,
                 name: Arc::new("text".into()),
                 index: None,
                 property: Some(Arc::new("text".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19009,
+                debug_id: 20009,
                 name: Arc::new("reference".into()),
                 index: None,
                 property: Some(Arc::new("reference".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19010,
+                debug_id: 20010,
                 name: Arc::new("sequence".into()),
                 index: None,
                 property: Some(Arc::new("sequence".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19011,
+                debug_id: 20011,
                 name: Arc::new("select".into()),
                 index: None,
                 property: Some(Arc::new("select".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19012,
+                debug_id: 20012,
                 name: Arc::new("separated_by".into()),
                 index: None,
                 property: Some(Arc::new("separated_by".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19013,
+                debug_id: 20013,
                 name: Arc::new("tag".into()),
                 index: None,
                 property: Some(Arc::new("tag".into())),
             }),
             Rule::Node(Node {
-                debug_id: 19013,
+                debug_id: 20013,
                 name: Arc::new("optional".into()),
                 index: None,
                 property: Some(Arc::new("optional".into())),
@@ -911,35 +993,35 @@ pub fn rules() -> Syntax {
     });
 
     /*
-    20 document = [
+    21 document = [
         .l([.w? {string:"string" comment}])
         .l([.w? {node:"node" comment}])
         .w?
     ]
     */
     let document_rule = Rule::Sequence(Sequence {
-        debug_id: 20001,
+        debug_id: 21001,
         args: vec![
             Rule::Lines(Box::new(Lines {
-                debug_id: 20002,
+                debug_id: 21002,
                 rule: Rule::Sequence(Sequence {
-                    debug_id: 20003,
+                    debug_id: 21003,
                     args: vec![
                         Rule::Whitespace(Whitespace {
-                            debug_id: 20004,
+                            debug_id: 21004,
                             optional: true,
                         }),
                         Rule::Select(Select {
-                            debug_id: 20005,
+                            debug_id: 21005,
                             args: vec![
                                 Rule::Node(Node {
-                                    debug_id: 20006,
+                                    debug_id: 21006,
                                     name: Arc::new("string".into()),
                                     index: None,
                                     property: Some(Arc::new("string".into())),
                                 }),
                                 Rule::Node(Node {
-                                    debug_id: 20007,
+                                    debug_id: 21007,
                                     name: Arc::new("comment".into()),
                                     index: None,
                                     property: None,
@@ -950,25 +1032,25 @@ pub fn rules() -> Syntax {
                 })
             })),
             Rule::Lines(Box::new(Lines {
-                debug_id: 20003,
+                debug_id: 21008,
                 rule: Rule::Sequence(Sequence {
-                    debug_id: 20004,
+                    debug_id: 21009,
                     args: vec![
                         Rule::Whitespace(Whitespace {
-                            debug_id: 20004,
+                            debug_id: 21010,
                             optional: true,
                         }),
                         Rule::Select(Select {
-                            debug_id: 20006,
+                            debug_id: 21011,
                             args: vec![
                                 Rule::Node(Node {
-                                    debug_id: 20007,
+                                    debug_id: 21012,
                                     name: Arc::new("node".into()),
                                     index: None,
                                     property: Some(Arc::new("node".into())),
                                 }),
                                 Rule::Node(Node {
-                                    debug_id: 20007,
+                                    debug_id: 21013,
                                     name: Arc::new("comment".into()),
                                     index: None,
                                     property: None,
@@ -979,16 +1061,17 @@ pub fn rules() -> Syntax {
                 })
             })),
             Rule::Whitespace(Whitespace {
-                debug_id: 20004,
+                debug_id: 21014,
                 optional: true,
             }),
         ]
     });
 
     let mut syntax = Syntax {
-        rules: Vec::with_capacity(21),
-        names: Vec::with_capacity(21)
+        rules: Vec::with_capacity(22),
+        names: Vec::with_capacity(22)
     };
+    syntax.push(Arc::new("multi_line_comment".into()), multi_line_comment_rule);
     syntax.push(Arc::new("comment".into()), comment_rule);
     syntax.push(Arc::new("string".into()), string_rule);
     syntax.push(Arc::new("node".into()), node_rule);
