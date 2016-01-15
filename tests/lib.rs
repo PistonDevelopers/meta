@@ -50,7 +50,7 @@ fn url_in_multiline_comments() {
         1 say_hi = ["hi" .w? {"James":"james" "Peter":"peter"} "!"]
         2 document = say_hi
     "#;
-    let _ = use_new_self_syntax(rules, text);
+    let _ = use_old_self_syntax(rules, text);
 }
 
 #[test]
@@ -61,7 +61,7 @@ fn star_in_multiline_comments() {
         1 say_hi = ["hi" .w? {"James":"james" "Peter":"peter"} "!"]
         2 document = say_hi
     "#;
-    let _ = use_new_self_syntax(rules, text);
+    let _ = use_old_self_syntax(rules, text);
 }
 
 #[test]
@@ -72,7 +72,7 @@ fn nested_multiline_comments() {
         1 say_hi = ["hi" .w? {"James":"james" "Peter":"peter"} "!"]
         2 document = say_hi
     "#;
-    let _ = use_new_self_syntax(rules, text);
+    let _ = use_old_self_syntax(rules, text);
 }
 
 #[test]
@@ -84,5 +84,5 @@ fn nested_multiline_comments_fail() {
         1 say_hi = ["hi" .w? {"James":"james" "Peter":"peter"} "!"]
         2 document = say_hi
     "#;
-    let _ = use_new_self_syntax(rules, text);
+    let _ = use_old_self_syntax(rules, text);
 }
