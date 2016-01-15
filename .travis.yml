@@ -1,10 +1,10 @@
 language: rust
 rust:
- - nightly
- - beta
- - stable
+  - nightly
+  - beta
+  - stable
 script:
- - cargo test -v
- - cargo doc -v
+  - cargo test -v
+  - cargo doc -v
 after_success:
- - curl http://docs.piston.rs/travis-doc-upload.sh | sh
+  - curl http://docs.piston.rs/travis-doc-upload.sh | sh
