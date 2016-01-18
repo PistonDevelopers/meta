@@ -22,7 +22,7 @@ use MetaData;
 use Syntax;
 
 /// Stores state when converting from meta data.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Convert<'a> {
     data: &'a [Range<MetaData>],
     offset: usize,
