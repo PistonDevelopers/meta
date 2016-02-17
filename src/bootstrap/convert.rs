@@ -49,6 +49,14 @@ impl<'a> Convert<'a> {
         Range::new(rhs.offset, self.offset - rhs.offset)
     }
 
+    /// Returns the subtracted range in source (union of meta data ranges).
+    pub fn source(self, rhs: Convert) -> Option<Range> {
+        if rhs.data.len() == 0 || self.offset <= rhs.offset { return None; }
+        let start = rhs.data[0].offset;
+        let end = rhs.data[self.offset - rhs.offset - 1].next_offset();
+        Some(Range::new(start, end - start))
+    }
+
     /// Updates with parsed range.
     pub fn update(&mut self, range: Range) {
         let next_offset = range.next_offset();
