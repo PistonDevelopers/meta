@@ -44,6 +44,7 @@ impl<'a> ParseErrorHandler<'a> {
         msg: &str
     ) -> Result<(), io::Error> {
         try!(writeln!(w, "{}", msg));
+        let mut printed_pointer = false;
         for (i, &(r, text)) in self.lines.iter().enumerate() {
             if let Some(intersect) = range.ends_intersect(&r) {
                 if intersect.offset >= r.offset {
@@ -55,18 +56,21 @@ impl<'a> ParseErrorHandler<'a> {
                         try!(write!(w, "{}", c));
                     }
                     try!(writeln!(w, ""));
-                    try!(write!(w, "{},{}: ", i + 1, j + 1));
-                    for c in text.chars().skip(s).take(j - s) {
-                        match c {
-                            '\t' => {
-                                try!(write!(w, "\t"));
-                            }
-                            _ => {
-                                try!(write!(w, " "));
+                    if !printed_pointer {
+                        try!(write!(w, "{},{}: ", i + 1, j + 1));
+                        for c in text.chars().skip(s).take(j - s) {
+                            match c {
+                                '\t' => {
+                                    try!(write!(w, "\t"));
+                                }
+                                _ => {
+                                    try!(write!(w, " "));
+                                }
                             }
                         }
+                        try!(writeln!(w, "^"));
+                        printed_pointer = true;
                     }
-                    try!(writeln!(w, "^"));
                 }
             }
         }
@@ -115,6 +119,7 @@ impl<'a> ParseErrorHandler<'a> {
                 }
             }
         }
+        let mut printed_pointer = false;
         for (i, &(r, text)) in self.lines.iter().enumerate() {
             if let Some(intersect) = range.ends_intersect(&r) {
                 if intersect.offset >= r.offset {
@@ -126,18 +131,21 @@ impl<'a> ParseErrorHandler<'a> {
                         try!(write!(w, "{}", c));
                     }
                     try!(writeln!(w, ""));
-                    try!(write!(w, "{},{}: ", i + 1, j + 1));
-                    for c in text.chars().skip(s).take(j - s) {
-                        match c {
-                            '\t' => {
-                                try!(write!(w, "\t"));
-                            }
-                            _ => {
-                                try!(write!(w, " "));
+                    if !printed_pointer {
+                        try!(write!(w, "{},{}: ", i + 1, j + 1));
+                        for c in text.chars().skip(s).take(j - s) {
+                            match c {
+                                '\t' => {
+                                    try!(write!(w, "\t"));
+                                }
+                                _ => {
+                                    try!(write!(w, " "));
+                                }
                             }
                         }
+                        try!(writeln!(w, "^"));
+                        printed_pointer = true;
                     }
-                    try!(writeln!(w, "^"));
                 }
             }
         }
