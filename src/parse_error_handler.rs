@@ -36,7 +36,44 @@ impl<'a> ParseErrorHandler<'a> {
         }
     }
 
-    /// Prints error message to standard error.
+    /// Writes message.
+    pub fn write_msg<W: Write>(
+        &mut self,
+        w: &mut W,
+        range: Range,
+        msg: &str
+    ) -> Result<(), io::Error> {
+        try!(writeln!(w, "{}", msg));
+        for (i, &(r, text)) in self.lines.iter().enumerate() {
+            if let Some(intersect) = range.ends_intersect(&r) {
+                if intersect.offset >= r.offset {
+                    let j = intersect.offset - r.offset;
+                    let s = if j > 75 { j - 50 } else { 0 };
+                    let e = ::std::cmp::min(s + 100, r.length);
+                    try!(write!(w, "{},{}: ", i + 1, j + 1));
+                    for c in text.chars().skip(s).take(e - s) {
+                        try!(write!(w, "{}", c));
+                    }
+                    try!(writeln!(w, ""));
+                    try!(write!(w, "{},{}: ", i + 1, j + 1));
+                    for c in text.chars().skip(s).take(j - s) {
+                        match c {
+                            '\t' => {
+                                try!(write!(w, "\t"));
+                            }
+                            _ => {
+                                try!(write!(w, " "));
+                            }
+                        }
+                    }
+                    try!(writeln!(w, "^"));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Writes error message.
     pub fn write<W: Write>(
         &mut self,
         w: &mut W,
@@ -107,7 +144,7 @@ impl<'a> ParseErrorHandler<'a> {
         Ok(())
     }
 
-    /// Prints error message.
+    /// Prints error message to standard error.
     pub fn error(&mut self, range_err: Range<ParseError>) {
         self.write(&mut stderr(), range_err).unwrap()
     }
