@@ -5,6 +5,7 @@ use read_token::ReadToken;
 use super::{
     Lines,
     Node,
+    Not,
     Number,
     Optional,
     ParseResult,
@@ -53,6 +54,8 @@ pub enum Rule {
     Node(Node),
     /// Read optional.
     Optional(Box<Optional>),
+    /// Read not.
+    Not(Box<Not>),
 }
 
 impl Rule {
@@ -103,6 +106,9 @@ impl Rule {
             }
             &Rule::Optional(ref o) => {
                 Ok(o.parse(tokens, state, read_token, refs))
+            }
+            &Rule::Not(ref n) => {
+                n.parse(tokens, state, read_token, refs)
             }
         }
     }
@@ -166,6 +172,9 @@ impl Rule {
             }
             &mut Rule::Optional(ref mut o) => {
                 o.rule.update_refs(names);
+            }
+            &mut Rule::Not(ref mut n) => {
+                n.rule.update_refs(names);
             }
         }
     }

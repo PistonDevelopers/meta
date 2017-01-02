@@ -6,6 +6,7 @@ use meta_rules::{
     Lines,
     Optional,
     Node,
+    Not,
     Number,
     Repeat,
     Rule,
@@ -588,6 +589,30 @@ pub fn convert(
         }))))
     }
 
+    fn read_not(
+        debug_id: &mut usize,
+        mut convert: Convert,
+        strings: &[(Arc<String>, Arc<String>)],
+        ignored: &mut Vec<Range>
+    ) -> Result<(Range, Rule), ()> {
+        let start = convert.clone();
+        let node = "not";
+        let range = try!(convert.start_node(node));
+        convert.update(range);
+        let (range, rule) = try!(read_rule(
+            debug_id, "rule", convert, strings, ignored
+        ));
+        convert.update(range);
+        let range = try!(convert.end_node(node));
+        convert.update(range);
+        *debug_id += 1;
+        Ok((convert.subtract(start),
+        Rule::Not(Box::new(Not {
+            debug_id: *debug_id,
+            rule: rule,
+        }))))
+    }
+
     fn read_separated_by(
         debug_id: &mut usize,
         mut convert: Convert,
@@ -769,6 +794,11 @@ pub fn convert(
             convert.update(range);
             rule = Some(val);
         } else if let Ok((range, val)) = read_optional(
+            debug_id, convert, strings, ignored
+        ) {
+            convert.update(range);
+            rule = Some(val);
+        } else if let Ok((range, val)) = read_not(
             debug_id, convert, strings, ignored
         ) {
             convert.update(range);

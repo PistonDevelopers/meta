@@ -86,3 +86,18 @@ fn nested_multiline_comments_fail() {
     "#;
     let _ = use_old_self_syntax(rules, text);
 }
+
+#[test]
+fn not_rule_pass() {
+    let text = "there";
+    let rules = r#"0 doc = [![{"hi" "hello"} .w!] "there"]"#;
+    let _ = use_new_self_syntax(rules, text);
+}
+
+#[test]
+#[should_panic(expected = "Did not expect: `hi `")]
+fn not_rule_stop() {
+    let text = "hi there";
+    let rules = r#"0 doc = [![{"hi" "hello"} .w!] "there"]"#;
+    let _ = use_new_self_syntax(rules, text);
+}
