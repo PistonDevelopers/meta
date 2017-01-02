@@ -2,6 +2,7 @@
 
 pub use self::lines::Lines;
 pub use self::node::Node;
+pub use self::not::Not;
 pub use self::number::Number;
 pub use self::optional::Optional;
 pub use self::repeat::Repeat;
@@ -26,6 +27,7 @@ use tokenizer::TokenizerState;
 
 mod lines;
 mod node;
+mod not;
 mod number;
 mod optional;
 mod repeat;

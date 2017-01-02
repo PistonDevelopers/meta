@@ -131,12 +131,13 @@ _seps: "[]{}():.!?\""
   "(" .w? rule:"by" .w! rule:"rule" .w? ")"]
 13 tag = [?"!":"not" set:"text" ?[":" ?"!":_inv set:_prop]]
 14 optional = ["?" rule:"rule"]
-15 whitespace = [".w" opt]
-16 until_any_or_whitespace = [".." set_opt:_any opt ?[":" set:_prop]]
-17 until_any = ["..." set_opt:_any opt ?[":" set:_prop]]
-18 repeat = [".r" opt "(" rule:"rule" ")"]
-19 lines = [".l(" .w? rule:"rule" .w? ")"]
-20 rule = {
+15 not = ["!" rule:"rule"]
+16 whitespace = [".w" opt]
+17 until_any_or_whitespace = [".." set_opt:_any opt ?[":" set:_prop]]
+18 until_any = ["..." set_opt:_any opt ?[":" set:_prop]]
+19 repeat = [".r" opt "(" rule:"rule" ")"]
+20 lines = [".l(" .w? rule:"rule" .w? ")"]
+21 rule = {
   whitespace:"whitespace"
   until_any_or_whitespace:"until_any_or_whitespace"
   until_any:"until_any"
@@ -150,8 +151,9 @@ _seps: "[]{}():.!?\""
   separated_by:"separated_by"
   tag:"tag"
   optional:"optional"
+  not:"not"
 }
-21 document = [
+22 document = [
     .l([.w? {string:"string" comment}])
     .l([.w? {node:"node" comment}])
     .w?
