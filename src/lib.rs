@@ -187,8 +187,6 @@ mod tests {
             hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
             hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
             hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
             foo"#;
             let rules = r#"
                 1 foo = [.." "!:"foo" .w! {"foo" foo}]
