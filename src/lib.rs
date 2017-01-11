@@ -1,5 +1,4 @@
 #![deny(missing_docs)]
-#![cfg_attr(test, feature(test))]
 
 //! A DSL parsing library for human readable text documents
 
@@ -123,9 +122,6 @@ pub fn load_syntax_data<A, B>(
 
 #[cfg(test)]
 mod tests {
-    extern crate test;
-
-    use self::test::Bencher;
     use super::*;
 
     fn is_thread_safe<T: Send + Sync>() {}
@@ -148,60 +144,5 @@ mod tests {
     #[test]
     fn syntax_thread_safe() {
         is_thread_safe::<Syntax>();
-    }
-
-    #[bench]
-    fn bench_hello(b: &mut Bencher) {
-        b.iter(|| {
-            let text = r#"hi James!"#;
-            let rules = r#"
-                1 say_hi = ["hi" .w? {"James":"james" "Peter":"peter"} "!"]
-                2 document = say_hi
-            "#;
-            // Parse rules with meta language and convert to rules for parsing text.
-            let rules = match syntax_errstr(rules) {
-                Err(err) => {
-                    panic!("{}", err);
-                }
-                Ok(rules) => rules
-            };
-            let mut data = vec![];
-            match parse_errstr(&rules, text, &mut data) {
-                Err(err) => {
-                    panic!("{}", err);
-                }
-                Ok(()) => {}
-            };
-        });
-    }
-
-    #[bench]
-    fn bench_deep_string(b: &mut Bencher) {
-        b.iter(|| {
-            let text = r#"hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi
-            foo"#;
-            let rules = r#"
-                1 foo = [.." "!:"foo" .w! {"foo" foo}]
-                2 document = foo
-            "#;
-            // Parse rules with meta language and convert to rules for parsing text.
-            let rules = match syntax_errstr(rules) {
-                Err(err) => panic!("{}", err),
-                Ok(rules) => rules
-            };
-            let mut data = vec![];
-            match parse_errstr(&rules, text, &mut data) {
-                Err(err) => panic!("{}", err),
-                Ok(()) => {}
-            };
-        });
     }
 }
