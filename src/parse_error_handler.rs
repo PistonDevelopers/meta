@@ -25,7 +25,7 @@ impl<'a> ParseErrorHandler<'a> {
         let mut start = 0;
         let mut lines = vec![];
         for line in text.split('\n') {
-            let length = line.chars().count();
+            let length = line.len();
             lines.push((Range::new(start, length), line));
             // Lines are separated by '\n'.
             start += length + 1;
