@@ -41,6 +41,7 @@ If you get an error `#4003`, then it was caused by a rule in the node starting w
 |"token":!name|Expects a token, sets name to `false`. Name is required.|
 |!"token":name|Fails if token is read, sets name to `true` if it is not read. Name is optional.|
 |!"token":!name|Fails if token is read, sets name to `false` if it is not read. Name is required.|
+|!rule|Fails if rule is read.|
 |.s?(by_rule rule)|Separates rule by another rule, allows zero repetitions.|
 |.s!(by_rule rule)|Separates rule by another rule, requires at least one repetition.|
 |.s?.(by_rule rule)|Separates rule by another rule, allows trailing.|
@@ -55,10 +56,7 @@ If you get an error `#4003`, then it was caused by a rule in the node starting w
 
 ### "Hello world" in Piston-Meta
 
-Piston-Meta allows parsing into any structure implementing `MetaReader`, for example `Tokenizer`.
-`Tokenizer` stores the tree structure in a flat `Vec` with "start node" and "end node" items.
-
-```Rust
+```rust
 extern crate piston_meta;
 
 use piston_meta::*;
@@ -89,8 +87,12 @@ fn main() {
 }
 ```
 
-### How does it work?
+### Bootstrapping
 
-1. Piston-Meta contains composable rules that can parse most human readable text formats.
+When the meta language changes, bootstrapping is used to host old meta syntax in the new meta syntax. Here is how it works:
+
+1. Piston-Meta contains composable rules that can parse many human readable text formats.
 2. Piston-Meta knows how to parse and convert to its own rules, known as "bootstrapping".
 3. Therefore, you can tell Piston-Meta how to parse other text formats using a meta language!
+4. Including the text format describing how to parse its own syntax, which generates equivalent rules to the ones hard coded in Rust.
+5. New versions of the meta language can describe older versions to keep backwards compatibility, by changing the self syntax slightly, so it can read an older version of itself.

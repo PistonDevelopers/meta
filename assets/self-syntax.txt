@@ -6,8 +6,8 @@ Developed and maintained as part of the Piston project.
 
 Strings:
 
-    You can reuse strings through the rules.
-    All strings starts with `_`.
+    You can reuse strings in the rules.
+    All strings start with `_`.
 
 Built-in rules:
 
@@ -51,6 +51,8 @@ Composition rules:
 
     ?           Parses a rule optionally.
                 `?$:"value"` generates a number with name "value", if any.
+
+    !           Fails if rule gets parsed.
 
     .s          Separates a rule by another rule.
                 `.s?.("," $)`   Allows zero repetitions, allows trailing.
