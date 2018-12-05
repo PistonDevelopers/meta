@@ -3,6 +3,7 @@ use std::sync::Arc;
 use read_token::ReadToken;
 
 use super::{
+    FastSelect,
     Lines,
     Node,
     Not,
@@ -41,6 +42,8 @@ pub enum Rule {
     /// If the first one does not succeed, try another and so on.
     /// If all sub rules fail, then the rule fails.
     Select(Select),
+    /// Select one of the sub rules, using fast table lookup.
+    FastSelect(Box<FastSelect>),
     /// Run each sub rule in sequence.
     /// If any sub rule fails, the rule fails.
     Sequence(Sequence),
@@ -88,6 +91,9 @@ impl Rule {
             }
             &Rule::Select(ref s) => {
                 s.parse(tokens, state, read_token, refs)
+            }
+            &Rule::FastSelect(ref fs) => {
+                fs.parse(tokens, state, read_token, refs)
             }
             &Rule::Sequence(ref s) => {
                 s.parse(tokens, state, read_token, refs)
@@ -150,6 +156,8 @@ impl Rule {
             &mut Rule::UntilAnyOrWhitespace(_) => {}
             &mut Rule::Text(_) => {}
             &mut Rule::Number(_) => {}
+            // FastSelect is generated from Select after update_refs is called.
+            &mut Rule::FastSelect(_) => {}
             &mut Rule::Select(ref mut s) => {
                 for sub_rule in &mut s.args {
                     sub_rule.update_refs(names);

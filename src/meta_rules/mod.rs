@@ -15,6 +15,7 @@ pub use self::tag::Tag;
 pub use self::until_any::UntilAny;
 pub use self::until_any_or_whitespace::UntilAnyOrWhitespace;
 pub use self::whitespace::Whitespace;
+pub use self::fast_select::FastSelect;
 
 use range::Range;
 use read_token::ReadToken;
@@ -40,6 +41,7 @@ mod tag;
 mod until_any;
 mod until_any_or_whitespace;
 mod whitespace;
+mod fast_select;
 
 /// Parses text with rules.
 pub fn parse(
