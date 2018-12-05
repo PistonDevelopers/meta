@@ -121,10 +121,12 @@
 //! 3. Therefore, you can tell Piston-Meta how to parse other text formats using a meta language!
 //! 4. Including the text format describing how to parse its own syntax, which generates equivalent rules to the ones hard coded in Rust.
 //! 5. New versions of the meta language can describe older versions to keep backwards compatibility, by changing the self syntax slightly, so it can read an older version of itself.
-//! 
+//!
 
 extern crate read_token;
 extern crate range;
+#[macro_use]
+extern crate lazy_static;
 
 pub use parse_error_handler::{
     stderr_unwrap,
@@ -148,6 +150,7 @@ pub mod tokenizer;
 
 mod parse_error;
 mod parse_error_handler;
+pub mod optimize;
 
 mod all {
     pub use super::*;
@@ -191,17 +194,27 @@ impl Syntax {
         self.rules.push(rule);
         self.names.push(name);
     }
+
+    /// Optimizes syntax.
+    pub fn optimize(self) -> Syntax {
+        let new_rules = self.rules.iter().map(|r| optimize::optimize_rule(&r, &self.rules)).collect();
+        Syntax {rules: new_rules, names: self.names}
+    }
 }
 
 /// Reads syntax from text.
 pub fn syntax(rules: &str) -> Result<Syntax, Range<ParseError>> {
+    lazy_static! {
+        static ref BOOTSTRAP_RULES: Syntax = bootstrap::rules().optimize();
+    }
+
     let mut tokens = vec![];
-    try!(parse(&bootstrap::rules(), rules, &mut tokens));
+    try!(parse(&BOOTSTRAP_RULES, rules, &mut tokens));
     let mut ignored_meta_data = vec![];
     match bootstrap::convert(&tokens, &mut ignored_meta_data) {
-        Ok(res) => Ok(res),
-        Err(()) => Err((Range::empty(0).wrap(ParseError::Conversion(
-            format!("Bootstrapping rules are incorrect")))))
+        Ok(res) => Ok(res.optimize()),
+        Err(()) => Err(Range::empty(0).wrap(ParseError::Conversion(
+            format!("Bootstrapping rules are incorrect"))))
     }
 }
 

@@ -14,6 +14,7 @@ documentation = "http://docs.piston.rs/piston_meta/piston_meta/"
 [dependencies]
 read_token = "0.9.0"
 range = "0.3.1"
+lazy_static = "1.0.0"
 
 [features]
 unstable = []
