@@ -3,11 +3,9 @@
 //! A search API for piston_meta
 
 extern crate piston_meta;
-extern crate range;
 
-use range::Range;
 use std::sync::Arc;
-use piston_meta::{ MetaData, ParseError };
+use piston_meta::{ MetaData, ParseError, Range };
 
 /// Used to search through meta data.
 pub struct Search<'a> {
