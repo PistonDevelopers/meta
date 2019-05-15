@@ -1,7 +1,7 @@
 [package]
 
 name = "piston_meta"
-version = "0.30.0"
+version = "1.0.0"
 authors = ["bvssvni <bvssvni@gmail.com>"]
 keywords = ["meta", "language", "encoding", "decoding", "piston"]
 description = "A DSL parsing library for human readable text documents"
@@ -12,8 +12,8 @@ homepage = "https://github.com/pistondevelopers/meta"
 documentation = "http://docs.piston.rs/piston_meta/piston_meta/"
 
 [dependencies]
-read_token = "0.9.0"
-range = "0.3.1"
+read_token = "1.0.0"
+range = "1.0.0"
 lazy_static = "1.0.0"
 
 [features]
