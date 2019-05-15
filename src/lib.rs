@@ -134,6 +134,7 @@ pub use parse_error_handler::{
 };
 pub use parse_error::ParseError;
 pub use meta_rules::{ parse, parse_errstr, Rule };
+pub use bootstrap::Convert;
 
 /// The type of debug id used to track down errors in rules.
 pub type DebugId = usize;
@@ -141,7 +142,7 @@ pub type DebugId = usize;
 use std::sync::Arc;
 use std::fs::File;
 use std::path::Path;
-use range::Range;
+pub use range::Range;
 
 pub mod bootstrap;
 pub mod json;
