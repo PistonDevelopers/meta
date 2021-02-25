@@ -4,7 +4,7 @@ A DSL parsing library for human readable text documents
 [![Travis](https://img.shields.io/travis/PistonDevelopers/meta.svg?style=flat-square)](https://travis-ci.org/PistonDevelopers/meta)
 [![Crates.io](https://img.shields.io/crates/v/piston_meta.svg?style=flat-square)](https://crates.io/crates/piston_meta)
 
-[Documentation](http://docs.piston.rs/piston_meta/piston_meta/)
+[Documentation](https://docs.rs/piston_meta/)
 
 [Why Piston-Meta?](https://github.com/PistonDevelopers/meta/issues/1)
 
