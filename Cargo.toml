@@ -9,7 +9,7 @@ license = "MIT"
 readme = "README.md"
 repository = "https://github.com/pistondevelopers/meta.git"
 homepage = "https://github.com/pistondevelopers/meta"
-documentation = "http://docs.piston.rs/piston_meta/piston_meta/"
+documentation = "https://docs.rs/piston_meta/"
 
 [dependencies]
 read_token = "1.0.0"
