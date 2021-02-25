@@ -147,7 +147,7 @@ pub fn convert(
     fn read_string(mut convert: Convert)
     -> Result<(Range, (Arc<String>, Arc<String>)), ()> {
         let start = convert.clone();
-        let range = try!(convert.start_node("string"));
+        let range = convert.start_node("string")?;
         convert.update(range);
         let mut name = None;
         let mut text = None;
@@ -184,7 +184,7 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "sequence";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
         let mut args: Vec<Rule> = vec![];
         loop {
@@ -219,7 +219,7 @@ pub fn convert(
         strings: &[(Arc<String>, Arc<String>)]
     ) -> Result<(Range, Arc<String>), ()> {
         let start = convert.clone();
-        let range = try!(convert.start_node(property));
+        let range = convert.start_node(property)?;
         convert.update(range);
         let mut text = None;
         loop {
@@ -250,7 +250,7 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "until_any_or_whitespace";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
         let mut any_characters = None;
         let mut optional = None;
@@ -298,7 +298,7 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "until_any";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
         let mut any_characters = None;
         let mut optional = None;
@@ -346,7 +346,7 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "tag";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
 
         let mut text = None;
@@ -396,11 +396,11 @@ pub fn convert(
     fn read_whitespace(debug_id: &mut usize, mut convert: Convert)
     -> Result<(Range, Rule), ()> {
         let start = convert.clone();
-        let range = try!(convert.start_node("whitespace"));
+        let range = convert.start_node("whitespace")?;
         convert.update(range);
-        let (range, optional) = try!(convert.meta_bool("optional"));
+        let (range, optional) = convert.meta_bool("optional")?;
         convert.update(range);
-        let range = try!(convert.end_node("whitespace"));
+        let range = convert.end_node("whitespace")?;
         convert.update(range);
         *debug_id += 1;
         Ok((convert.subtract(start),
@@ -418,7 +418,7 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "text";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
         let mut allow_empty = None;
         let mut property = None;
@@ -456,7 +456,7 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "number";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
 
         let mut property = None;
@@ -495,7 +495,7 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "reference";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
 
         let mut name = None;
@@ -539,7 +539,7 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "select";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
         let mut args: Vec<Rule> = vec![];
         loop {
@@ -573,13 +573,13 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "optional";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
-        let (range, rule) = try!(read_rule(
+        let (range, rule) = read_rule(
             debug_id, "rule", convert, strings, ignored
-        ));
+        )?;
         convert.update(range);
-        let range = try!(convert.end_node(node));
+        let range = convert.end_node(node)?;
         convert.update(range);
         *debug_id += 1;
         Ok((convert.subtract(start),
@@ -597,13 +597,13 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "not";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
-        let (range, rule) = try!(read_rule(
+        let (range, rule) = read_rule(
             debug_id, "rule", convert, strings, ignored
-        ));
+        )?;
         convert.update(range);
-        let range = try!(convert.end_node(node));
+        let range = convert.end_node(node)?;
         convert.update(range);
         *debug_id += 1;
         Ok((convert.subtract(start),
@@ -621,7 +621,7 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "separated_by";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
         let mut optional = None;
         let mut allow_trail = None;
@@ -678,13 +678,13 @@ pub fn convert(
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
-        let range = try!(convert.start_node("lines"));
+        let range = convert.start_node("lines")?;
         convert.update(range);
-        let (range, rule) = try!(read_rule(
+        let (range, rule) = read_rule(
             debug_id, "rule", convert, strings, ignored
-        ));
+        )?;
         convert.update(range);
-        let range = try!(convert.end_node("lines"));
+        let range = convert.end_node("lines")?;
         convert.update(range);
         *debug_id += 1;
         Ok((convert.subtract(start),
@@ -702,7 +702,7 @@ pub fn convert(
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
         let node = "repeat";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
         let mut rule = None;
         let mut optional = None;
@@ -746,7 +746,7 @@ pub fn convert(
         ignored: &mut Vec<Range>
     ) -> Result<(Range, Rule), ()> {
         let start = convert.clone();
-        let range = try!(convert.start_node(property));
+        let range = convert.start_node(property)?;
         convert.update(range);
 
         let mut rule = None;
@@ -821,7 +821,7 @@ pub fn convert(
         }
 
         if let Some(rule) = rule {
-            let range = try!(convert.end_node(property));
+            let range = convert.end_node(property)?;
             convert.update(range);
             Ok((convert.subtract(start), rule))
         } else {
@@ -836,7 +836,7 @@ pub fn convert(
     ) -> Result<(Range, (Arc<String>, Rule)), ()> {
         let start = convert.clone();
         let node = "node";
-        let range = try!(convert.start_node(node));
+        let range = convert.start_node(node)?;
         convert.update(range);
         let mut id = None;
         let mut name = None;
