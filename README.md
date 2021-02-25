@@ -10,6 +10,41 @@ A DSL parsing library for human readable text documents
 
 [self-syntax](https://raw.githubusercontent.com/PistonDevelopers/meta/master/assets/self-syntax.txt)
 
+### Introduction
+
+Piston-Meta makes it easy to write parsers for human readable text documents.
+It can be used for language design, custom formats and data driven development.
+
+Meta parsing is a development technique that goes back to the first modern computer.
+The idea is to turn pieces of a computer program into a programmable pipeline,
+and thereby accelerating development.
+An important, but surprisingly reusable part across projects, is the concept of generating
+structured data from text, since text is easy to modify and reason about.
+
+Most programs that work with text use the following pipeline:
+
+```ignore
+f : text -> data
+```
+
+The problem with this approach is that `f` changes from project to project,
+and the task of transforming text into a data structure can get very complex.
+For example, to create a parser for the syntax of a programming language,
+one might need several thousands lines of code.
+This slows down development and increases the chance of making errors.
+
+Meta parsing is a technique where `f` gets splitted into two steps:
+
+```ignore
+f <=> f2 . f1
+f1 : text -> meta data
+f2 : meta data -> data
+```
+
+The first step `f1` takes text and converts it into meta data.
+A DSL (Domain Specific Language) is used to describe how this transformation happens.
+The second step `f2` converts meta data into data, and this is often written as code.
+
 ### Rules
 
 The meta language is used to describe how to read other documents.
