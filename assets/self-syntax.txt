@@ -28,7 +28,7 @@ Built-in rules:
             `.._any?` allows empty
 
     ..._any  Reads until any of the characters in the string.
-             `..._any?` allows empty and `..._any!` disallow empty.
+             `..._any?` allows empty and `..._any!` disallows empty.
 
 Tokens:
 
@@ -45,7 +45,9 @@ Tokens:
 
 Composition rules:
 
-    [...]       Parses a sequence of rules, seperated by whitespace.
+    Rules are separated using whitespace, e.g. `[a b c]` or `{a b c}`.
+
+    [...]       Parses a sequence of rules.
 
     {...}       Tries the first rule, then the second if the first fails etc.
 
@@ -60,9 +62,9 @@ Composition rules:
                 `.s!.("," $)`   At least one repetition, allows trailing.
                 `.s!("," $)`    At least one repetition, no trailing.
 
-    .r          Repeats a rule by another rule.
-                `.r?("ha")`     Allows zero repitions.
-                `.r!("ha")`     At least one repition.
+    .r          Repeats a rule until it fails parsing.
+                `.r?("ha")`     Allows zero repetitions.
+                `.r!("ha")`     At least one repetition.
 
     .l          Separates a rule by one or more new lines.
                 Handles edge cases nicely for the intended use.
