@@ -1,6 +1,9 @@
 #![deny(missing_docs)]
 
+//! # Piston-Meta
 //! A DSL parsing library for human readable text documents
+//!
+//! ### Introduction
 //!
 //! Piston-Meta makes it easy to write parsers for human readable text documents.
 //! It can be used for language design, custom formats and data driven development.
@@ -11,7 +14,7 @@
 //! An important, but surprisingly reusable part across projects, is the concept of generating
 //! structured data from text, since text is easy to modify and reason about.
 //!
-//! Most programs that work with text uses the following pipeline:
+//! Most programs that work with text use the following pipeline:
 //!
 //! ```ignore
 //! f : text -> data
@@ -31,7 +34,7 @@
 //! f2 : meta data -> data
 //! ```
 //!
-//! The first step `f1` takes text and converts it into a meta data.
+//! The first step `f1` takes text and converts it into meta data.
 //! A DSL (Domain Specific Language) is used to describe how this transformation happens.
 //! The second step `f2` converts meta data into data, and this is often written as code.
 //!
