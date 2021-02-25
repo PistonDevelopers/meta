@@ -210,7 +210,7 @@ pub fn syntax(rules: &str) -> Result<Syntax, Range<ParseError>> {
     }
 
     let mut tokens = vec![];
-    try!(parse(&BOOTSTRAP_RULES, rules, &mut tokens));
+    parse(&BOOTSTRAP_RULES, rules, &mut tokens)?;
     let mut ignored_meta_data = vec![];
     match bootstrap::convert(&tokens, &mut ignored_meta_data) {
         Ok(res) => Ok(res.optimize()),

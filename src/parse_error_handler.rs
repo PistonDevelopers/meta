@@ -43,7 +43,7 @@ impl<'a> ParseErrorHandler<'a> {
         range: Range,
         msg: &str
     ) -> Result<(), io::Error> {
-        try!(writeln!(w, "{}", msg));
+        writeln!(w, "{}", msg)?;
         let mut printed_pointer = false;
         for (i, &(r, text)) in self.lines.iter().enumerate() {
             if let Some(intersect) = range.ends_intersect(&r) {
@@ -51,24 +51,24 @@ impl<'a> ParseErrorHandler<'a> {
                     let j = intersect.offset - r.offset;
                     let s = if j > 75 { j - 50 } else { 0 };
                     let e = ::std::cmp::min(s + 100, r.length);
-                    try!(write!(w, "{},{}: ", i + 1, j + 1));
+                    write!(w, "{},{}: ", i + 1, j + 1)?;
                     for c in text.chars().skip(s).take(e - s) {
-                        try!(write!(w, "{}", c));
+                        write!(w, "{}", c)?;
                     }
-                    try!(writeln!(w, ""));
+                    writeln!(w, "")?;
                     if !printed_pointer {
-                        try!(write!(w, "{},{}: ", i + 1, j + 1));
+                        write!(w, "{},{}: ", i + 1, j + 1)?;
                         for c in text.chars().skip(s).take(j - s) {
                             match c {
                                 '\t' => {
-                                    try!(write!(w, "\t"));
+                                    write!(w, "\t")?;
                                 }
                                 _ => {
-                                    try!(write!(w, " "));
+                                    write!(w, " ")?;
                                 }
                             }
                         }
-                        try!(writeln!(w, "^"));
+                        writeln!(w, "^")?;
                         printed_pointer = true;
                     }
                 }
@@ -100,7 +100,7 @@ impl<'a> ParseErrorHandler<'a> {
 
         let (range, error) = range_err.decouple();
 
-        try!(writeln!(w, "Error {}", error));
+        writeln!(w, "Error {}", error)?;
         if let &ParseError::ExpectedTag(_, _) = &error {
             // Improves the error report when forgetting a token at end of
             // a line, for example `;` after an expression.
@@ -114,8 +114,7 @@ impl<'a> ParseErrorHandler<'a> {
                 }
                 for (i, &(_, text)) in
                     self.lines[prev_line .. first_line.0].iter().enumerate() {
-                    try!(writeln!(w, "{}: {}",
-                        i + prev_line + 1, text));
+                    writeln!(w, "{}: {}", i + prev_line + 1, text)?;
                 }
             }
         }
@@ -126,24 +125,24 @@ impl<'a> ParseErrorHandler<'a> {
                     let j = intersect.offset - r.offset;
                     let s = if j > 75 { j - 50 } else { 0 };
                     let e = ::std::cmp::min(s + 100, r.length);
-                    try!(write!(w, "{},{}: ", i + 1, j + 1));
+                    write!(w, "{},{}: ", i + 1, j + 1)?;
                     for c in text.chars().skip(s).take(e - s) {
-                        try!(write!(w, "{}", c));
+                        write!(w, "{}", c)?;
                     }
-                    try!(writeln!(w, ""));
+                    writeln!(w, "")?;
                     if !printed_pointer {
-                        try!(write!(w, "{},{}: ", i + 1, j + 1));
+                        write!(w, "{},{}: ", i + 1, j + 1)?;
                         for c in text.chars().skip(s).take(j - s) {
                             match c {
                                 '\t' => {
-                                    try!(write!(w, "\t"));
+                                    write!(w, "\t")?;
                                 }
                                 _ => {
-                                    try!(write!(w, " "));
+                                    write!(w, " ")?;
                                 }
                             }
                         }
-                        try!(writeln!(w, "^"));
+                        writeln!(w, "^")?;
                         printed_pointer = true;
                     }
                 }

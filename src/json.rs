@@ -30,40 +30,40 @@ pub fn write<W>(w: &mut W, data: &[Range<MetaData>]) -> Result<(), io::Error>
         } else { false };
         let print_comma = !first && !is_end;
         if print_comma {
-            try!(writeln!(w, ","));
+            writeln!(w, ",")?;
         } else if i != 0 {
-            try!(writeln!(w, ""));
+            writeln!(w, "")?;
         }
         first = false;
         for _ in 0 .. indent_offset + indent {
-            try!(write!(w, " "));
+            write!(w, " ")?;
         }
         match *d {
             MetaData::StartNode(ref name) => {
                 first = true;
-                try!(write_string(w, name));
-                try!(write!(w, ":{}", "{"));
+                write_string(w, name)?;
+                write!(w, ":{}", "{")?;
                 indent += 1;
             }
             MetaData::EndNode(_) => {
-                try!(write!(w, "{}", "}"));
+                write!(w, "{}", "}")?;
             }
             MetaData::Bool(ref name, val) => {
-                try!(write_string(w, name));
-                try!(write!(w, ":{}", val));
+                write_string(w, name)?;
+                write!(w, ":{}", val)?;
             }
             MetaData::F64(ref name, val) => {
-                try!(write_string(w, name));
-                try!(write!(w, ":{}", val));
+                write_string(w, name)?;
+                write!(w, ":{}", val)?;
             }
             MetaData::String(ref name, ref val) => {
-                try!(write_string(w, name));
-                try!(write!(w, ":"));
-                try!(write_string(w, val));
+                write_string(w, name)?;
+                write!(w, ":")?;
+                write_string(w, val)?;
             }
         }
     }
-    try!(writeln!(w, ""));
+    writeln!(w, "")?;
     Ok(())
 }
 
@@ -71,17 +71,17 @@ pub fn write<W>(w: &mut W, data: &[Range<MetaData>]) -> Result<(), io::Error>
 pub fn write_string<W>(w: &mut W, val: &str) -> Result<(), io::Error>
     where W: io::Write
 {
-    try!(write!(w, "\""));
+    write!(w, "\"")?;
     for c in val.chars() {
         if c == '\\' {
-            try!(write!(w, "\\\\"));
+            write!(w, "\\\\")?;
         } else if c == '\"' {
-            try!(write!(w, "\\\""));
+            write!(w, "\\\"")?;
         } else {
-            try!(write!(w, "{}", c));
+            write!(w, "{}", c)?;
         }
     }
-    try!(write!(w, "\""));
+    write!(w, "\"")?;
     Ok(())
 }
 
