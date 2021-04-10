@@ -56,6 +56,7 @@
 //! |Rule|Description|
 //! |----|-----------|
 //! |.l(rule)|Separates sub rule with lines.|
+//! |.l+(rule)|Separates sub rule with lines, with indention (whitespace sensitive)|
 //! |.r?(rule)|Repeats sub rule until it fails, allows zero repetitions.|
 //! |.r!(rule)|Repeats sub rule until it fails, requires at least one repetition.|
 //! |...any_characters?:name|Reads a string until any characters, allows zero characters. Name is optional.|
@@ -136,7 +137,13 @@ pub use parse_error_handler::{
     ParseErrorHandler
 };
 pub use parse_error::ParseError;
-pub use meta_rules::{ parse, parse_errstr, Rule };
+pub use meta_rules::{
+    parse,
+    parse_errstr,
+    parse_errstr_with_indent,
+    parse_with_indent,
+    Rule
+};
 pub use bootstrap::Convert;
 
 /// The type of debug id used to track down errors in rules.

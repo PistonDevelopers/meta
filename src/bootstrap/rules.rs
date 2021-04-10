@@ -876,33 +876,50 @@ pub fn rules() -> Syntax {
         ]
     });
 
-    // 20 lines = [".l(" .w? rule:"rule" .w? ")"]
+    // 20 lines = [".l" ?"+":"indent" "(" .w? rule:"rule" .w? ")"]
     let lines_rule = Rule::Sequence(Sequence {
         debug_id: 20001,
         args: vec![
             Rule::Tag(Tag {
                 debug_id: 20002,
-                text: Arc::new(".l(".into()),
+                text: Arc::new(".l".into()),
                 not: false,
                 inverted: false,
                 property: None,
             }),
-            Rule::Whitespace(Whitespace {
+            Rule::Optional(Box::new(Optional {
                 debug_id: 20003,
+                rule: Rule::Tag(Tag {
+                    debug_id: 20004,
+                    text: Arc::new("+".into()),
+                    not: false,
+                    inverted: false,
+                    property: Some(Arc::new("indent".into())),
+                }),
+            })),
+            Rule::Tag(Tag {
+                debug_id: 20005,
+                text: Arc::new("(".into()),
+                not: false,
+                inverted: false,
+                property: None
+            }),
+            Rule::Whitespace(Whitespace {
+                debug_id: 20006,
                 optional: true,
             }),
             Rule::Node(Node {
-                debug_id: 20004,
+                debug_id: 20007,
                 name: Arc::new("rule".into()),
                 index: None,
                 property: Some(Arc::new("rule".into())),
             }),
             Rule::Whitespace(Whitespace {
-                debug_id: 20005,
+                debug_id: 20008,
                 optional: true,
             }),
             Rule::Tag(Tag {
-                debug_id: 20006,
+                debug_id: 20009,
                 text: Arc::new(")".into()),
                 not: false,
                 inverted: false,
@@ -1030,6 +1047,7 @@ pub fn rules() -> Syntax {
         args: vec![
             Rule::Lines(Box::new(Lines {
                 debug_id: 22002,
+                indent: false,
                 rule: Rule::Sequence(Sequence {
                     debug_id: 22003,
                     args: vec![
@@ -1059,6 +1077,7 @@ pub fn rules() -> Syntax {
             })),
             Rule::Lines(Box::new(Lines {
                 debug_id: 22008,
+                indent: false,
                 rule: Rule::Sequence(Sequence {
                     debug_id: 22009,
                     args: vec![

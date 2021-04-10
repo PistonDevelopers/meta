@@ -5,6 +5,7 @@ use std::sync::Arc;
 use super::{
     ret_err,
     update,
+    IndentSettings,
     ParseResult,
 };
 use {
@@ -35,7 +36,8 @@ impl Node {
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         read_token: &ReadToken,
-        refs: &[Rule]
+        refs: &[Rule],
+        indent_settings: &mut IndentSettings,
     ) -> ParseResult<TokenizerState> {
         let start = read_token;
         let mut read_token = *start;
@@ -62,7 +64,7 @@ impl Node {
         };
         let mut opt_error = None;
         state = match refs[index].parse(
-            tokens, &state, &read_token, refs
+            tokens, &state, &read_token, refs, indent_settings
         ) {
             Err(err) => { return Err(ret_err(err, opt_error)); }
             Ok((range, state, err)) => {

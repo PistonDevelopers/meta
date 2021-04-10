@@ -5,6 +5,7 @@ use super::{
     ret_err,
     err_update,
     update,
+    IndentSettings,
     ParseResult,
 };
 use {
@@ -32,7 +33,8 @@ impl Repeat {
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         read_token: &ReadToken,
-        refs: &[Rule]
+        refs: &[Rule],
+        indent_settings: &mut IndentSettings,
     ) -> ParseResult<TokenizerState> {
         let start = read_token;
         let mut read_token = *start;
@@ -40,7 +42,7 @@ impl Repeat {
         let mut opt_error = None;
         let mut first = true;
         loop {
-            state = match self.rule.parse(tokens, &state, &read_token, refs) {
+            state = match self.rule.parse(tokens, &state, &read_token, refs, indent_settings) {
                 Err(err) => {
                     if first && !self.optional {
                         return Err(ret_err(err, opt_error));
@@ -64,13 +66,14 @@ impl Repeat {
 mod tests {
     use all::*;
     use all::tokenizer::*;
-    use meta_rules::{ Repeat, Tag };
+    use meta_rules::{ IndentSettings, Repeat, Tag };
     use std::sync::Arc;
     use range::Range;
     use read_token::ReadToken;
 
     #[test]
     fn fail() {
+        let ref mut indent_settings = IndentSettings::default();
         let text = "[a][a][a]";
         let mut tokens = vec![];
         let s = TokenizerState::new();
@@ -86,13 +89,14 @@ mod tests {
                 property: None,
             })
         };
-        let res = rule.parse(&mut tokens, &s, &ReadToken::new(&text, 0), &[]);
+        let res = rule.parse(&mut tokens, &s, &ReadToken::new(&text, 0), &[], indent_settings);
         assert_eq!(res, Err(Range::new(0, 0).wrap(
             ParseError::ExpectedTag(token.clone(), 1))))
     }
 
     #[test]
     fn success() {
+        let ref mut indent_settings = IndentSettings::default();
         let text = "(a)(a)(a)";
         let mut tokens = vec![];
         let s = TokenizerState::new();
@@ -108,7 +112,7 @@ mod tests {
                 property: None,
             })
         };
-        let res = rule.parse(&mut tokens, &s, &ReadToken::new(&text, 0), &[]);
+        let res = rule.parse(&mut tokens, &s, &ReadToken::new(&text, 0), &[], indent_settings);
         assert_eq!(res, Ok((Range::new(0, 9), TokenizerState(0),
             Some(Range::new(9, 0).wrap(
                 ParseError::ExpectedTag(token.clone(), 1))))))

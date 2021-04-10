@@ -4,6 +4,7 @@ use read_token::ReadToken;
 use super::{
     ret_err,
     err_update,
+    IndentSettings,
     ParseResult,
 };
 use {
@@ -45,7 +46,8 @@ impl FastSelect {
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         read_token: &ReadToken,
-        refs: &[Rule]
+        refs: &[Rule],
+        indent_settings: &mut IndentSettings,
     ) -> ParseResult<TokenizerState> {
         if self.tail {
             if let Some(ch) = read_token.src.chars().next() {
@@ -55,7 +57,7 @@ impl FastSelect {
                 let ind = self.table[buf[0] as usize];
                 if ind != 255 {
                     let sub_rule = &self.args[ind as usize];
-                    match sub_rule.parse(tokens, state, read_token, refs) {
+                    match sub_rule.parse(tokens, state, read_token, refs, indent_settings) {
                         Ok((range, state, err)) => {
                             err_update(err, &mut opt_error);
                             return Ok((read_token.peek(range.length),
@@ -67,7 +69,7 @@ impl FastSelect {
                     }
                 }
                 let sub_rule = &self.args[self.args.len()-1];
-                match sub_rule.parse(tokens, state, read_token, refs) {
+                match sub_rule.parse(tokens, state, read_token, refs, indent_settings) {
                     Ok((range, state, err)) => {
                         err_update(err, &mut opt_error);
                         Ok((read_token.peek(range.length),
@@ -88,7 +90,7 @@ impl FastSelect {
                 let ind = self.table[buf[0] as usize];
                 if ind != 255 {
                     let sub_rule = &self.args[ind as usize];
-                    match sub_rule.parse(tokens, state, read_token, refs) {
+                    match sub_rule.parse(tokens, state, read_token, refs, indent_settings) {
                         Ok((range, state, err)) => {
                             Ok((read_token.peek(range.length),
                                 state, err))

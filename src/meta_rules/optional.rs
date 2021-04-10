@@ -4,6 +4,7 @@ use read_token::ReadToken;
 use super::{
     ret_err,
     update,
+    IndentSettings,
 };
 use {
     DebugId,
@@ -30,14 +31,15 @@ impl Optional {
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         read_token: &ReadToken,
-        refs: &[Rule]
+        refs: &[Rule],
+        indent_settings: &mut IndentSettings,
     ) -> (Range, TokenizerState, Option<Range<ParseError>>) {
         let start = read_token;
         let mut read_token = *start;
         let mut success_state = state.clone();
         let mut opt_error = None;
         success_state = match self.rule.parse(
-            tokens, &success_state, &read_token, refs
+            tokens, &success_state, &read_token, refs, indent_settings
         ) {
             Ok((range, state, err)) => {
                 update(range, err, &mut read_token, &mut opt_error);
@@ -56,13 +58,14 @@ impl Optional {
 mod tests {
     use all::*;
     use all::tokenizer::*;
-    use meta_rules::{ Number, Optional, Sequence, Text };
+    use meta_rules::{ IndentSettings, Number, Optional, Sequence, Text };
     use range::Range;
     use read_token::ReadToken;
     use std::sync::Arc;
 
     #[test]
     fn fail_but_continue() {
+        let ref mut indent_settings = IndentSettings::default();
         let text = "2";
         let mut tokens = vec![];
         let s = TokenizerState::new();
@@ -87,7 +90,7 @@ mod tests {
             }),
         };
         let res = optional.parse(&mut tokens, &s,
-            &ReadToken::new(&text, 0), &[]);
+            &ReadToken::new(&text, 0), &[], indent_settings);
         assert_eq!(res, (Range::new(0, 0), TokenizerState(0),
             Some(Range::new(0, 0).wrap(ParseError::ExpectedText(2)))));
         assert_eq!(tokens.len(), 0);

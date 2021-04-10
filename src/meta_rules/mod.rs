@@ -16,6 +16,7 @@ pub use self::until_any::UntilAny;
 pub use self::until_any_or_whitespace::UntilAnyOrWhitespace;
 pub use self::whitespace::Whitespace;
 pub use self::fast_select::FastSelect;
+pub use self::indent_settings::IndentSettings;
 
 use range::Range;
 use read_token::ReadToken;
@@ -26,6 +27,7 @@ use {
 };
 use tokenizer::TokenizerState;
 
+mod indent_settings;
 mod lines;
 mod node;
 mod not;
@@ -49,13 +51,24 @@ pub fn parse(
     text: &str,
     tokens: &mut Vec<Range<MetaData>>
 ) -> Result<(), Range<ParseError>> {
+    parse_with_indent(rules, text, tokens, &IndentSettings::default())
+}
+
+/// Parses text with rules, using specified indention settings.
+pub fn parse_with_indent(
+    rules: &Syntax,
+    text: &str,
+    tokens: &mut Vec<Range<MetaData>>,
+    indent_settings: &IndentSettings,
+) -> Result<(), Range<ParseError>> {
     let s = TokenizerState(tokens.len());
     let n = match rules.rules.len() {
         0 => { return Err(Range::empty(0).wrap(ParseError::NoRules)); }
         x => x
     };
     let read_token = ReadToken::new(&text, 0);
-    let res = rules.rules[n - 1].parse(tokens, &s, &read_token, &rules.rules);
+    let ref mut indent_settings = indent_settings.clone();
+    let res = rules.rules[n - 1].parse(tokens, &s, &read_token, &rules.rules, indent_settings);
     match res {
         Ok((range, s, opt_error)) => {
             // Report error if did not reach the end of text.
@@ -78,11 +91,21 @@ pub fn parse(
 pub fn parse_errstr(
     rules: &Syntax,
     text: &str,
-    tokens: &mut Vec<Range<MetaData>>
+    tokens: &mut Vec<Range<MetaData>>,
+) -> Result<(), String> {
+    parse_errstr_with_indent(rules, text, tokens, &IndentSettings::default())
+}
+
+/// Parses text with rules with indention settings, formatting the error as a `String`.
+pub fn parse_errstr_with_indent(
+    rules: &Syntax,
+    text: &str,
+    tokens: &mut Vec<Range<MetaData>>,
+    indent_settings: &IndentSettings,
 ) -> Result<(), String> {
     use ParseErrorHandler;
 
-    match parse(rules, text, tokens) {
+    match parse_with_indent(rules, text, tokens, indent_settings) {
         Ok(()) => Ok(()),
         Err(range_err) => {
             let mut w: Vec<u8> = vec![];

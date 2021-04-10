@@ -5,6 +5,7 @@ use super::{
     ret_err,
     err_update,
     update,
+    IndentSettings,
     ParseResult,
 };
 use {
@@ -36,7 +37,8 @@ impl SeparateBy {
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         read_token: &ReadToken,
-        refs: &[Rule]
+        refs: &[Rule],
+        indent_settings: &mut IndentSettings,
     ) -> ParseResult<TokenizerState> {
         let start = read_token;
         let mut read_token = *start;
@@ -44,7 +46,7 @@ impl SeparateBy {
         let mut first = true;
         let mut opt_error = None;
         loop {
-            state = match self.rule.parse(tokens, &state, &read_token, refs) {
+            state = match self.rule.parse(tokens, &state, &read_token, refs, indent_settings) {
                 Err(err) => {
                     match (first, self.optional, self.allow_trail) {
                           (true, false, _)
@@ -64,7 +66,7 @@ impl SeparateBy {
                 }
             };
             state = match self.by.parse(
-                tokens, &state, &read_token, refs
+                tokens, &state, &read_token, refs, indent_settings
             ) {
                 Err(err) => {
                     err_update(Some(err), &mut opt_error);
@@ -85,13 +87,14 @@ impl SeparateBy {
 mod tests {
     use all::*;
     use all::tokenizer::*;
-    use meta_rules::{ SeparateBy, Tag, UntilAnyOrWhitespace };
+    use meta_rules::{ IndentSettings, SeparateBy, Tag, UntilAnyOrWhitespace };
     use std::sync::Arc;
     use range::Range;
     use read_token::ReadToken;
 
     #[test]
     fn required() {
+        let ref mut indent_settings = IndentSettings::default();
         let text = "foo()";
         let mut tokens = vec![];
         let s = TokenizerState::new();
@@ -114,13 +117,14 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&text[4..], 4), &[]);
+            &ReadToken::new(&text[4..], 4), &[], indent_settings);
         assert_eq!(res, Err(Range::new(4, 0).wrap(
             ParseError::ExpectedSomething(1))));
     }
 
     #[test]
     fn optional() {
+        let ref mut indent_settings = IndentSettings::default();
         let text = "foo()";
         let mut tokens = vec![];
         let s = TokenizerState::new();
@@ -143,13 +147,14 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&text[4..], 4), &[]);
+            &ReadToken::new(&text[4..], 4), &[], indent_settings);
         assert_eq!(res, Ok((Range::new(4, 0), s,
             Some(Range::new(4, 0).wrap(ParseError::ExpectedSomething(1))))));
     }
 
     #[test]
     fn disallow_trail() {
+        let ref mut indent_settings = IndentSettings::default();
         let text = "foo(a,b,c,)";
         let mut tokens = vec![];
         let s = TokenizerState::new();
@@ -173,13 +178,14 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&text[4..], 4), &[]);
+            &ReadToken::new(&text[4..], 4), &[], indent_settings);
         assert_eq!(res, Err(Range::new(10, 0).wrap(
             ParseError::ExpectedSomething(1))));
     }
 
     #[test]
     fn allow_trail() {
+        let ref mut indent_settings = IndentSettings::default();
         let text = "foo(a,b,c,)";
         let mut tokens = vec![];
         let s = TokenizerState::new();
@@ -203,7 +209,7 @@ mod tests {
             allow_trail: true,
         };
         let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&text[4..], 4), &[]);
+            &ReadToken::new(&text[4..], 4), &[], indent_settings);
         assert_eq!(res, Ok((Range::new(4, 6), TokenizerState(3),
             Some(Range::new(10, 0).wrap(ParseError::ExpectedSomething(1))))));
         assert_eq!(tokens.len(), 3);
@@ -217,6 +223,7 @@ mod tests {
 
     #[test]
     fn successful() {
+        let ref mut indent_settings = IndentSettings::default();
         let text = "foo(a,b,c)";
         let mut tokens = vec![];
         let s = TokenizerState::new();
@@ -240,7 +247,7 @@ mod tests {
             allow_trail: false,
         };
         let res = sep.parse(&mut tokens, &s,
-            &ReadToken::new(&text[4..], 4), &[]);
+            &ReadToken::new(&text[4..], 4), &[], indent_settings);
         assert_eq!(res, Ok((Range::new(4, 5), TokenizerState(3),
             Some(Range::new(9, 0).wrap(
                 ParseError::ExpectedTag(Arc::new(",".into()), 2))))));
@@ -255,6 +262,7 @@ mod tests {
 
     #[test]
     fn nested() {
+        let ref mut indent_settings = IndentSettings::default();
         let text = "a,b,c;d,e,f;";
         let mut tokens = vec![];
         let s = TokenizerState::new();
@@ -289,7 +297,7 @@ mod tests {
             optional: false,
             allow_trail: true,
         };
-        let res = sep.parse(&mut tokens, &s, &ReadToken::new(&text, 0), &[]);
+        let res = sep.parse(&mut tokens, &s, &ReadToken::new(&text, 0), &[], indent_settings);
         assert_eq!(res, Ok((Range::new(0, 12), TokenizerState(6),
             Some(Range::new(12, 0).wrap(
                 ParseError::ExpectedSomething(2))))));
