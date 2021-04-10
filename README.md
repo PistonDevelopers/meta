@@ -1,14 +1,5 @@
-# piston_meta
+# Piston-Meta
 A DSL parsing library for human readable text documents
-
-[![Travis](https://img.shields.io/travis/PistonDevelopers/meta.svg?style=flat-square)](https://travis-ci.org/PistonDevelopers/meta)
-[![Crates.io](https://img.shields.io/crates/v/piston_meta.svg?style=flat-square)](https://crates.io/crates/piston_meta)
-
-[Documentation](https://docs.rs/piston_meta/)
-
-[Why Piston-Meta?](https://github.com/PistonDevelopers/meta/issues/1)
-
-[self-syntax](https://raw.githubusercontent.com/PistonDevelopers/meta/master/assets/self-syntax.txt)
 
 ### Introduction
 
@@ -63,6 +54,7 @@ If you get an error `#4003`, then it was caused by a rule in the node starting w
 |Rule|Description|
 |----|-----------|
 |.l(rule)|Separates sub rule with lines.|
+|.l+(rule)|Separates sub rule with lines, with indention (whitespace sensitive)|
 |.r?(rule)|Repeats sub rule until it fails, allows zero repetitions.|
 |.r!(rule)|Repeats sub rule until it fails, requires at least one repetition.|
 |...any_characters?:name|Reads a string until any characters, allows zero characters. Name is optional.|

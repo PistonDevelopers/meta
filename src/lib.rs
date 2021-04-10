@@ -56,6 +56,7 @@
 //! |Rule|Description|
 //! |----|-----------|
 //! |.l(rule)|Separates sub rule with lines.|
+//! |.l+(rule)|Separates sub rule with lines, with indention (whitespace sensitive)|
 //! |.r?(rule)|Repeats sub rule until it fails, allows zero repetitions.|
 //! |.r!(rule)|Repeats sub rule until it fails, requires at least one repetition.|
 //! |...any_characters?:name|Reads a string until any characters, allows zero characters. Name is optional.|
