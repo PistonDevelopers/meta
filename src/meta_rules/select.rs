@@ -3,6 +3,7 @@ use read_token::ReadToken;
 
 use super::{
     err_update,
+    IndentSettings,
     ParseResult,
 };
 use {
@@ -29,11 +30,12 @@ impl Select {
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         read_token: &ReadToken,
-        refs: &[Rule]
+        refs: &[Rule],
+        indent_settings: &mut IndentSettings,
     ) -> ParseResult<TokenizerState> {
         let mut opt_error: Option<Range<ParseError>> = None;
         for sub_rule in &self.args {
-            match sub_rule.parse(tokens, state, read_token, refs) {
+            match sub_rule.parse(tokens, state, read_token, refs, indent_settings) {
                 Ok((range, state, err)) => {
                     err_update(err, &mut opt_error);
                     return Ok((read_token.peek(range.length),

@@ -691,6 +691,7 @@ pub fn convert(
         Rule::Lines(Box::new(Lines {
             debug_id: *debug_id,
             rule: rule,
+            indent: false,
         }))))
     }
 

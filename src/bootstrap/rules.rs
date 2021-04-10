@@ -1030,6 +1030,7 @@ pub fn rules() -> Syntax {
         args: vec![
             Rule::Lines(Box::new(Lines {
                 debug_id: 22002,
+                indent: false,
                 rule: Rule::Sequence(Sequence {
                     debug_id: 22003,
                     args: vec![
@@ -1059,6 +1060,7 @@ pub fn rules() -> Syntax {
             })),
             Rule::Lines(Box::new(Lines {
                 debug_id: 22008,
+                indent: false,
                 rule: Rule::Sequence(Sequence {
                     debug_id: 22009,
                     args: vec![

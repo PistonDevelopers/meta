@@ -4,6 +4,7 @@ use read_token::ReadToken;
 use super::{
     ret_err,
     err_update,
+    IndentSettings,
     ParseResult,
 };
 use {
@@ -22,6 +23,8 @@ pub struct Lines {
     pub rule: Rule,
     /// A debug id to track down the rule generating an error.
     pub debug_id: DebugId,
+    /// Whether to increase indention.
+    pub indent: bool,
 }
 
 impl Lines {
@@ -32,12 +35,13 @@ impl Lines {
         tokenizer: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         read_token: &ReadToken,
-        refs: &[Rule]
+        refs: &[Rule],
+        indent_settings: &mut IndentSettings,
     ) -> ParseResult<TokenizerState> {
         let mut state = state.clone();
         let mut opt_error = None;
         match read_token.lines(|read_token| {
-            match self.rule.parse(tokenizer, &state, read_token, refs) {
+            match self.rule.parse(tokenizer, &state, read_token, refs, indent_settings) {
                 Err(err) => {
                     err_update(Some(err), &mut opt_error);
                     None
@@ -65,7 +69,7 @@ impl Lines {
 mod tests {
     use all::*;
     use all::tokenizer::*;
-    use meta_rules::{ Lines, Number, Sequence, Text, Whitespace };
+    use meta_rules::{ IndentSettings, Lines, Number, Sequence, Text, Whitespace };
     use range::Range;
     use read_token::ReadToken;
     use std::sync::Arc;
@@ -82,6 +86,7 @@ mod tests {
 \"error\"
 4
         ";
+        let ref mut indent_settings = IndentSettings::default();
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let lines = Lines {
@@ -91,9 +96,10 @@ mod tests {
                 property: None,
                 allow_underscore: false,
             }),
+            indent: false,
         };
         let res = lines.parse(&mut tokenizer, &s,
-            &ReadToken::new(&text, 0), &[]);
+            &ReadToken::new(&text, 0), &[], indent_settings);
         assert_eq!(res, Ok((Range::new(0, 10), s,
             Some(Range::new(10, 0).wrap(ParseError::ExpectedNumber(1))))));
     }
@@ -108,6 +114,7 @@ mod tests {
 
 5
  ";
+        let ref mut ident_settings = IndentSettings::default();
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let val: Arc<String> = Arc::new("val".into());
@@ -127,9 +134,10 @@ mod tests {
                     })
                 ]
             }),
+            indent: false,
         };
         let res = lines.parse(&mut tokenizer, &s,
-            &ReadToken::new(&text, 0), &[]);
+            &ReadToken::new(&text, 0), &[], ident_settings);
         assert_eq!(res, Err(Range::new(8, 0).wrap(
             ParseError::ExpectedNewLine(0))));
     }
@@ -145,6 +153,7 @@ mod tests {
 
 4
  ";
+        let ref mut ident_settings = IndentSettings::default();
         let mut tokenizer = vec![];
         let s = TokenizerState::new();
         let val: Arc<String> = Arc::new("val".into());
@@ -155,9 +164,10 @@ mod tests {
                 property: Some(val.clone()),
                 allow_underscore: false,
             }),
+            indent: false,
         };
         let res = lines.parse(&mut tokenizer, &s,
-            &ReadToken::new(&text, 0), &[]);
+            &ReadToken::new(&text, 0), &[], ident_settings);
         assert_eq!(res, Ok((Range::new(0, 13), TokenizerState(4), None)));
     }
 
@@ -182,7 +192,8 @@ mod tests {
                         debug_id: 2,
                         allow_underscore: true,
                         property: Some(num.clone()),
-                    })
+                    }),
+                    indent: false,
                 })),
                 Rule::Lines(Box::new(Lines {
                     debug_id: 3,
@@ -190,7 +201,8 @@ mod tests {
                         debug_id: 4,
                         allow_empty: false,
                         property: Some(tex.clone()),
-                    })
+                    }),
+                    indent: false,
                 }))
             ]
         });

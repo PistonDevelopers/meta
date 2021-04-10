@@ -4,6 +4,7 @@ use read_token::ReadToken;
 
 use super::{
     FastSelect,
+    IndentSettings,
     Lines,
     Node,
     Not,
@@ -68,7 +69,8 @@ impl Rule {
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         read_token: &ReadToken,
-        refs: &[Rule]
+        refs: &[Rule],
+        indent_settings: &mut IndentSettings,
     ) -> ParseResult<TokenizerState> {
         match self {
             &Rule::Whitespace(ref w) => {
@@ -90,31 +92,31 @@ impl Rule {
                 n.parse(tokens, state, read_token)
             }
             &Rule::Select(ref s) => {
-                s.parse(tokens, state, read_token, refs)
+                s.parse(tokens, state, read_token, refs, indent_settings)
             }
             &Rule::FastSelect(ref fs) => {
-                fs.parse(tokens, state, read_token, refs)
+                fs.parse(tokens, state, read_token, refs, indent_settings)
             }
             &Rule::Sequence(ref s) => {
-                s.parse(tokens, state, read_token, refs)
+                s.parse(tokens, state, read_token, refs, indent_settings)
             }
             &Rule::SeparateBy(ref s) => {
-                s.parse(tokens, state, read_token, refs)
+                s.parse(tokens, state, read_token, refs, indent_settings)
             }
             &Rule::Repeat(ref r) => {
-                r.parse(tokens, state, read_token, refs)
+                r.parse(tokens, state, read_token, refs, indent_settings)
             }
             &Rule::Lines(ref l) => {
-                l.parse(tokens, state, read_token, refs)
+                l.parse(tokens, state, read_token, refs, indent_settings)
             }
             &Rule::Node(ref p) => {
-                p.parse(tokens, state, read_token, refs)
+                p.parse(tokens, state, read_token, refs, indent_settings)
             }
             &Rule::Optional(ref o) => {
-                Ok(o.parse(tokens, state, read_token, refs))
+                Ok(o.parse(tokens, state, read_token, refs, indent_settings))
             }
             &Rule::Not(ref n) => {
-                n.parse(tokens, state, read_token, refs)
+                n.parse(tokens, state, read_token, refs, indent_settings)
             }
         }
     }

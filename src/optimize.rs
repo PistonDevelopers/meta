@@ -114,6 +114,7 @@ pub fn optimize_rule(rule: &Rule, refs: &[Rule]) -> Rule {
             Rule::Lines(Box::new(Lines {
                 rule: optimize_rule(&lines.rule, refs),
                 debug_id: lines.debug_id,
+                indent: lines.indent,
             }))
         }
         Rule::Optional(ref opt) => {

@@ -3,7 +3,7 @@ use read_token::ReadToken;
 
 use std::sync::Arc;
 
-use super::ParseResult;
+use super::{ IndentSettings, ParseResult };
 use {
     DebugId,
     MetaData,
@@ -29,11 +29,12 @@ impl Not {
         tokens: &mut Vec<Range<MetaData>>,
         state: &TokenizerState,
         read_token: &ReadToken,
-        refs: &[Rule]
+        refs: &[Rule],
+        indent_settings: &mut IndentSettings,
     ) -> ParseResult<TokenizerState> {
         let start = read_token;
         match self.rule.parse(
-            tokens, state, read_token, refs
+            tokens, state, read_token, refs, indent_settings
         ) {
             Ok((range, _, _)) => {
                 let text = read_token.raw_string(range.length);

@@ -16,6 +16,7 @@ pub use self::until_any::UntilAny;
 pub use self::until_any_or_whitespace::UntilAnyOrWhitespace;
 pub use self::whitespace::Whitespace;
 pub use self::fast_select::FastSelect;
+pub use self::indent_settings::IndentSettings;
 
 use range::Range;
 use read_token::ReadToken;
@@ -26,6 +27,7 @@ use {
 };
 use tokenizer::TokenizerState;
 
+mod indent_settings;
 mod lines;
 mod node;
 mod not;
@@ -55,7 +57,8 @@ pub fn parse(
         x => x
     };
     let read_token = ReadToken::new(&text, 0);
-    let res = rules.rules[n - 1].parse(tokens, &s, &read_token, &rules.rules);
+    let ref mut indent_settings = IndentSettings::default();
+    let res = rules.rules[n - 1].parse(tokens, &s, &read_token, &rules.rules, indent_settings);
     match res {
         Ok((range, s, opt_error)) => {
             // Report error if did not reach the end of text.
