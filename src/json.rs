@@ -77,6 +77,12 @@ pub fn write_string<W>(w: &mut W, val: &str) -> Result<(), io::Error>
             write!(w, "\\\\")?;
         } else if c == '\"' {
             write!(w, "\\\"")?;
+        } else if c == '\n' {
+            write!(w, "\\n")?;
+        } else if c == '\r' {
+            write!(w, "\\r")?;
+        } else if c == '\t' {
+            write!(w, "\\t")?;
         } else {
             write!(w, "{}", c)?;
         }
@@ -141,5 +147,12 @@ mod tests {
         ]).unwrap();
         assert_eq!(String::from_utf8(s).unwrap(),
             "\"pos\":{\n \"x\":1\n},\n\"pos\":{\n \"x\":1\n}\n");
+    }
+
+    #[test]
+    fn test_write_string() {
+        let mut data: Vec<u8> = vec![];
+        write_string(&mut data, "\n\r\t").unwrap();
+        assert_eq!(String::from_utf8(data).unwrap(), "\"\\n\\r\\t\"");
     }
 }
