@@ -46,9 +46,18 @@ impl Lines {
                 let offset = read_token.offset;
                 let mut read_token = *read_token;
                 if self.indent {
-                    for _ in 0..indent_settings.indent {
+                    let mut n = indent_settings.indent;
+                    while n > 0 {
                         if let Some(range) = read_token.tag(" ") {
                             read_token = read_token.consume(range.length);
+                            n -= 1;
+                        } else if let Some(range) = read_token.tag("\t") {
+                            read_token = read_token.consume(range.length);
+                            if n <= indent_settings.tab_spaces as u32 {
+                                break
+                            } else {
+                                n -= indent_settings.tab_spaces as u32;
+                            }
                         } else {
                             return None;
                         }
@@ -59,6 +68,9 @@ impl Lines {
                             if let Some(range) = read_token.tag(" ") {
                                 read_token = read_token.consume(range.length);
                                 indent_settings.indent += 1;
+                            } else if let Some(range) = read_token.tag("\t") {
+                                read_token = read_token.consume(range.length);
+                                indent_settings.indent += indent_settings.tab_spaces as u32;
                             } else {
                                 break;
                             }
@@ -362,5 +374,53 @@ mod tests {
         let res = lines.parse(&mut tokenizer, &s,
             &ReadToken::new(&text, 0), &[], ident_settings);
         assert_eq!(res, Ok((Range::new(0, 13), TokenizerState(2), None)));
+    }
+
+    #[test]
+    fn indent_align_tabs() {
+        let text = "
+\t1
+    2
+";
+        let ref mut ident_settings = IndentSettings::default();
+        let mut tokenizer = vec![];
+        let s = TokenizerState::new();
+        let val: Arc<String> = Arc::new("val".into());
+        let lines = Lines {
+            debug_id: 0,
+            rule: Rule::Number(Number {
+                debug_id: 1,
+                property: Some(val.clone()),
+                allow_underscore: false,
+            }),
+            indent: true,
+        };
+        let res = lines.parse(&mut tokenizer, &s,
+            &ReadToken::new(&text, 0), &[], ident_settings);
+        assert_eq!(res, Ok((Range::new(0, 10), TokenizerState(2), None)));
+    }
+
+    #[test]
+    fn indent_align_tabs2() {
+        let text = "
+    1
+\t2
+";
+        let ref mut ident_settings = IndentSettings::default();
+        let mut tokenizer = vec![];
+        let s = TokenizerState::new();
+        let val: Arc<String> = Arc::new("val".into());
+        let lines = Lines {
+            debug_id: 0,
+            rule: Rule::Number(Number {
+                debug_id: 1,
+                property: Some(val.clone()),
+                allow_underscore: false,
+            }),
+            indent: true,
+        };
+        let res = lines.parse(&mut tokenizer, &s,
+            &ReadToken::new(&text, 0), &[], ident_settings);
+        assert_eq!(res, Ok((Range::new(0, 10), TokenizerState(2), None)));
     }
 }
