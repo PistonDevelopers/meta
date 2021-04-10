@@ -40,26 +40,87 @@ impl Lines {
     ) -> ParseResult<TokenizerState> {
         let mut state = state.clone();
         let mut opt_error = None;
-        match read_token.lines(|read_token| {
-            match self.rule.parse(tokenizer, &state, read_token, refs, indent_settings) {
-                Err(err) => {
-                    err_update(Some(err), &mut opt_error);
-                    None
+        let mut first = true;
+        if self.indent {
+            match read_token.lines(|read_token| {
+                let offset = read_token.offset;
+                let mut read_token = *read_token;
+                if self.indent {
+                    for _ in 0..indent_settings.indent {
+                        if let Some(range) = read_token.tag(" ") {
+                            read_token = read_token.consume(range.length);
+                        } else {
+                            return None;
+                        }
+                    }
+                    if first && indent_settings.align_first {
+                        first = false;
+                        loop {
+                            if let Some(range) = read_token.tag(" ") {
+                                read_token = read_token.consume(range.length);
+                                indent_settings.indent += 1;
+                            } else {
+                                break;
+                            }
+                        }
+                    } else {
+                        if let Some(_) = read_token.tag(" ") {
+                            return None;
+                        }
+                    }
                 }
-                Ok((range, new_state, err)) => {
-                    err_update(err, &mut opt_error);
-                    state = new_state;
-                    Some(range)
+
+                // Increase indent.
+                let old_indent = indent_settings.indent;
+                indent_settings.indent += 1;
+                match self.rule.parse(tokenizer, &state, &read_token, refs, indent_settings) {
+                    Err(err) => {
+                        indent_settings.indent = old_indent;
+                        err_update(Some(err), &mut opt_error);
+                        None
+                    }
+                    Ok((mut range, new_state, err)) => {
+                        let end = range.offset + range.length;
+                        range.length = end - offset;
+                        range.offset = offset;
+                        indent_settings.indent = old_indent;
+                        err_update(err, &mut opt_error);
+                        state = new_state;
+                        Some(range)
+                    }
+                }
+            }) {
+                Err(range) => {
+                    let err = range.wrap(
+                        ParseError::ExpectedNewLine(self.debug_id));
+                    Err(ret_err(err, opt_error))
+                }
+                Ok(range) => {
+                    Ok((range, state, opt_error))
                 }
             }
-        }) {
-            Err(range) => {
-                let err = range.wrap(
-                    ParseError::ExpectedNewLine(self.debug_id));
-                Err(ret_err(err, opt_error))
-            }
-            Ok(range) => {
-                Ok((range, state, opt_error))
+        } else {
+            match read_token.lines(|read_token| {
+                match self.rule.parse(tokenizer, &state, &read_token, refs, indent_settings) {
+                    Err(err) => {
+                        err_update(Some(err), &mut opt_error);
+                        None
+                    }
+                    Ok((range, new_state, err)) => {
+                        err_update(err, &mut opt_error);
+                        state = new_state;
+                        Some(range)
+                    }
+                }
+            }) {
+                Err(range) => {
+                    let err = range.wrap(
+                        ParseError::ExpectedNewLine(self.debug_id));
+                    Err(ret_err(err, opt_error))
+                }
+                Ok(range) => {
+                    Ok((range, state, opt_error))
+                }
             }
         }
     }
@@ -222,5 +283,84 @@ mod tests {
             Range::new(19, 7).wrap(
                 MetaData::String(tex.clone(), Arc::new("three".into())))
         ]);
+    }
+
+    #[test]
+    fn indent_success() {
+        let text = "
+1
+2
+
+3
+
+
+4
+ ";
+        let ref mut ident_settings = IndentSettings::default();
+        let mut tokenizer = vec![];
+        let s = TokenizerState::new();
+        let val: Arc<String> = Arc::new("val".into());
+        let lines = Lines {
+            debug_id: 0,
+            rule: Rule::Number(Number {
+                debug_id: 1,
+                property: Some(val.clone()),
+                allow_underscore: false,
+            }),
+            indent: true,
+        };
+        let res = lines.parse(&mut tokenizer, &s,
+            &ReadToken::new(&text, 0), &[], ident_settings);
+        assert_eq!(res, Ok((Range::new(0, 13), TokenizerState(4), None)));
+    }
+
+    #[test]
+    fn indent_1_2() {
+        let text = "
+1
+2
+ 3
+4
+ ";
+        let ref mut ident_settings = IndentSettings::default();
+        let mut tokenizer = vec![];
+        let s = TokenizerState::new();
+        let val: Arc<String> = Arc::new("val".into());
+        let lines = Lines {
+            debug_id: 0,
+            rule: Rule::Number(Number {
+                debug_id: 1,
+                property: Some(val.clone()),
+                allow_underscore: false,
+            }),
+            indent: true,
+        };
+        let res = lines.parse(&mut tokenizer, &s,
+            &ReadToken::new(&text, 0), &[], ident_settings);
+        assert_eq!(res, Ok((Range::new(0, 5), TokenizerState(2), None)));
+    }
+
+    #[test]
+    fn indent_align() {
+        let text = "
+    1
+    2
+";
+        let ref mut ident_settings = IndentSettings::default();
+        let mut tokenizer = vec![];
+        let s = TokenizerState::new();
+        let val: Arc<String> = Arc::new("val".into());
+        let lines = Lines {
+            debug_id: 0,
+            rule: Rule::Number(Number {
+                debug_id: 1,
+                property: Some(val.clone()),
+                allow_underscore: false,
+            }),
+            indent: true,
+        };
+        let res = lines.parse(&mut tokenizer, &s,
+            &ReadToken::new(&text, 0), &[], ident_settings);
+        assert_eq!(res, Ok((Range::new(0, 13), TokenizerState(2), None)));
     }
 }
