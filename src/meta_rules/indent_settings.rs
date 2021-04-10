@@ -1,4 +1,5 @@
 /// Stores indent settings.
+#[derive(Clone, Copy)]
 pub struct IndentSettings {
     /// The current indention.
     pub indent: u32,

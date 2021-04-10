@@ -136,7 +136,13 @@ pub use parse_error_handler::{
     ParseErrorHandler
 };
 pub use parse_error::ParseError;
-pub use meta_rules::{ parse, parse_errstr, Rule };
+pub use meta_rules::{
+    parse,
+    parse_errstr,
+    parse_errstr_with_indent,
+    parse_with_indent,
+    Rule
+};
 pub use bootstrap::Convert;
 
 /// The type of debug id used to track down errors in rules.
