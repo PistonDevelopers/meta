@@ -140,7 +140,7 @@ _seps: "[]{}():.!?\""
 17 until_any_or_whitespace = [".." set_opt:_any opt ?[":" set:_prop]]
 18 until_any = ["..." set_opt:_any opt ?[":" set:_prop]]
 19 repeat = [".r" opt "(" rule:"rule" ")"]
-20 lines = [".l(" .w? rule:"rule" .w? ")"]
+20 lines = [".l" ?"+":"indent" "(" .w? rule:"rule" .w? ")"]
 21 rule = {
   whitespace:"whitespace"
   until_any_or_whitespace:"until_any_or_whitespace"

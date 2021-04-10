@@ -680,6 +680,10 @@ pub fn convert(
         let start = convert.clone();
         let range = convert.start_node("lines")?;
         convert.update(range);
+        let indent = if let Ok((range, val)) = convert.meta_bool("indent") {
+            convert.update(range);
+            val
+        } else {false};
         let (range, rule) = read_rule(
             debug_id, "rule", convert, strings, ignored
         )?;
@@ -690,8 +694,8 @@ pub fn convert(
         Ok((convert.subtract(start),
         Rule::Lines(Box::new(Lines {
             debug_id: *debug_id,
-            rule: rule,
-            indent: false,
+            rule,
+            indent,
         }))))
     }
 
