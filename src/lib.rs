@@ -10,7 +10,7 @@
 //!
 //! Meta parsing is a development technique that goes back to the first modern computer.
 //! The idea is to turn pieces of a computer program into a programmable pipeline,
-//! and thereby accelerating development.
+//! thereby accelerating development.
 //! An important, but surprisingly reusable part across projects, is the concept of generating
 //! structured data from text, since text is easy to modify and reason about.
 //!
@@ -26,7 +26,7 @@
 //! one might need several thousands lines of code.
 //! This slows down development and increases the chance of making errors.
 //!
-//! Meta parsing is a technique where `f` gets splitted into two steps:
+//! Meta parsing is a technique where `f` gets split into two steps:
 //!
 //! ```ignore
 //! f <=> f2 . f1
@@ -46,7 +46,7 @@
 //!
 //! `20 document = [.l(string:"string") .l(node:"node") .w?]`
 //!
-//! Strings starts with underscore and can be reused among the rules:
+//! Strings start with an underscore and can be reused among the rules:
 //!
 //! `_opt: "optional"`
 //!
@@ -74,7 +74,7 @@
 //! |.s?(by_rule rule)|Separates rule by another rule, allows zero repetitions.|
 //! |.s!(by_rule rule)|Separates rule by another rule, requires at least one repetition.|
 //! |.s?.(by_rule rule)|Separates rule by another rule, allows trailing.|
-//! |{rules}|Selects a rule. Tries the first rule, then the second etc. Rules are separated by whitespace.|
+//! |{rules}|Selects a rule. Tries the first rule, then the second, etc. Rules are separated by whitespace.|
 //! |[rules]|A sequence of rules. Rules are separated by whitespace.|
 //! |node|Uses a node without a name. The read data is put in the current node.|
 //! |node:name|Uses a node with a name. The read data is put in a new node with the name.|
@@ -118,7 +118,7 @@
 //!
 //! ### Bootstrapping
 //!
-//! When the meta language changes, bootstrapping is used to host old meta syntax in the new meta syntax. Here is how it works:
+//! When the meta language changes, bootstrapping is used to hoist the old meta syntax into the new meta syntax. Here is how it works:
 //!
 //! 1. Piston-Meta contains composable rules that can parse many human readable text formats.
 //! 2. Piston-Meta knows how to parse and convert to its own rules, known as "bootstrapping".
